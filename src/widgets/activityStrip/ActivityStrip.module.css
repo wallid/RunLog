@@ -1,0 +1,31 @@
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.block {
+  flex: 1 1 8px;
+  min-width: 6px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 2px;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.block:hover {
+  transform: translateY(-2px);
+}
+
+.dimmed {
+  opacity: 0.22;
+}
+
+.scaleRow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}

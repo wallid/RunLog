@@ -1,0 +1,360 @@
+/*
+ * The card, and the turn that reveals its back.
+ *
+ * The scene holds the perspective; the flipper rotates; each face carries the
+ * card's own surface and shadow so the lift stays correct mid-turn.
+ */
+.scene {
+  perspective: 1800px;
+  /* Clears the sticky masthead when a contents link jumps here. */
+  scroll-margin-top: calc(var(--header-height) + var(--space-5));
+  /*
+   * Both faces are out of flow and only the one showing sets the card's
+   * height, so the hidden face — often the taller of the two — hangs below the
+   * card without being seen. Chrome still counts it as scrollable area, which
+   * on the last card of the page buys the reader several hundred pixels of
+   * blank space past the footer. Clipping ends the card at its own height; the
+   * margin is wide enough to leave the shadow, which is the only thing that
+   * legitimately paints outside it.
+   */
+  overflow: clip;
+  overflow-clip-margin: 28px;
+}
+
+.flipper {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 0.68, 0.24, 1),
+    height 0.45s cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+.flipper[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+/*
+ * Faces are out of flow so both can occupy the same space. Height is left to
+ * the content and reported back up, which is what lets the card resize as it
+ * turns rather than clipping the longer side.
+ */
+.face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+/* Marks a section whose method is not settled, so a reader knows to weigh it
+   differently rather than discovering that later. */
+.betaBadge {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Provenance sits beside Beta but reads quieter than it: an outline rather
+   than a fill, because it is a standing property of the card rather than a
+   warning about it. The three levels differ only in ink, so the badge is read
+   by its word and not by a colour the reader has to learn. */
+
+.provenanceBadge {
+  padding: 2px 9px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.provenance_measured {
+  color: var(--text-secondary);
+}
+
+.provenance_derived {
+  color: var(--text-muted);
+}
+
+.provenance_estimated {
+  border-style: dashed;
+}
+
+.provenanceNote {
+  margin-top: var(--space-4);
+}
+
+.betaNote {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+/* The information button is quiet until wanted, so it never competes with the
+   card's own content. */
+.infoButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+
+.infoButton:hover {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+.information {
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.visualisation {
+  padding: var(--space-4) 0;
+}
+
+.observations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.observation {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.explanations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.explanation {
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.6;
+}
+
+/* Tags sit inline with the sentence they qualify, so the confidence is
+   impossible to read past. */
+.observedTag,
+.confidenceTag {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  vertical-align: 1.5px;
+  white-space: nowrap;
+}
+
+.observedTag {
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+}
+
+.high {
+  background: #e6f4ea;
+  color: var(--confidence-high);
+}
+
+.medium {
+  background: #fdf3dd;
+  color: var(--confidence-medium);
+}
+
+.low {
+  background: var(--surface-inset);
+  color: var(--confidence-low);
+}
+
+/* The back */
+.backLabel {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 660;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.backTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.backDescription {
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.teachingPoints {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.teachingTitle {
+  font-size: 0.875rem;
+  font-weight: 660;
+}
+
+.teachingText {
+  margin-top: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+  line-height: 1.7;
+}
+
+/* Citations sit after the teaching, separated the same way the teaching is
+   separated from the description: the reader has finished being taught the
+   metric before being shown where the idea was borrowed from. */
+
+.references {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.referencesTitle {
+  font-size: 0.875rem;
+  font-weight: 660;
+}
+
+.referenceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.reference {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.referenceLink {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+
+.referenceLink:hover {
+  text-decoration-color: currentColor;
+}
+
+.referenceDetail {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.referenceNote {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.backToCard {
+  margin-top: var(--space-5);
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.backToCard:hover {
+  background: var(--border-strong);
+}
+
+@media (max-width: 640px) {
+  .face {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+}
+
+/* Turning the card is decorative; the reveal is not. Without motion the faces
+   simply swap. */
+@media (prefers-reduced-motion: reduce) {
+  .flipper {
+    transition: none;
+  }
+}

@@ -1,0 +1,72 @@
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+
+.columnHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.columnTitle {
+  font-size: 0.85rem;
+  font-weight: 640;
+}
+
+.timeBarTrack {
+  display: flex;
+  height: 52px;
+  align-items: flex-end;
+  margin-top: var(--space-3);
+}
+
+.timeBar {
+  width: 100%;
+  border-radius: 4px 4px 2px 2px;
+  opacity: 0.85;
+}
+
+.time {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.metrics dt {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 550;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.metrics dd {
+  margin: 1px 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}

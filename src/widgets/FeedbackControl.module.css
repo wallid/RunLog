@@ -1,0 +1,93 @@
+.feedback {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.prompt {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 660;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.chip {
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.chip:hover {
+  background: var(--border-strong);
+  color: var(--text-primary);
+}
+
+/* The chosen answer is a solid dark pill, matching the page's other toggles. */
+.chipActive {
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.chipActive:hover {
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.addNote {
+  margin-top: var(--space-3);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.addNote:hover {
+  color: var(--text-primary);
+}
+
+.noteRow {
+  margin-top: var(--space-3);
+}
+
+.note {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.note:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.saved {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}

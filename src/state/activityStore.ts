@@ -1,0 +1,221 @@
+import { create } from "zustand";
+import { ParseError, type RawActivity } from "@/parsers/types";
+import type { DerivedActivity } from "@/model/activity";
+import { buildActivity } from "@/model/pipeline";
+import { parseFile } from "@/parsers";
+import { ArchiveError, readArchive, type ArchiveEntry } from "@/upload/archive";
+import { reportParseFailure } from "@/observability/sentry";
+import { useSelectionStore } from "./selectionStore";
+import { useSettingsStore } from "./settingsStore";
+import { fetchRunWeather } from "@/weather/openMeteo";
+
+/**
+ * The run currently being read.
+ *
+ * The raw parse is kept alongside the derived model so changing the maximum
+ * heart rate can rebuild zones without asking the reader to upload again.
+ */
+
+export type LoadStatus = "idle" | "loading" | "choosing" | "ready" | "error";
+
+interface ActivityState {
+  status: LoadStatus;
+  raw: RawActivity | null;
+  activity: DerivedActivity | null;
+  error: string | null;
+  fileName: string | null;
+  /**
+   * The runs found inside an export archive, when it held more than one.
+   *
+   * Present only while the reader is picking; choosing one or starting over
+   * clears it. Entries are lazy, so listing a Health export with four hundred
+   * routes in it has not decompressed any of them.
+   */
+  choices: ArchiveEntry[] | null;
+
+  loadFile: (file: File) => Promise<void>;
+  /** Opens one run out of the archive currently being chosen from. */
+  chooseEntry: (path: string) => Promise<void>;
+  loadDemo: () => Promise<void>;
+  /** Recomputes the model against a new maximum heart rate. */
+  rebuild: (maxHr: number | undefined) => void;
+  /**
+   * Looks up the conditions near this run, when the runner has asked for it.
+   *
+   * Separate from loading so it can be triggered by switching the setting on
+   * for a run already on screen, and so a failed or refused lookup never has
+   * any bearing on whether the run itself renders.
+   */
+  loadWeather: () => Promise<void>;
+  reset: () => void;
+}
+
+const DEMO_URL = `${import.meta.env.BASE_URL}demo/Lunch_Run.fit`;
+
+export const useActivityStore = create<ActivityState>((set, get) => ({
+  status: "idle",
+  raw: null,
+  activity: null,
+  error: null,
+  fileName: null,
+  choices: null,
+
+  /**
+   * Takes whatever the reader handed over.
+   *
+   * An export from Apple Health or Strava arrives as a zip rather than an
+   * activity, so the container is opened first and the runs inside it are
+   * offered. One run inside means there is nothing to ask about.
+   */
+  loadFile: async (file) => {
+    set({ status: "loading", error: null, fileName: file.name, choices: null });
+    useSelectionStore.getState().clearAll();
+    try {
+      const entries = await readArchive(file, file.name);
+
+      if (entries) {
+        if (entries.length === 0) {
+          throw new ArchiveError(
+            "There are no FIT or GPX activities in that archive. An Apple Health export keeps them in workout-routes; a Strava export keeps them in activities.",
+          );
+        }
+        if (entries.length > 1) {
+          set({ status: "choosing", choices: entries });
+          return;
+        }
+        await ingest(set, entries[0].name, () => entries[0].read());
+        return;
+      }
+
+      await ingest(set, file.name, async () => file);
+    } catch (error) {
+      if (isReportable(error)) {
+        reportParseFailure(error, {
+          format: extensionOf(file.name),
+          bytes: file.size,
+        });
+      }
+      set({ status: "error", raw: null, activity: null, choices: null, error: messageFor(error) });
+    }
+  },
+
+  chooseEntry: async (path) => {
+    const entry = get().choices?.find((candidate) => candidate.path === path);
+    if (!entry) return;
+    set({ status: "loading", error: null, fileName: entry.name });
+    try {
+      await ingest(set, entry.name, () => entry.read());
+    } catch (error) {
+      if (isReportable(error)) {
+        reportParseFailure(error, { format: extensionOf(entry.name), bytes: entry.size });
+      }
+      // The list is kept: a route the parser could not read is a reason to try
+      // another one, not a reason to go back to the file picker.
+      set({ status: "choosing", raw: null, activity: null, error: messageFor(error) });
+    }
+  },
+
+  loadDemo: async () => {
+    set({ status: "loading", error: null, fileName: "Lunch Run (demo)" });
+    useSelectionStore.getState().clearAll();
+    try {
+      const response = await fetch(DEMO_URL);
+      if (!response.ok) throw new Error("The demo run could not be downloaded.");
+      const blob = await response.blob();
+      // The demo goes through the same path as an upload, so it exercises the
+      // real parser rather than a pre-baked result.
+      const raw = await parseFile(blob, "Lunch_Run.fit");
+      const activity = buildActivity({ ...raw, name: raw.name ?? "Lunch Run" }, {
+        maxHr: currentMaxHr(),
+      });
+      set({ status: "ready", raw, activity, error: null });
+    } catch (error) {
+      set({ status: "error", raw: null, activity: null, error: messageFor(error) });
+    }
+  },
+
+  rebuild: (maxHr) => {
+    const { raw, activity } = get();
+    if (!raw) return;
+    // Weather survives a rebuild: it belongs to the run, not to the zone
+    // boundaries being recomputed, and re-requesting it would mean another
+    // needless disclosure.
+    const rebuilt = buildActivity(raw, { maxHr });
+    set({ activity: { ...rebuilt, weather: activity?.weather } });
+  },
+
+  loadWeather: async () => {
+    const { activity } = get();
+    if (!activity || activity.weather) return;
+    if (!useSettingsStore.getState().weatherLookup) return;
+
+    // The first fix of the run is what gets rounded and sent. A run with no
+    // GPS has nothing to ask about.
+    const fix = activity.samples.find(
+      (sample) => sample.lat !== undefined && sample.lon !== undefined,
+    );
+    if (!fix?.lat || !fix.lon) return;
+
+    const start = activity.startedAt;
+    const end = new Date(start.getTime() + activity.elapsedS * 1000);
+    const weather = await fetchRunWeather(fix.lat, fix.lon, start, end);
+    if (!weather) return;
+
+    // The run may have been replaced while the request was in flight.
+    const current = get().activity;
+    if (!current || current.id !== activity.id) return;
+    set({ activity: { ...current, weather } });
+  },
+
+  reset: () => {
+    useSelectionStore.getState().clearAll();
+    set({
+      status: "idle",
+      raw: null,
+      activity: null,
+      error: null,
+      fileName: null,
+      choices: null,
+    });
+  },
+}));
+
+/**
+ * The one path from bytes to a run on screen.
+ *
+ * An upload, an entry chosen out of an archive and the demo all go through it,
+ * so none of them can drift into exercising a different parser or a different
+ * set of settings than the others.
+ */
+async function ingest(
+  set: (partial: Partial<ActivityState>) => void,
+  name: string,
+  open: () => Promise<Blob>,
+): Promise<void> {
+  const blob = await open();
+  const raw = await parseFile(blob, name);
+  const activity = buildActivity(raw, { maxHr: currentMaxHr() });
+  set({ status: "ready", raw, activity, error: null, choices: null });
+}
+
+function currentMaxHr(): number | undefined {
+  return useSettingsStore.getState().maxHr;
+}
+
+function messageFor(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message;
+  return "Something went wrong while reading this file.";
+}
+
+/** Picking the wrong file is not a bug; failing to read the right one is. */
+function isReportable(error: unknown): boolean {
+  if (error instanceof ArchiveError) return false;
+  return !(error instanceof ParseError && error.kind === "unsupported");
+}
+
+/** The extension alone. Runners name exports after places and people. */
+function extensionOf(fileName: string): string {
+  const dot = fileName.lastIndexOf(".");
+  if (dot < 0 || dot === fileName.length - 1) return "none";
+  return fileName.slice(dot + 1).toLowerCase();
+}

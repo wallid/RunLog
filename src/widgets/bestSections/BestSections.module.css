@@ -1,0 +1,44 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.effort {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.effort:hover {
+  background: var(--surface-hover);
+}
+
+.selected {
+  background: var(--accent-soft);
+}
+
+.label {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.pace {
+  grid-row: span 2;
+  align-self: center;
+  font-size: 1.05rem;
+  font-weight: 660;
+}
+
+.context {
+  grid-column: 1;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}

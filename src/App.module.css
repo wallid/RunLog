@@ -1,0 +1,63 @@
+.app {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+/*
+ * The reading column stays centred in the viewport and the contents rail sits
+ * in the space beside it, so adding navigation does not shift the article off
+ * centre. Below the breakpoint the rail is dropped entirely and the header's
+ * compact contents panel takes over.
+ */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: center;
+  /* Room to breathe between the masthead and the first card. */
+  padding-top: var(--space-7);
+}
+
+.rail {
+  display: none;
+}
+
+.main {
+  width: min(100% - 2rem, var(--column-width));
+  margin-inline: auto;
+  min-width: 0;
+}
+
+@media (min-width: 1180px) {
+  .layout {
+    grid-template-columns: var(--rail-width) var(--column-width) var(--rail-width);
+    /* A wide gutter keeps the rail from crowding the reading column. */
+    gap: var(--space-8);
+    justify-content: center;
+    padding-inline: var(--space-5);
+  }
+
+  .rail {
+    display: block;
+  }
+
+  .main {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  /* The third column is empty; it exists so the article stays centred rather
+     than being pushed right by the rail. */
+  .layout::after {
+    content: "";
+  }
+}
+
+.footer {
+  margin-top: auto;
+  padding: var(--space-5) 0 var(--space-6);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}

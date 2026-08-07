@@ -1,0 +1,37 @@
+{
+  "name": "runlog",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "An open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@sentry/react": "^10.69.0",
+    "leaflet": "^1.9.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.16",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "happy-dom": "^20.11.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11",
+    "vitest": "^3.0.5",
+    "wrangler": "^4.119.0"
+  }
+}

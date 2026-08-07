@@ -1,0 +1,76 @@
+.screen {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+}
+
+.card {
+  width: min(100%, 34rem);
+  padding: var(--space-7) var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.body {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.primary,
+.secondary {
+  padding: 11px 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 650;
+  transition:
+    background 0.14s ease,
+    transform 0.14s ease;
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(252, 82, 0, 0.28);
+}
+
+.primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.secondary {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+.secondary:hover {
+  background: var(--border-strong);
+}
+
+.note {
+  margin-top: var(--space-5);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}

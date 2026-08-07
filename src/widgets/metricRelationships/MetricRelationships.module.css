@@ -1,0 +1,81 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  text-align: left;
+}
+
+.card:hover {
+  background: var(--surface-hover);
+}
+
+.selected {
+  background: var(--accent-soft);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: 0.95rem;
+}
+
+.at {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.changes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-size: 0.78rem;
+}
+
+.changeLabel {
+  color: var(--text-secondary);
+}
+
+.arrow {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.up {
+  color: var(--terrain-uphill);
+}
+
+.down {
+  color: var(--terrain-downhill);
+}
+
+.amount {
+  font-weight: 620;
+}
+
+.summary {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}

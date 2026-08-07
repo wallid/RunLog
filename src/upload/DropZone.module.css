@@ -1,0 +1,475 @@
+/*
+ * The landing screen: a thin bar, then one hero that fills the viewport.
+ *
+ * Everything is sized against the viewport height rather than a fixed scale, so
+ * the screen holds its shape on a laptop without a scrollbar appearing. Below
+ * the breakpoint the two columns stack and the page is allowed to scroll, which
+ * is the only honest thing to do on a phone.
+ */
+.screen {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: clamp(1rem, 3vh, 1.75rem) 0;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+/* The one piece of colour above the fold. */
+.mark {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.barNote {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.hero {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  width: 100%;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding-bottom: clamp(1.5rem, 6vh, 3.5rem);
+}
+
+/* Left: why this is worth a file. */
+.title {
+  font-size: clamp(2.4rem, 2.1rem + 1.7vw, 3.5rem);
+  font-weight: 750;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.05;
+}
+
+.lede {
+  max-width: 30rem;
+  margin-top: var(--space-4);
+  color: var(--text-secondary);
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.15rem);
+  line-height: 1.55;
+}
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.4vh, 1.5rem);
+  max-width: 30rem;
+  margin-top: clamp(1.75rem, 4.5vh, 2.75rem);
+}
+
+/* A hairline the points hang off, so three claims read as one list rather than
+   three paragraphs that happen to be stacked. */
+.point {
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--border-strong);
+}
+
+.pointTitle {
+  font-size: 0.95rem;
+  font-weight: 660;
+}
+
+.pointBody {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Right: the only thing on the screen to do. */
+.start {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-4);
+}
+
+/* The card is a button: the whole surface opens the picker, and a drop lands
+   anywhere on the window rather than only here. */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(2.25rem, 7vh, 3.75rem) var(--space-5);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dropzone:hover:not(:disabled) {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-raised);
+}
+
+.input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.dropTitle {
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: var(--tracking-heading);
+}
+
+.dropHint {
+  max-width: 21rem;
+  margin-top: var(--space-4);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+/* Inside the card this is a label rather than its own control, so it is a span
+   styled as a button and the card behind it takes the click. */
+.primary {
+  margin-top: var(--space-5);
+  padding: 12px 26px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 650;
+  box-shadow: 0 2px 8px rgba(252, 82, 0, 0.28);
+  transition:
+    background 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.dropzone:hover:not(:disabled) .primary {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 14px rgba(252, 82, 0, 0.32);
+}
+
+/* The demo is a way past the file requirement, not a second call to action, so
+   it reads as a link rather than a button. */
+.secondary {
+  align-self: center;
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  transition: color 0.14s ease;
+}
+
+.secondary:hover:not(:disabled) {
+  color: var(--text-primary);
+  text-decoration-color: currentColor;
+}
+
+.dropzone:disabled,
+.secondary:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.error {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: #fdeceb;
+  color: #8f2020;
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+/*
+ * The export guide.
+ *
+ * Chips choose a source and the steps swap in place under them; the box keeps
+ * its height whether or not one is open, so picking a source never shifts the
+ * card above it.
+ */
+.guide {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.guideRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* On its own line, so five chips wrap into an even block rather than around a
+   label that leaves a ragged first row. */
+.guideLabel {
+  width: 100%;
+  margin-bottom: var(--space-1);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 640;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.sourceChip {
+  padding: 5px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.sourceChip:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.sourceChip[aria-pressed="true"] {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.guideSteps {
+  min-height: 4.25rem;
+  padding-top: var(--space-3);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  counter-reset: step;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  padding-left: var(--space-5);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  counter-increment: step;
+}
+
+.step::before {
+  content: counter(step);
+  position: absolute;
+  top: 1px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface-inset);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.guideNote {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/*
+ * Choosing a run out of an export.
+ *
+ * The list is capped and scrolls rather than growing, because a Health export
+ * runs to hundreds of routes and the screen still has to fit.
+ */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+.pickerTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.pickerHint {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.search {
+  padding: 9px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+}
+
+.search:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.pickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: min(38vh, 20rem);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  list-style: none;
+}
+
+.pickerItem {
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.pickerItem:hover {
+  background: var(--surface-hover);
+}
+
+.pickerItemLabel {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 620;
+}
+
+.pickerItemName {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  overflow: hidden;
+  max-width: 9rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pickerEmpty {
+  padding: var(--space-4) 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.pickerActions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+/* The drop overlay. The window is the target, so the confirmation covers it. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(244, 243, 241, 0.82);
+  backdrop-filter: blur(3px);
+}
+
+.overlayText {
+  padding: var(--space-5) var(--space-7);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-raised);
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+@media (min-width: 880px) {
+  .hero {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+
+  .start {
+    max-width: 24rem;
+    margin-left: auto;
+  }
+}
+
+/* Stacked, the screen no longer has to fit — trying to make it would shrink the
+   type past reading size. */
+@media (max-width: 879px) {
+  .screen {
+    min-height: 0;
+  }
+
+  .hero {
+    padding-top: clamp(1rem, 4vh, 2rem);
+  }
+
+  .barNote {
+    display: none;
+  }
+
+  .points {
+    margin-bottom: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    backdrop-filter: none;
+  }
+}

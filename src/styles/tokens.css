@@ -1,0 +1,106 @@
+/*
+ * Design tokens.
+ *
+ * The look is a warm off-white page carrying white cards with generous corners
+ * and shadows soft enough to read as lift rather than as a border. One accent
+ * colour does all the emphasis work; everything else is ink on paper.
+ *
+ * Colour still encodes exactly one kind of thing. Heart-rate zones are an
+ * ordered sequence, so they take a single-hue orange ramp whose lightness
+ * carries the order — a reader sees intensity rise without learning a legend.
+ * Metric identities take fixed slots, and gradient is a polarity around flat,
+ * so it takes two poles with a neutral middle. Every ramp below has been
+ * checked for colour-vision separation and contrast against the card surface.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --surface-page: #f4f3f1;
+  --surface-card: #ffffff;
+  --surface-sunken: #f6f5f3;
+  --surface-hover: #f1f0ed;
+  --surface-inset: #ebe9e5;
+
+  /* Ink */
+  --text-primary: #17171a;
+  --text-secondary: #5f5f66;
+  --text-muted: #93939c;
+
+  /* Hairlines. Cards carry no border at all; these are for dividers inside. */
+  --border: #ebe9e6;
+  --border-strong: #ddd9d4;
+  --gridline: #f0eeeb;
+
+  /* The single accent. */
+  --accent: #fc5200;
+  --accent-hover: #e04800;
+  --accent-soft: #fff1e9;
+  --accent-ink: #b03900;
+
+  /* Heart-rate zones: one hue, light to dark, order carried by lightness. */
+  --zone-1: #f4915a;
+  --zone-2: #ee7328;
+  --zone-3: #dd5208;
+  --zone-4: #ab4208;
+  --zone-5: #7d3106;
+  --zone-1-soft: #fdece1;
+  --zone-2-soft: #fbe2d1;
+  --zone-3-soft: #f8d5be;
+  --zone-4-soft: #f0c9b1;
+  --zone-5-soft: #e6bda6;
+
+  /* Metric identities: fixed slots, assigned in order. */
+  --metric-heart: #dd5208;
+  --metric-pace: #2a78d6;
+  --metric-elevation: #0f9463;
+  --metric-power: #6d4aca;
+  --metric-cadence: #b8348a;
+
+  /* Gradient polarity: two poles around a neutral flat. */
+  --terrain-uphill: #d03b3b;
+  --terrain-flat: #c9c5be;
+  --terrain-downhill: #2a78d6;
+
+  /* Confidence, used for the uncertainty labels rather than as series colour. */
+  --confidence-high: #157a3e;
+  --confidence-medium: #8a6410;
+  --confidence-low: #6a6a72;
+
+  /* Layout */
+  --column-width: 46rem;
+  --rail-width: 14rem;
+  /* Reserved by the sticky masthead; anchors offset by this so a jumped-to
+     section title is never hidden underneath it. */
+  --header-height: 4.5rem;
+
+  /* Shape. Cards are generously rounded; controls follow at a smaller radius. */
+  --radius-card: 22px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 999px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Barely-there lift. Two layers: a tight contact shadow and a wide soft one. */
+  --shadow-card: 0 1px 2px rgba(23, 23, 26, 0.04), 0 6px 20px rgba(23, 23, 26, 0.05);
+  --shadow-raised: 0 2px 4px rgba(23, 23, 26, 0.05), 0 12px 32px rgba(23, 23, 26, 0.08);
+
+  --font-sans:
+    "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Headings and figures run tight; body text stays at normal tracking. */
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.022em;
+  --tracking-label: 0.04em;
+}

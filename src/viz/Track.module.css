@@ -1,0 +1,54 @@
+.wrapper {
+  width: 100%;
+}
+
+.track {
+  position: relative;
+  width: 100%;
+  touch-action: pan-y;
+  cursor: crosshair;
+  border-radius: var(--radius-md);
+}
+
+.track:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.svg {
+  width: 100%;
+  overflow: visible;
+}
+
+.selection {
+  fill: var(--accent);
+  fill-opacity: 0.1;
+  stroke: var(--accent);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+
+.cursorLine {
+  stroke: var(--text-primary);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.cursorDot {
+  fill: var(--text-primary);
+  stroke: var(--surface-card);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.axis {
+  width: 100%;
+  margin-top: 2px;
+  overflow: visible;
+}
+
+.axisLabel {
+  fill: var(--text-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}

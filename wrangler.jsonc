@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "run-story",
+  // Vite writes the static bundle here; `npm run deploy` uploads this directory
+  // as-is. There is no Worker in front of it — the app is entirely client-side.
+  "pages_build_output_dir": "dist",
+  "compatibility_date": "2026-08-07"
+}

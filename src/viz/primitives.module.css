@@ -1,0 +1,402 @@
+/* Figures */
+.statRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5) var(--space-6);
+  margin: 0;
+  padding: 0;
+}
+
+.stat {
+  min-width: 0;
+}
+
+.statLabel {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.statValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+  margin: 3px 0 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+}
+
+/* The unit sits back from the figure so the number reads first. */
+.statUnit {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.statNote {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Label-and-value rows */
+.metricRows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.metricRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.metricRow:last-child {
+  border-bottom: none;
+}
+
+.metricLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.925rem;
+}
+
+.metricDot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.metricDetail {
+  margin-left: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.metricValue {
+  display: flex;
+  align-items: baseline;
+  gap: 0.22em;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: var(--tracking-heading);
+  white-space: nowrap;
+}
+
+.metricUnit {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Bubbles */
+.bubbleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-4) var(--space-5);
+  padding: var(--space-3) 0;
+}
+
+.bubbleItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.bubble {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+button.bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+}
+
+.bubbleSelected {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--surface-card);
+}
+
+.bubbleValue {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.bubbleLabel {
+  margin-top: var(--space-1);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.bubbleSubLabel {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+/* Comparison cards */
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.panel {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  text-align: center;
+}
+
+.panelTitle {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.panelPrimary {
+  margin-top: var(--space-1);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+}
+
+.panelSecondary {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 550;
+}
+
+.panelDetail {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.comparisonArrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--space-1);
+}
+
+.arrowGlyph {
+  color: var(--accent);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.arrowLabel {
+  max-width: 6.5rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+/* Proportion bars */
+.barRows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.barRow {
+  display: flex;
+  flex-direction: column;
+}
+
+.barButton {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: left;
+}
+
+button.barButton:hover {
+  background: var(--surface-hover);
+}
+
+.barSelected {
+  background: var(--surface-hover);
+}
+
+.barLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.barTrack {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-sm);
+}
+
+.barValue {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.barDetail {
+  padding-left: calc(5.5rem + var(--space-3) + var(--space-3));
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.legendSwatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+/* Hero figure */
+.hero {
+  padding: var(--space-4) 0;
+  text-align: center;
+}
+
+.heroValue {
+  font-size: 3rem;
+  font-weight: 750;
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+.hero_positive .heroValue {
+  color: var(--confidence-high);
+}
+
+.hero_cautious .heroValue {
+  color: var(--confidence-medium);
+}
+
+.heroCaption {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Scatter */
+.scatterWrapper {
+  margin: var(--space-2) 0;
+}
+
+/* The drawing space is fixed and the box scales it, so the chart needs no
+   measurement and renders identically on the server. */
+.scatter {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.scatterTick {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.scatterAxisLabel {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/* Figure shell */
+.figure {
+  margin: 0;
+}
+
+.figCaption {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 560px) {
+  .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .comparisonArrow {
+    flex-direction: row;
+    gap: var(--space-2);
+  }
+
+  .arrowGlyph {
+    transform: rotate(90deg);
+  }
+
+  .barButton {
+    grid-template-columns: 4.5rem 1fr auto;
+    gap: var(--space-2);
+  }
+
+  .barDetail {
+    padding-left: calc(4.5rem + var(--space-2) * 2);
+  }
+}

@@ -1,0 +1,137 @@
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.modeToggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+}
+
+.mode,
+.modeActive {
+  padding: 5px 16px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
+}
+
+.mode:hover {
+  color: var(--text-primary);
+}
+
+/* The selected option is a solid dark pill, which reads as chosen at a glance
+   without needing a second colour. */
+.modeActive {
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.clear {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.clear:hover {
+  color: var(--text-primary);
+}
+
+.readout,
+.readoutIdle {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+
+.readoutIdle {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.readoutGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.readoutEntry dt {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 550;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.readoutEntry dd {
+  margin: 1px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.readoutContext {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.legendSwatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.legendZones {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.legendZones span {
+  width: 6px;
+  height: 11px;
+  border-radius: 1px;
+}
+
+@media (max-width: 560px) {
+  .readoutGrid {
+    grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  }
+
+  .readoutEntry dd {
+    font-size: 0.92rem;
+  }
+}

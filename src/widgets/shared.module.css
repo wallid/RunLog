@@ -1,0 +1,103 @@
+/* Styles shared across widgets, so each widget file carries only what is
+   genuinely its own.
+
+   Nested groupings inside a card are filled rather than outlined: a border
+   inside a borderless card reads as a second card and makes the page busy. */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+
+.cardTitle {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.cardValue {
+  margin-top: 3px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+.cardDetail {
+  margin-top: var(--space-1);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+button.row:hover {
+  background: var(--surface-hover);
+}
+
+.rowSelected {
+  background: var(--accent-soft);
+}
+
+.note {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.trackLabel {
+  margin-bottom: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.emptyNote {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}

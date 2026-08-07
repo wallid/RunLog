@@ -1,0 +1,201 @@
+/*
+ * The tour sits above everything, including the sticky masthead. It is one
+ * dimmed sheet with a hole in it and a small card of text — no arrows, no
+ * pulsing, nothing that has to be waited out.
+ */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* Only the blocker and the panel take clicks; the sheet itself must not
+     swallow them twice. */
+  pointer-events: none;
+  animation: appear 0.32s ease both;
+}
+
+.blocker {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  cursor: default;
+}
+
+/*
+ * The dimming is this element's own shadow, spread far enough to cover any
+ * window, which leaves the box itself as a clear hole onto the page beneath.
+ * Position and size are written every frame from script, so nothing here may
+ * transition them.
+ */
+.spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 100vmax rgba(20, 19, 18, 0.52);
+  pointer-events: none;
+  /* Deliberately not promoted with `will-change`: a compositor layer the size
+     of that shadow costs more than the handful of frames it would smooth. */
+}
+
+/* Lit steps carry a soft accent ring; the centred welcome has no hole to ring. */
+.spotlight[data-lit] {
+  box-shadow:
+    0 0 0 100vmax rgba(20, 19, 18, 0.52),
+    0 0 0 3px rgba(252, 82, 0, 0.32);
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: min(21rem, calc(100vw - 2rem));
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-raised);
+  pointer-events: auto;
+  will-change: transform;
+}
+
+/* The opening step is not about anything on the page, so it is given more room
+   to say what the page is. */
+.panel[data-centred] {
+  width: min(26rem, calc(100vw - 2rem));
+}
+
+.panel:focus {
+  outline: none;
+}
+
+.content {
+  animation: rise 0.3s ease both;
+}
+
+.eyebrow {
+  color: var(--accent-ink);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.title {
+  margin-top: var(--space-2);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+}
+
+.body {
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.dots {
+  display: flex;
+  gap: 5px;
+  margin-top: var(--space-5);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--border-strong);
+  transition:
+    width 0.2s ease,
+    background 0.2s ease;
+}
+
+.dot[data-current] {
+  width: 16px;
+  background: var(--accent);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.forward {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.skip {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.skip:hover {
+  color: var(--text-primary);
+}
+
+.back {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.back:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.next {
+  padding: 7px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 650;
+  transition: background 0.14s ease;
+}
+
+.next:hover {
+  background: var(--accent-hover);
+}
+
+.hint {
+  margin-top: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

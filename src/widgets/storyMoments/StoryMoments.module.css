@@ -1,0 +1,98 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.item {
+  position: relative;
+}
+
+/* The connecting line makes the cards read as one sequence rather than a set
+   of unrelated findings. */
+.item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 2.4rem;
+  bottom: -0.5rem;
+  left: 1.05rem;
+  width: 2px;
+  background: var(--border);
+}
+
+.card {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.card:hover {
+  background: var(--surface-hover);
+}
+
+.cardSelected {
+  background: var(--accent-soft);
+}
+
+.marker {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: var(--surface-inset);
+  font-size: 0.85rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardSelected .marker {
+  background: var(--accent);
+  color: #fff;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.98rem;
+  font-weight: 620;
+}
+
+.uncertain {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--confidence-low);
+  font-size: 0.65rem;
+  font-weight: 620;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.position {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}

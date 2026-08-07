@@ -1,0 +1,32 @@
+# Dependencies and build output
+node_modules
+dist
+dist-ssr
+.vite
+coverage
+*.tsbuildinfo
+
+# Local environment. Only the example is committed, and it holds no values.
+*.local
+.env
+.env.*
+!.env.example
+
+# Wrangler's local state and temporary files.
+.wrangler
+
+# OS noise
+.DS_Store
+
+# Design references gathered while working on the look. They are other
+# people's work, kept locally for comparison rather than redistributed.
+design/
+
+# Activity files sitting at the repository root.
+#
+# These are real recordings, and a GPS track is a record of where somebody
+# actually was. The copies the tests need live in fixtures/ and are the only
+# ones the project commits; anything dropped in here while working stays out.
+/*.fit
+/*.gpx
+/*.tcx

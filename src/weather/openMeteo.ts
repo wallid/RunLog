@@ -4,7 +4,7 @@ import { haversineMetres } from "@/lib/geo";
 /**
  * The one request this app makes on the runner's behalf.
  *
- * Everything else in Run Story happens on the machine. This does not, so it is
+ * Everything else in Run Log happens on the machine. This does not, so it is
  * built the way crash reporting is: off unless asked for, and sending as little
  * as will still answer the question.
  *

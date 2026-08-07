@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { readStored } from "./storage";
 
 /**
  * Whether the guided tour is on screen, and whether this browser has already
@@ -9,7 +10,9 @@ import { create } from "zustand";
  * that reappears is an interruption rather than an introduction.
  */
 
-const STORAGE_KEY = "run-story.tour";
+const STORAGE_KEY = "runlog.tour";
+/** What the key was called before the project was renamed. */
+const LEGACY_STORAGE_KEY = "run-story.tour";
 
 /**
  * Bumped only when the tour gains something a returning reader needs to see.
@@ -33,7 +36,7 @@ interface TourState {
 function loadSeenVersion(): number {
   if (typeof localStorage === "undefined") return 0;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = readStored(STORAGE_KEY, LEGACY_STORAGE_KEY);
     if (!stored) return 0;
     const parsed = JSON.parse(stored) as { seenVersion?: unknown };
     // Anything unrecognisable counts as never seen: showing the tour once more

@@ -211,7 +211,7 @@ describe("the record of having seen it", () => {
 
     expect(useTourStore.getState().step).toBeNull();
     expect(hasSeenTour(useTourStore.getState().seenVersion)).toBe(true);
-    expect(JSON.parse(localStorage.getItem("run-story.tour")!)).toEqual({
+    expect(JSON.parse(localStorage.getItem("runlog.tour")!)).toEqual({
       seenVersion: TOUR_VERSION,
     });
   });

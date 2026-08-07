@@ -2,7 +2,7 @@
  * The slice of the FIT global profile this app reads.
  *
  * Field numbers and scaling come from the FIT SDK profile. Only the messages
- * and fields Run Story actually uses are listed — the decoder skips the rest
+ * and fields Run Log actually uses are listed — the decoder skips the rest
  * byte-correctly without needing to know what they mean.
  */
 

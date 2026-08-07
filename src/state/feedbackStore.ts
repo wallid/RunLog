@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { readStored } from "./storage";
 
 /**
  * What the reader thinks of each section.
@@ -26,7 +27,9 @@ export interface FeedbackEntry {
   at: string;
 }
 
-const STORAGE_KEY = "run-story.feedback";
+const STORAGE_KEY = "runlog.feedback";
+/** What the key was called before the project was renamed. */
+const LEGACY_STORAGE_KEY = "run-story.feedback";
 
 interface FeedbackState {
   entries: Record<string, FeedbackEntry>;
@@ -39,7 +42,7 @@ interface FeedbackState {
 function load(): Record<string, FeedbackEntry> {
   if (typeof localStorage === "undefined") return {};
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = readStored(STORAGE_KEY, LEGACY_STORAGE_KEY);
     if (!stored) return {};
     const parsed = JSON.parse(stored) as Record<string, FeedbackEntry>;
     return typeof parsed === "object" && parsed !== null ? parsed : {};
@@ -131,7 +134,7 @@ export function feedbackAsMarkdown(entries: FeedbackEntry[]): string {
   const label = (rating: FeedbackRating) =>
     FEEDBACK_OPTIONS.find((option) => option.rating === rating)?.label ?? rating;
 
-  const lines = ["## Run Story feedback", ""];
+  const lines = ["## Run Log feedback", ""];
   for (const entry of entries) {
     lines.push(`- **${entry.widgetTitle}** — ${label(entry.rating)}`);
     if (entry.note) lines.push(`  - ${entry.note}`);

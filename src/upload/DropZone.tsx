@@ -65,7 +65,7 @@ export function DropZone() {
       <header className={styles.bar}>
         <span className={styles.wordmark}>
           <span className={styles.mark} aria-hidden="true" />
-          Run Story
+          Run Log
         </span>
         <span className={styles.barNote}>Open source · runs in your browser</span>
       </header>

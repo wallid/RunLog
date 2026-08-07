@@ -85,7 +85,7 @@ function Footer() {
     <footer className={styles.footer}>
       <div className="column">
         <p>
-          Run Story is open source and runs entirely in your browser. Map data ©
+          Run Log is open source and runs entirely in your browser. Map data ©
           OpenStreetMap contributors.
         </p>
       </div>

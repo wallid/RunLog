@@ -1,10 +1,10 @@
 # runlog
 
-**Run Story — an open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.**
+**Run Log — an open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.**
 
 > Upload a run. Explore the moments. Understand the data.
 
-Most running apps show you totals and charts, then leave you to work out what they mean. Run Story walks through a single run and explains what changed, where, and what might account for it.
+Most running apps show you totals and charts, then leave you to work out what they mean. Run Log walks through a single run and explains what changed, where, and what might account for it.
 
 Everything runs in your browser. There is no account and no upload — your activity file is read locally and never leaves the machine. Two things talk to a server, both narrow and both listed in Settings: the hosted build sends anonymous crash reports carrying a stack trace and nothing from your run, and a weather lookup you have to switch on yourself sends a position rounded to about eleven kilometres, so the page can tell you what the wind and heat were doing.
 

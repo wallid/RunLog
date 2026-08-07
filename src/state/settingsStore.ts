@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { readStored } from "./storage";
 
 /**
  * Runner-supplied context.
@@ -8,7 +9,9 @@ import { create } from "zustand";
  * once rather than on every upload.
  */
 
-const STORAGE_KEY = "run-story.settings";
+const STORAGE_KEY = "runlog.settings";
+/** What the key was called before the project was renamed. */
+const LEGACY_STORAGE_KEY = "run-story.settings";
 
 export interface Settings {
   /** The runner's own maximum heart rate. Undefined means "estimate from the run". */
@@ -46,7 +49,7 @@ interface SettingsState extends Settings {
 function loadSettings(): Settings {
   if (typeof localStorage === "undefined") return {};
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = readStored(STORAGE_KEY, LEGACY_STORAGE_KEY);
     if (!stored) return {};
     const parsed = JSON.parse(stored) as Settings;
     const settings: Settings = {};

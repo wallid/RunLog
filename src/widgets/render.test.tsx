@@ -234,7 +234,7 @@ describe("feedback", () => {
       },
     ]);
 
-    expect(markdown).toContain("## Run Story feedback");
+    expect(markdown).toContain("## Run Log feedback");
     expect(markdown).toContain("**Pace story** — Too much detail");
     expect(markdown).toContain("The ribbon needs a scale.");
     expect(markdown).toContain("**Kilometre splits** — Useful");

@@ -17,7 +17,7 @@ interface Result {
 }
 
 export const storyMomentsWidget = defineWidget<Result>({
-  id: "run-story",
+  id: "story-moments",
   title: "The story of this run",
   description: "The moments worth looking at, in the order they happened.",
   section: "story",
@@ -85,7 +85,7 @@ export const storyMomentsWidget = defineWidget<Result>({
                     moment.startT,
                     moment.endT,
                     { kind: "moment", momentId: moment.id },
-                    "run-story",
+                    "story-moments",
                   )
                 }
                 aria-pressed={selected}

@@ -1,7 +1,7 @@
 /**
  * Crash reporting.
  *
- * Run Story's promise is that a runner's activity file never leaves their
+ * Run Log's promise is that a runner's activity file never leaves their
  * machine, and crash reporting is the one thing on the page that talks to a
  * server at all. So it is built to send the least it can while still being
  * useful: a stack trace, the browser, the release — and nothing that describes

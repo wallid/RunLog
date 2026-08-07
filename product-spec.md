@@ -1,4 +1,4 @@
-# Run Story
+# Run Log
 
 ## Open-Source Visual Run Explorer
 
@@ -10,9 +10,9 @@
 
 ## 1. Product vision
 
-Run Story is a free, open-source web application that helps runners understand the data recorded during a run.
+Run Log is a free, open-source web application that helps runners understand the data recorded during a run.
 
-Most running applications display totals, charts, and raw metrics, but leave the user to interpret them. Run Story should turn the same information into a guided visual explanation:
+Most running applications display totals, charts, and raw metrics, but leave the user to interpret them. Run Log should turn the same information into a guided visual explanation:
 
 > Upload a run, move through it, see what changed, understand why it may have changed, and learn what the metric means.
 
@@ -1447,7 +1447,7 @@ The first version is successful when a runner can:
 
 # 13. Product positioning
 
-> **Run Story is an open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.**
+> **Run Log is an open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.**
 
 Alternative:
 

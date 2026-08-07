@@ -41,14 +41,14 @@ describe("parseFit", () => {
   it("reads plausible GPS coordinates", () => {
     const withPosition = activity.samples.filter((s) => s.lat !== undefined);
     expect(withPosition.length).toBeGreaterThan(1000);
-    // The fixture is a synthetic loop in Greenwich Park — see
-    // scripts/make-fixtures.mjs. Real recordings are deliberately not
-    // committed, because a GPS track says where somebody actually was.
+    // The fixture is a real recording moved to Richmond Park — see
+    // scripts/make-fixtures.mjs. The running is genuine; the place is not,
+    // because a GPS track says where somebody actually was.
     for (const sample of withPosition) {
-      expect(sample.lat).toBeGreaterThan(51.4);
-      expect(sample.lat).toBeLessThan(51.6);
-      expect(sample.lon).toBeGreaterThan(-0.1);
-      expect(sample.lon).toBeLessThan(0.1);
+      expect(sample.lat).toBeGreaterThan(51.43);
+      expect(sample.lat).toBeLessThan(51.46);
+      expect(sample.lon).toBeGreaterThan(-0.29);
+      expect(sample.lon).toBeLessThan(-0.25);
     }
   });
 
@@ -67,8 +67,12 @@ describe("parseFit", () => {
     expect(Math.max(...power)).toBeLessThan(1500);
   });
 
-  it("has no cadence, which is what this device recorded", () => {
-    expect(collect(activity.samples, (s) => s.cadenceSpm)).toHaveLength(0);
+  it("reads cadence, doubling the per-leg figure FIT stores", () => {
+    const cadence = collect(activity.samples, (s) => s.cadenceSpm);
+    expect(cadence.length).toBeGreaterThan(1200);
+    // FIT writes strides per minute for one leg; runners count both feet.
+    expect(Math.min(...cadence)).toBeGreaterThan(120);
+    expect(Math.max(...cadence)).toBeLessThan(220);
   });
 
   it("reads monotonic cumulative distance", () => {
@@ -122,6 +126,18 @@ describe("parseGpx", () => {
 
   it("carries no distance, because GPX does not record it", () => {
     expect(collect(activity.samples, (s) => s.distanceM)).toHaveLength(0);
+  });
+});
+
+describe("a device that recorded no cadence", () => {
+  const activity = parseGpx(new TextDecoder().decode(readFixture("No_Cadence.gpx")));
+
+  it("reads the run but carries no cadence at all", () => {
+    expect(activity.samples.length).toBe(1245);
+    // Plenty of watches never record it, and the page drops its whole cadence
+    // section when that happens rather than showing an empty one.
+    expect(collect(activity.samples, (s) => s.cadenceSpm)).toHaveLength(0);
+    expect(collect(activity.samples, (s) => s.hrBpm).length).toBeGreaterThan(1200);
   });
 });
 

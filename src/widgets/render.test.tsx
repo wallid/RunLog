@@ -47,8 +47,8 @@ describe("every widget on the demo run", () => {
     expect(ids).toContain("heart-rate-zones");
     expect(ids).toContain("power-story");
     expect(ids).toContain("route-map");
-    // This device recorded no cadence, so the whole cadence section must be gone.
-    expect(ids.filter((id) => id.startsWith("cadence-"))).toEqual([]);
+    // The demo carries cadence, so the whole cadence section is available.
+    expect(ids.filter((id) => id.startsWith("cadence-")).length).toBeGreaterThan(8);
   });
 
   for (const widget of WIDGETS) {
@@ -112,13 +112,17 @@ describe("the whole page", () => {
     // Twenty minutes is not a durability question, and the opening minutes of
     // it are heart rate still catching up with the effort — so every card that
     // divides by heart rate opts out here even though the metrics are present.
-    // The cards that do appear are the ones with no such problem: power and
-    // speed both answer the effort immediately, and terrain and coverage are
-    // not questions about how the run wore on at all.
+    // The cards that do appear are the ones with no such problem: power, speed
+    // and the stride answer the effort immediately, and terrain, wind and
+    // coverage are not questions about how the run wore on at all.
     const lab = built.filter((item) => item.widget.section === "lab");
     expect(lab.map((item) => item.widget.id)).toEqual([
       "mechanical-efficiency",
+      "cadence-durability",
+      "stride-drift",
+      "rhythm-stability",
       "terrain-response",
+      "what-changed",
       "data-confidence",
     ]);
   });
@@ -153,8 +157,11 @@ describe("the contents list", () => {
 
   it("never links to a widget the data did not support", () => {
     const linked = new Set(groups.flatMap((g) => g.widgets.map((w) => w.widget.id)));
-    expect(linked.has("cadence-summary")).toBe(false);
+    expect(linked.has("cadence-summary")).toBe(true);
     expect(linked.has("run-summary")).toBe(true);
+    // Nothing the file cannot support may be offered: this run is far too
+    // short for the cards that compare its first quarter against its last.
+    expect(linked.has("cardiac-durability")).toBe(false);
   });
 
   it("keeps each section contiguous, so contents order matches page order", () => {

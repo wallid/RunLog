@@ -1,41 +1,63 @@
 # Fixtures
 
-**Every file here is synthetic. None of them is a recording of a real run.**
+**No file here says where anybody actually ran.**
 
-A GPS track is a record of where somebody actually was, usually starting and
-finishing at their front door. This project's whole argument is that a run
-belongs to the person who ran it, so committing one of those to a public
-repository would contradict the thing the app is built to protect.
-
-So the fixtures are generated instead, by [`scripts/make-fixtures.mjs`](../scripts/make-fixtures.mjs):
+The recording is real — a genuine run, with the heart rate, cadence, power and
+elevation it was recorded with. What has been removed is the place. Every
+coordinate was moved to Richmond Park, and the sensor jitter was smoothed out.
+Both are done by [`scripts/make-fixtures.mjs`](../scripts/make-fixtures.mjs).
 
 ```bash
+# Invent a run from nothing. Needs no input; anyone can do this.
 node scripts/make-fixtures.mjs
+
+# Anonymise a real recording. This is how the committed fixtures were made.
+node scripts/make-fixtures.mjs --source path/to/your-run.gpx
 ```
 
 | File | What it exercises |
 |---|---|
-| `Lunch_Run.fit` | The FIT decoder: definition messages, invalid-value sentinels, a sparse heart-rate series, intermittent distance, session totals and laps. No cadence, which is what many watches write. |
-| `Lunch_Run.gpx` | The GPX parser: the Garmin `TrackPointExtension` for heart rate and the plain Strava `<power>` element. Describes the same run as the FIT, so the two can be cross-checked. |
-| `Cadence_Run.gpx` | The same route with cadence, which is what the cadence section and most of the experimental lab need. |
+| `Lunch_Run.fit` | The FIT decoder: definition messages, invalid-value sentinels, a sparse heart-rate series, intermittent distance, session totals and laps. |
+| `Lunch_Run.gpx` | The GPX parser: the Garmin `TrackPointExtension` for heart rate and cadence, and the plain Strava `<power>` element. The same run as the FIT, so the two can be cross-checked. |
+| `No_Cadence.gpx` | The same run with cadence removed. Plenty of watches never record it, and the page has to drop its whole cadence section rather than show an empty one. |
 
 `public/demo/Lunch_Run.fit` is a byte-identical copy of the FIT fixture, so the
 demo a visitor loads is exactly what the tests exercise.
 
-## What is real about them
+## Why a real run rather than an invented one
 
-The route is a loop in Greenwich Park — a landmark rather than anybody's house,
-and obviously so. The file *format* is genuine: `Lunch_Run.fit` is a valid FIT
-2.0 file with a correct header CRC, correct definition messages and a correct
-trailing CRC. That matters. A fixture that only satisfied this project's own
-decoder would stop the tests catching the day the decoder drifts away from the
-format, which is the main thing they are there to catch.
+Invented physiology looks invented. A heart rate that never hesitates and a
+pace line with no texture read as a chart of a formula — a poor advertisement
+for a page whose whole claim is that it explains real running. Worse, a
+generated run has no *story*: nothing to detect, no drop to attribute, no
+moment worth a card. The committed run has a genuine cadence drop in its third
+kilometre, which is precisely the sort of thing the page exists to notice.
 
-The signals are smooth and slow-moving on purpose. The FIT writes heart rate
-every fourth second while the GPX carries it on every point, and a test asserts
-the two agree on the range — a signal that turned sharply would have its peak
-fall between the FIT's samples and the two would disagree for reasons that say
-nothing about either parser.
+## What moving the route does and does not protect
+
+Moving it is not a fixed offset added to each coordinate. That would be wrong
+in a way that is easy to miss: a degree of longitude is 111 km at the equator
+and narrows towards the poles, so a route shifted from Melbourne to London
+keeps its numbers and loses a fifth of its width. Instead the track is
+converted to metres east and north of its own centre and re-projected at the
+destination, so every distance, gradient and pace survives exactly.
+
+What survives is also the limit of the protection. **The shape of the route and
+the elevation profile are real.** Somebody holding the original recording could
+match them, and in principle an elevation profile can be matched against
+terrain. This is a large reduction in what is disclosed, not anonymity — it is
+the right trade only for a route whose owner is content to publish its shape.
+
+## Smoothing
+
+Consumer GPS wanders a metre or two a second even when a runner does not. In
+this recording the largest step between two consecutive seconds was 6.0 m
+against a 2.46 m average — a 21 km/h sprint that never happened. Those wobbles
+reach the page as pace spikes that say nothing about the run.
+
+A five-second rolling mean over position and power removes them, taking the
+largest step down to 3.6 m while changing the total distance by 0.3%. Heart
+rate, cadence and elevation are left alone; they were already steady.
 
 ## Testing with a real run
 

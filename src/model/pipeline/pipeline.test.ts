@@ -27,7 +27,7 @@ describe("buildActivity on the demo run", () => {
   });
 
   it("reports the run the device recorded", () => {
-    expect(activity.distanceM).toBeCloseTo(3006, 0);
+    expect(activity.distanceM).toBeCloseTo(3045, 0);
     expect(activity.elapsedS).toBeGreaterThan(1200);
     expect(activity.elapsedS).toBeLessThan(1300);
   });
@@ -66,8 +66,9 @@ describe("buildActivity on the demo run", () => {
     expect(metrics.has("elevation")).toBe(true);
     expect(metrics.has("position")).toBe(true);
     expect(metrics.has("pace")).toBe(true);
-    // This device recorded no cadence, so cadence widgets must stay hidden.
-    expect(metrics.has("cadence")).toBe(false);
+    // The demo carries cadence, which is what lets the cadence section and
+    // most of the experimental lab appear on it.
+    expect(metrics.has("cadence")).toBe(true);
   });
 
   it("estimates a maximum heart rate and says that it did", () => {
@@ -186,7 +187,7 @@ describe("the same run parsed from GPX", () => {
   it("carries the same metrics and produces a story", () => {
     expect(gpx.availableMetrics.has("heartRate")).toBe(true);
     expect(gpx.availableMetrics.has("power")).toBe(true);
-    expect(gpx.availableMetrics.has("cadence")).toBe(false);
+    expect(gpx.availableMetrics.has("cadence")).toBe(true);
     expect(gpx.moments.length).toBeGreaterThanOrEqual(3);
   });
 });

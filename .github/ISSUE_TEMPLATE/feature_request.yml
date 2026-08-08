@@ -1,0 +1,26 @@
+name: Feature request
+description: A widget, metric, source format, or improvement you would like
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What question about a run should this answer?
+      description: >
+        Run Log is organised around questions a runner asks of one run. What
+        would this feature let the page explain that it cannot today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What might it look like?
+      description: Optional — a sketch of the card, metric or behaviour.
+  - type: textarea
+    id: data
+    attributes:
+      label: What data does it need?
+      description: >
+        Which recorded metrics it depends on (heart rate, cadence, power,
+        position…). Note the app never sends run data to a server, so features
+        needing server-side processing are out of scope.

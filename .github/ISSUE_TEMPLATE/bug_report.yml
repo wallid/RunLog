@@ -1,0 +1,33 @@
+name: Bug report
+description: Something renders wrong, parses wrong, or crashes
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: >
+        Steps from a fresh page load. If the bug depends on a particular run,
+        an activity file that reproduces it is the single most useful thing you
+        can attach — `scripts/make-fixtures.mjs` shows how to strip the
+        location out of one first.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: File source
+      description: Watch or app that produced the file, and format (.fit / .gpx).
+      placeholder: e.g. Garmin Forerunner 255, .fit
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: e.g. Firefox 142 on macOS

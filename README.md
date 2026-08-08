@@ -171,6 +171,13 @@ symptom, an injury, or a reading that worries you, see a qualified professional
 rather than a chart. The software itself is provided as-is, without warranty of
 any kind, per the licence below.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the trunk-based flow, and
+[CONVENTIONS.md](CONVENTIONS.md) for the commit-message format. In short:
+branch off `main`, open a PR with a Conventional Commits title, and once it is
+squash-merged it deploys to the official site automatically.
+
 ## Licence
 
 MIT.

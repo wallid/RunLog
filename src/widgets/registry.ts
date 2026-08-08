@@ -35,6 +35,8 @@ import splits from "./splits";
 import stopsAndWalking from "./stopsAndWalking";
 import bestSections from "./bestSections";
 import metricRelationships from "./metricRelationships";
+import fuellingPattern from "./fuellingPattern";
+import eventImpact from "./eventImpact";
 import learningSummary from "./learningSummary";
 import durability from "./durability";
 import powerEfficiency from "./powerEfficiency";
@@ -118,6 +120,14 @@ export const WIDGETS: ErasedWidget[] = [
 
   // Synthesis
   erase(metricRelationships),
+  // The two cards built on what the reader added themselves, in the order the
+  // claims get harder. The pattern is counting: when the fuel went in and how
+  // evenly, which is exact and true of any run. The impact is inference: what
+  // the running did afterwards, which one run answers badly and which is
+  // therefore beta. Reading them the other way round would put the shakiest
+  // claim first.
+  erase(fuellingPattern),
+  erase(eventImpact),
   erase(learningSummary),
 
   // Experimental lab. Last on purpose: these apply methods from recent running

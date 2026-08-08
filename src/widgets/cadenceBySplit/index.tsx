@@ -100,12 +100,17 @@ export const cadenceBySplitWidget = defineWidget<Result>({
 
     const explanations = [];
     if (result.spread >= NOISE_FLOOR.cadenceSpm) {
-      const climbed = result.lowest.gainM >= 10 || result.lowest.avgGradientPct >= 1.5;
+      // What matters is how the two kilometres differed, not how much the
+      // slower one climbed in absolute terms: if both went uphill equally, the
+      // terrain explains nothing about the gap between them.
+      const extraGain = result.lowest.gainM - result.highest.gainM;
+      const extraGradient = result.lowest.avgGradientPct - result.highest.avgGradientPct;
+      const climbed = extraGain >= 10 || extraGradient >= 1.5;
       const slower = result.lowest.paceSecPerKm - result.highest.paceSecPerKm;
 
       explanations.push({
         text: climbed
-          ? `${result.lowest.label} climbed ${Math.round(result.lowest.gainM)} m at an average of ${formatGradient(result.lowest.avgGradientPct)}, and step rate falls on rising ground for almost everyone. The terrain accounts for most of this difference.`
+          ? `${result.lowest.label} climbed ${Math.round(result.lowest.gainM)} m at an average of ${formatGradient(result.lowest.avgGradientPct)}, against ${Math.round(result.highest.gainM)} m on ${result.highest.label.toLowerCase()}. Step rate falls on rising ground for almost everyone, so the terrain accounts for a good part of this difference.`
           : slower >= 10
             ? `${result.lowest.label} was also ${Math.round(slower)} seconds per kilometre slower than ${result.highest.label.toLowerCase()}. Cadence follows speed closely, so the two are likely the same change seen twice rather than two findings.`
             : `Neither the gradient nor the pace of ${result.lowest.label.toLowerCase()} accounts for its lower step rate, which leaves fatigue, footing or a change in stride as the remaining explanations.`,

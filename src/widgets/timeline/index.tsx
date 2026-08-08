@@ -10,7 +10,14 @@ import {
   type BandRanges,
   type MetricBand,
 } from "../MetricBands";
-import { BAND_COLORS, bandsUsed, zoneRegions } from "../helpers";
+import {
+  ANNOTATION_COLOR,
+  annotationMarkers,
+  BAND_COLORS,
+  bandsUsed,
+  zoneRegions,
+} from "../helpers";
+import { EventEditor, useEventEditor } from "./EventEditor";
 import { bandDefinition } from "@/model/zones";
 import { formatDistance, formatDuration } from "@/lib/format";
 import styles from "./Timeline.module.css";
@@ -45,7 +52,9 @@ export const timelineWidget = defineWidget<Result>({
       information: [],
       observations: [
         {
-          text: `This run lasted ${formatDuration(activity.elapsedS)} and covered ${formatDistance(activity.distanceM)}. Drag the timeline to read any moment.`,
+          // An observation is a statement about the data. How to work the
+          // control belongs with the control, and it is already said under it.
+          text: `This run lasted ${formatDuration(activity.elapsedS)} and covered ${formatDistance(activity.distanceM)}, recorded once a second throughout.`,
         },
       ],
       explanations: [],
@@ -65,6 +74,8 @@ export const timelineWidget = defineWidget<Result>({
     const clearAll = useSelectionStore((state) => state.clearAll);
 
     const sample = sampleAt(activity, cursorT);
+    const editor = useEventEditor(activity);
+    const markers = annotationMarkers(activity);
 
     return (
       <div>
@@ -110,6 +121,10 @@ export const timelineWidget = defineWidget<Result>({
           selectable
           ariaLabel="Run timeline. Use arrow keys to move through the run."
           regions={zoneRegions(activity)}
+          markers={markers}
+          // Only while an event is being placed. With the form closed a tap is
+          // what it has always been: the cursor moving.
+          onClickAt={editor.draft === null ? undefined : editor.moveTo}
         >
           {(scale) => (
             <MetricBands
@@ -138,7 +153,19 @@ export const timelineWidget = defineWidget<Result>({
               {bandDefinition(band).name}
             </span>
           ))}
+          {markers.length > 0 && (
+            <span className={styles.legendItem}>
+              <span
+                className={styles.legendSwatch}
+                style={{ background: ANNOTATION_COLOR }}
+                aria-hidden="true"
+              />
+              Your events
+            </span>
+          )}
         </div>
+
+        <EventEditor activity={activity} controller={editor} />
       </div>
     );
   },

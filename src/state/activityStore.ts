@@ -178,11 +178,17 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   rebuild: (maxHr) => {
     const { raw, activity } = get();
     if (!raw) return;
-    // Weather survives a rebuild: it belongs to the run, not to the zone
-    // boundaries being recomputed, and re-requesting it would mean another
-    // needless disclosure.
+    // Weather and the reader's own annotations survive a rebuild: both belong
+    // to the run, not to the zone boundaries being recomputed, and
+    // re-requesting the weather would mean another needless disclosure.
     const rebuilt = buildActivity(raw, { maxHr });
-    set({ activity: { ...rebuilt, weather: activity?.weather } });
+    set({
+      activity: {
+        ...rebuilt,
+        weather: activity?.weather,
+        annotations: activity?.annotations,
+      },
+    });
   },
 
   loadWeather: async () => {

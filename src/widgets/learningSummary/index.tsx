@@ -118,7 +118,7 @@ function findStrengths(activity: DerivedActivity): string[] {
   const consistency = summary.consistency;
   if (consistency && consistency.withinBandFraction >= 0.5) {
     strengths.push(
-      `Pace held within 15 seconds per kilometre of the median for ${formatPercent(consistency.withinBandFraction)} of the moving run.`,
+      `Pace held within ${Math.round(consistency.bandSecPerKm)} seconds per kilometre of the median for ${formatPercent(consistency.withinBandFraction)} of the moving run.`,
     );
   }
 
@@ -149,8 +149,19 @@ function findChanges(activity: DerivedActivity): string[] {
 
   const climb = mainClimb(activity);
   if (climb) {
+    // Whether the climb was also where the run slowed most has to be checked
+    // rather than assumed: on a rolling route the slowest split is frequently
+    // somewhere else entirely, and claiming otherwise invents a fact.
+    const slowest = activity.splits.find((s) => s.tags.includes("slowest"));
+    const climbSlowedMost =
+      slowest !== undefined &&
+      slowest.startT < climb.endT &&
+      slowest.endT > climb.startT;
+
     changes.push(
-      `The ${climb.label.toLowerCase()} from ${formatDistanceShort(climb.startDistanceM)} gained ${formatElevation(climb.metrics.elevationChangeM)} and coincided with the largest slowdown.`,
+      `The ${climb.label.toLowerCase()} from ${formatDistanceShort(climb.startDistanceM)} gained ${formatElevation(climb.metrics.elevationChangeM)}${
+        climbSlowedMost ? `, and kilometre ${slowest.index}, the slowest of the run, falls inside it` : ""
+      }.`,
     );
   }
 
@@ -182,8 +193,11 @@ function buildMeaning(activity: DerivedActivity): string {
   const drift = activity.summary.drift;
   const slowest = activity.splits.find((s) => s.tags.includes("slowest"));
 
-  if (climb && slowest && slowest.gainM >= 8) {
-    return `The slowest split is better accounted for by the terrain than by pacing: kilometre ${slowest.index} climbed ${formatElevation(slowest.gainM)}, which is enough to explain the difference on its own.`;
+  // Eight metres over a kilometre is under a one per cent grade, which explains
+  // very little. The claim is only worth making when the slowest split climbed
+  // enough to be a real hill, and it is put as a candidate rather than a cause.
+  if (climb && slowest && slowest.gainM >= 20) {
+    return `The slowest split is more likely the terrain than the pacing: kilometre ${slowest.index} climbed ${formatElevation(slowest.gainM)}, which would account for a good part of the difference on its own.`;
   }
 
   if (drift && drift.confidence === "high" && drift.driftPct >= 4) {

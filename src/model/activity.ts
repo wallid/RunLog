@@ -1,4 +1,5 @@
 import type { RunWeather } from "./weather";
+import type { RunAnnotation } from "./annotations";
 
 /**
  * The source-independent activity model.
@@ -267,6 +268,13 @@ export interface DerivedActivity {
    * case, and every card that reads it must work without it.
    */
   weather?: RunWeather;
+  /**
+   * Events the runner told us about — a gel, a cramp — that no sensor
+   * recorded. Attached after the fact like `weather`, because they come from
+   * the reader rather than the file. Absent is the normal case, and every card
+   * that reads them must work without them.
+   */
+  annotations?: RunAnnotation[];
   /** Non-fatal problems found while parsing, surfaced in the UI. */
   warnings: string[];
 }

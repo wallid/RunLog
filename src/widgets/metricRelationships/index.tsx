@@ -41,6 +41,22 @@ interface Result {
 /** The baseline is the minute of running immediately before the event. */
 const BASELINE_S = 60;
 
+/**
+ * The metric each kind of event is defined by.
+ *
+ * These cannot count towards the event being corroborated, because the detector
+ * found the event by looking at them. A climb whose gradient rose has told you
+ * nothing you did not already know from calling it a climb.
+ */
+const DEFINING_METRIC: Partial<Record<ActivityEvent["type"], MetricType>> = {
+  climb: "gradient",
+  descent: "gradient",
+  stop: "pace",
+  walk: "pace",
+  fastStart: "pace",
+  strongFinish: "pace",
+};
+
 export const metricRelationshipsWidget = defineWidget<Result>({
   id: "metric-relationships",
   title: "What moved together",
@@ -246,10 +262,18 @@ function buildRelationship(
 
   if (changes.length === 0) return null;
 
+  // Confidence counts only the metrics that were free to disagree. A climb is
+  // defined by its gradient and a fast start by its pace, so finding those
+  // moved during them is not corroboration — it is the detector's own input
+  // handed back, and counting it would push almost every event to "high".
+  const corroborating = changes.filter(
+    (change) => change.metric !== DEFINING_METRIC[event.type],
+  ).length;
+
   // One metric moving is within the noise of consumer sensors; two or more
   // moving together is a pattern worth naming.
   const confidence: Confidence =
-    changes.length >= 3 ? "high" : changes.length === 2 ? "medium" : "low";
+    corroborating >= 3 ? "high" : corroborating === 2 ? "medium" : "low";
 
   return {
     eventId: event.id,

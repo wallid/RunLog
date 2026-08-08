@@ -108,7 +108,13 @@ export const cadenceDistributionWidget = defineWidget<Result>({
       ],
       observations: [
         {
-          text: `Most of the running — ${formatPercent(result.modal.fraction)} of it — sat between ${result.modal.from} and ${result.modal.to} steps per minute, and half of it fell within a ${Math.round(spread)} spm band around ${formatCadence(result.median)}.`,
+          // Four-step bands rarely hold a majority, so the sentence only claims
+          // one when the band actually has it.
+          text: `${
+            result.modal.fraction > 0.5
+              ? `Most of the running — ${formatPercent(result.modal.fraction)} of it — sat`
+              : `The largest share of the running, ${formatPercent(result.modal.fraction)} of it, sat`
+          } between ${result.modal.from} and ${result.modal.to} steps per minute, and half of it fell within a ${Math.round(spread)} spm band around ${formatCadence(result.median)}.`,
         },
       ],
       explanations: [

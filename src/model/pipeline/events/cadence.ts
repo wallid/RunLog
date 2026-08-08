@@ -102,6 +102,18 @@ export function detectCadenceDrops(samples: Sample[]): ActivityEvent[] {
     const gradients = collect(window, (s) => s.gradientPct);
     const stoppedS = window.filter((s) => !s.moving).length;
 
+    // Where the rhythm bottomed out. Recovery is timed from here rather than
+    // from the drop's end, because a drop ends the moment cadence crosses back
+    // above the drop threshold — which is already most of the way to the
+    // recovery target, so timing from it would measure a second or two on
+    // almost every drop and mean nothing.
+    let lowestIndex = span.start;
+    for (let i = span.start; i <= span.end; i++) {
+      const value = runningCadenceOf(samples[i]);
+      const best = runningCadenceOf(samples[lowestIndex]);
+      if (value !== undefined && (best === undefined || value < best)) lowestIndex = i;
+    }
+
     return {
       id: `cadence-drop-${window[0].t}`,
       type: "cadenceDrop" as const,
@@ -119,6 +131,7 @@ export function detectCadenceDrops(samples: Sample[]): ActivityEvent[] {
         baselineSpm: medianSpm,
         avgSpm,
         lowestSpm,
+        lowestT: samples[lowestIndex].t,
         deficitSpm,
         durationS,
         stoppedS,
@@ -155,7 +168,12 @@ export function detectCadenceRecoveries(
   const events: ActivityEvent[] = [];
 
   for (const drop of drops) {
-    const from = indexOfTime(samples, drop.endT) + 1;
+    // Timed from the low point of the drop, not its end. The end is defined as
+    // cadence crossing back above the drop threshold, which sits only four
+    // steps below the recovery target — so timing from there returns one or two
+    // seconds for practically every drop, which is an artefact of the two
+    // thresholds rather than anything the runner did.
+    const from = indexOfTime(samples, drop.metrics.lowestT ?? drop.endT);
     const limit = Math.min(samples.length, from + MAX_RECOVERY_S);
 
     let held = 0;
@@ -197,10 +215,10 @@ export function detectCadenceRecoveries(
         dropStartDistanceM: drop.startDistanceM,
         recoveryS: window.length,
         baselineSpm: medianSpm,
-        fromSpm: drop.metrics.avgSpm,
+        fromSpm: drop.metrics.lowestSpm,
         toSpm: regained.length > 0 ? mean(regained) : medianSpm,
         regainedSpm:
-          (regained.length > 0 ? mean(regained) : medianSpm) - drop.metrics.avgSpm,
+          (regained.length > 0 ? mean(regained) : medianSpm) - drop.metrics.lowestSpm,
       },
       label: "Cadence recovery",
     });

@@ -1,0 +1,256 @@
+/* The one place on the page that takes something in rather than giving it out,
+   so it is set apart from the chart above it by a rule rather than by a border:
+   a box here would read as a second card inside the card. */
+
+.editor {
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.add {
+  padding: 5px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.add:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.empty {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* Each event is one chip: the label, where it happened, and whatever was
+   written about it, with removal on its own target so a mis-tap while editing
+   cannot delete it. */
+.chip {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  overflow: hidden;
+}
+
+.chipOpen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 6px 5px 12px;
+  border: none;
+  background: none;
+  font-size: 0.78rem;
+  text-align: start;
+}
+
+.chipOpen:hover {
+  background: var(--surface-hover);
+}
+
+.chipKind {
+  font-weight: 650;
+}
+
+.chipWhere {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.chipNote {
+  max-width: 14rem;
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipRemove {
+  padding-inline: 10px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.chipRemove:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.form {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-3);
+  background: var(--surface-sunken);
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.kinds {
+  padding: 0;
+  border: none;
+  margin: var(--space-3) 0 0;
+}
+
+.legendLabel {
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.kindGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.kindGroupLabel {
+  min-width: 4.5rem;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.kindRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.kind,
+.kindActive {
+  padding: 5px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.kind:hover {
+  border-color: var(--accent);
+}
+
+/* The chosen kind is the solid pill, the same way the axis toggle above it
+   says which axis is showing. */
+.kindActive {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: #fff;
+}
+
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.at {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.save {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--accent-strong);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.save:hover {
+  background: var(--accent-strong-hover);
+}
+
+.cancel {
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cancel:hover {
+  color: var(--text-primary);
+}

@@ -1,6 +1,7 @@
 import { defineWidget } from "../contract";
 import type { ActivityEvent } from "@/model/activity";
 import { ComparisonCards } from "@/viz/primitives";
+import { STRONG_FINISH_THRESHOLD } from "@/model/pipeline/events/pacing";
 import { formatDistanceShort, formatHeartRate, formatPaceWithUnit } from "@/lib/format";
 import shared from "../shared.module.css";
 
@@ -26,7 +27,14 @@ export const strongFinishWidget = defineWidget<Result>({
   compute(activity) {
     const event = activity.events.find((e) => e.type === "strongFinish");
     if (!event) return null;
-    return { event, spedUp: event.metrics.paceDeltaSecPerKm > 0 };
+    // The detector only calls a finish "strong" past a three per cent
+    // improvement; below that it fired on the rising heart rate instead. Reading
+    // any positive delta as speeding up would tell the strong-finish story about
+    // an event the pipeline labelled "Rising effort at the finish".
+    return {
+      event,
+      spedUp: event.metrics.improvementPct >= STRONG_FINISH_THRESHOLD * 100,
+    };
   },
 
   narrate(result) {
@@ -43,7 +51,9 @@ export const strongFinishWidget = defineWidget<Result>({
     ];
 
     const supporting: string[] = [];
-    if (Number.isFinite(metrics.hrRiseBpm) && metrics.hrRiseBpm >= 3) {
+    // The held-pace observation already quotes the heart-rate rise, so repeating
+    // it here would read as a second, independent measurement.
+    if (result.spedUp && Number.isFinite(metrics.hrRiseBpm) && metrics.hrRiseBpm >= 3) {
       supporting.push(`heart rate rose by ${Math.round(metrics.hrRiseBpm)} bpm`);
     }
     if (Number.isFinite(metrics.cadenceDeltaSpm) && Math.abs(metrics.cadenceDeltaSpm) >= 2) {
@@ -69,10 +79,12 @@ export const strongFinishWidget = defineWidget<Result>({
       observations,
       explanations: [
         {
+          // In the held-pace case there is no pace change to be alongside, and
+          // saying there was would contradict the observation directly above.
           text:
             supporting.length > 0
-              ? `Alongside the pace change, ${supporting.join(" and ")}, which is consistent with a deliberate finishing effort rather than a measurement artefact.`
-              : "Nothing else moved alongside the pace change, so this may be terrain or measurement rather than a deliberate effort.",
+              ? `${result.spedUp ? "Alongside the pace change" : "Through the same stretch"}, ${supporting.join(" and ")}, which is consistent with a deliberate finishing effort rather than a measurement artefact.`
+              : `Nothing else moved alongside ${result.spedUp ? "the pace change" : "the finish"}, so this may be terrain or measurement rather than a deliberate effort.`,
           confidence: result.event.confidence,
           relatedMetrics: ["pace", "heartRate", "power"],
         },

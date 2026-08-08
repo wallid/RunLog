@@ -3,7 +3,7 @@ import type { HrZone } from "@/model/activity";
 import { ALL_ZONES, zoneBoundsBpm, zoneDefinition } from "@/model/zones";
 import { BubbleRow, Legend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
-import { findRuns, ZONE_COLORS } from "../helpers";
+import { findRuns, MIN_MEANINGFUL_ZONE_RUN_S, ZONE_COLORS } from "../helpers";
 import { formatDuration, formatDurationWords, formatPercent } from "@/lib/format";
 import shared from "../shared.module.css";
 
@@ -50,13 +50,22 @@ export const zoneBubblesWidget = defineWidget<Result>({
 
     const zones: ZoneStat[] = ALL_ZONES.map((zone) => {
       const zoneRuns = runs.filter((run) => run.value === zone);
+      // Only stretches long enough to be a change of effort count as entries.
+      // Heart rate wandering across a boundary produces one-second crossings by
+      // the dozen, and counting those turns a single sustained effort into
+      // fourteen of them. The time in the zone is unaffected — those seconds
+      // were really spent there; it is calling each of them an entry that is
+      // wrong.
+      const sustained = zoneRuns.filter(
+        (run) => run.durationS >= MIN_MEANINGFUL_ZONE_RUN_S,
+      );
       const seconds = activity.summary.zoneTime[zone];
       const bounds = zoneBoundsBpm(zone, maxHr);
       return {
         zone,
         seconds,
         fraction: seconds / totalSeconds,
-        entries: zoneRuns.length,
+        entries: sustained.length,
         longestRunS: zoneRuns.reduce((best, run) => Math.max(best, run.durationS), 0),
         firstT: zoneRuns[0]?.startT,
         lastT: zoneRuns[zoneRuns.length - 1]?.endT,
@@ -89,8 +98,13 @@ export const zoneBubblesWidget = defineWidget<Result>({
     const highZones = result.zones.filter((z) => z.zone >= 4);
     const highSeconds = highZones.reduce((a, z) => a + z.seconds, 0);
     if (highSeconds > 0) {
+      const entries = highZones.reduce((a, z) => a + z.entries, 0);
       observations.push({
-        text: `${formatDurationWords(highSeconds)} was spent in Zone 4 or above, entered ${highZones.reduce((a, z) => a + z.entries, 0)} times.`,
+        text: `${formatDurationWords(highSeconds)} was spent in Zone 4 or above${
+          entries > 0
+            ? `, across ${entries} ${entries === 1 ? "stretch" : "separate stretches"} of at least ${MIN_MEANINGFUL_ZONE_RUN_S} seconds`
+            : `, though never for ${MIN_MEANINGFUL_ZONE_RUN_S} seconds together — heart rate crossed the boundary repeatedly rather than settling above it`
+        }.`,
       });
     }
 

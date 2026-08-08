@@ -1,0 +1,79 @@
+/* One row per event, in the same four-column before-and-after shape the lab's
+   fatigue card uses, so a reader who has met that table already knows how to
+   read this one. */
+
+.table {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.head {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.headRight {
+  composes: head;
+  text-align: right;
+}
+
+/* The event name and where it happened, stacked: the position is what makes
+   one gel distinguishable from the next, so it cannot be dropped, and it is not
+   worth a column of its own. */
+.event {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.where {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.value {
+  padding: var(--space-2) 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-align: end;
+}
+
+.after {
+  composes: value;
+  color: var(--text-primary);
+  font-weight: 650;
+}
+
+.delta {
+  padding: var(--space-2) 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  text-align: end;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .table {
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .event,
+  .value,
+  .after {
+    font-size: 0.82rem;
+  }
+
+  .delta {
+    font-size: 0.76rem;
+  }
+}

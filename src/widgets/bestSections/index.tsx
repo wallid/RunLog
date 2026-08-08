@@ -65,10 +65,13 @@ export const bestSectionsWidget = defineWidget<Result>({
     }
 
     const explanations = [];
-    if (kilometre && Math.abs(kilometre.avgGradientPct) >= 1) {
+    // One per cent over a kilometre is ten metres of climb, which is not enough
+    // to have decided anything. Two is where the ground starts doing real work,
+    // and it is still put as a contribution rather than the cause.
+    if (kilometre && Math.abs(kilometre.avgGradientPct) >= 2) {
       explanations.push({
-        text: `That section averaged ${formatGradient(kilometre.avgGradientPct)}, so ${kilometre.avgGradientPct < 0 ? "the descent helped" : "it was run on rising ground"}.`,
-        confidence: "high" as const,
+        text: `That section averaged ${formatGradient(kilometre.avgGradientPct)}, so ${kilometre.avgGradientPct < 0 ? "some of the speed came from the ground falling away rather than from the effort" : "it was run on rising ground, which makes the pace better than it looks"}.`,
+        confidence: "medium" as const,
         relatedMetrics: ["pace" as const, "gradient" as const],
       });
     }

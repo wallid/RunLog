@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useActivityStore } from "./state/activityStore";
+import { useAnnotationStore } from "./state/annotationStore";
 import { useLibraryStore } from "./state/libraryStore";
 import { useSettingsStore } from "./state/settingsStore";
 import { DropZone } from "./upload/DropZone";
@@ -48,6 +49,14 @@ export function App() {
     if (weatherLookup) void loadWeather();
   }, [weatherLookup, loadWeather, activity?.id]);
 
+  // Any events the reader added to this run in an earlier visit are put back
+  // on it. Watches the whole activity rather than its id, because a rebuild or
+  // a re-open replaces the object without changing the id; `attach` bails when
+  // the annotations are already on, so this never loops.
+  useEffect(() => {
+    if (activity) useAnnotationStore.getState().attach(activity.id);
+  }, [activity]);
+
   // Undecided means shown: see the note on `showExperimental` in the store.
   const showExperimental = useSettingsStore((state) => state.showExperimental) ?? true;
 
@@ -66,7 +75,8 @@ export function App() {
 
   // The upload screen is a landing page rather than a document: it brings its
   // own full-height layout, and everything needed to start fits one screen —
-  // only the proof strip hangs below the fold.
+  // the benefit charts and the proof strip hang below the fold, for a reader
+  // who scrolls to see more before deciding.
   if (status !== "ready" || !activity) {
     return <DropZone />;
   }

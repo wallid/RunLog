@@ -60,7 +60,10 @@ export const paceConsistencyWidget = defineWidget<Result>({
 
     return {
       information: [
-        { label: "Within band", value: percent, note: `±15 s/km of median` },
+        // The band comes from the detector rather than being restated here, so
+        // the two cannot drift apart into a card describing a band it is not
+        // measuring against.
+        { label: "Within band", value: percent, note: `±${Math.round(consistency.bandSecPerKm)} s/km of median` },
         { label: "Median pace", value: `${formatPace(consistency.medianPace)}/km` },
         {
           label: "Spread",
@@ -70,7 +73,7 @@ export const paceConsistencyWidget = defineWidget<Result>({
       ],
       observations: [
         {
-          text: `${percent} of the moving run stayed within 15 seconds per kilometre of the median pace of ${formatPaceWithUnit(consistency.medianPace)}.`,
+          text: `${percent} of the moving run stayed within ${Math.round(consistency.bandSecPerKm)} seconds per kilometre of the median pace of ${formatPaceWithUnit(consistency.medianPace)}.`,
         },
       ],
       explanations,

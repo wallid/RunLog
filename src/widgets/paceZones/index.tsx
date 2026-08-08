@@ -91,7 +91,12 @@ export const paceZonesWidget = defineWidget<Result>({
       ],
       observations: [
         {
-          text: `Most of the moving run fell between ${result.dominant.label} per kilometre, which accounted for ${formatPercent(result.dominant.fraction)} of the time spent running.`,
+          // The modal bucket is rarely a majority — with five bands it is often
+          // a quarter of the run — so it is only called "most" when it is.
+          text:
+            result.dominant.fraction > 0.5
+              ? `Most of the moving run — ${formatPercent(result.dominant.fraction)} of it — fell between ${result.dominant.label} per kilometre.`
+              : `No single pace range held most of the run. The largest was ${result.dominant.label} per kilometre, which accounted for ${formatPercent(result.dominant.fraction)} of the time spent running.`,
         },
       ],
       explanations:

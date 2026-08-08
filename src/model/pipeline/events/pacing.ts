@@ -15,7 +15,12 @@ const FAST_START_THRESHOLD = 0.05;
 const SETTLE_TOLERANCE = 0.03;
 const FINISH_DISTANCE_M = 600;
 const MIN_FINISH_DISTANCE_M = 400;
-const STRONG_FINISH_THRESHOLD = 0.03;
+/**
+ * Exported so the widget classifies a finish exactly as the detector did.
+ * Below this the event was raised on rising heart rate at held pace, which is a
+ * different story from speeding up and has to be narrated as one.
+ */
+export const STRONG_FINISH_THRESHOLD = 0.03;
 /** A rising heart rate at unchanged pace also counts as a finishing effort. */
 const FINISH_HR_RISE_BPM = 5;
 
@@ -62,15 +67,31 @@ export function detectFastStart(samples: Sample[], splits: Split[]): ActivityEve
   };
 }
 
-/** The first moment sustained pace comes back within tolerance of the median. */
+/**
+ * The first moment sustained pace comes back within tolerance of the median.
+ *
+ * The search cannot simply take the first window that is not fast: every run
+ * begins from standing, so the opening thirty seconds are always slower than the
+ * middle and would be returned immediately — reporting that a fast start settled
+ * after fifty metres, which contradicts the finding it belongs to. So the
+ * opening surge has to be seen first, and the settle point is where it ends.
+ */
 function findSettlePoint(samples: Sample[], middlePace: number): number | undefined {
   const WINDOW_S = 30;
+  const fastEnough = middlePace * (1 - SETTLE_TOLERANCE);
+  let sawTheSurge = false;
+
   for (let i = WINDOW_S; i < samples.length; i++) {
     const window = samples.slice(i - WINDOW_S, i);
     const paces = collect(window, (s) => s.paceSecPerKm);
     if (paces.length < WINDOW_S / 2) continue;
+
     const windowPace = mean(paces);
-    if (windowPace >= middlePace * (1 - SETTLE_TOLERANCE)) return samples[i].t;
+    if (windowPace < fastEnough) {
+      sawTheSurge = true;
+      continue;
+    }
+    if (sawTheSurge) return samples[i].t;
   }
   return undefined;
 }

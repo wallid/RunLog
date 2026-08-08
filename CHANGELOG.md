@@ -9,6 +9,54 @@ the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+**Events the runner adds themselves.** A watch records what happened; only the
+runner knows why. Under the interactive timeline there is now a short editor for
+marking what the file could not: a gel, a drink, food, a salt tab, a cramp, a
+niggle, an energy dip, a stop to fix a shoe. Open the form and tap the timeline
+where it happened, or type the distance; each event carries an optional note.
+They are drawn as dashed markers on the timeline, the pace story and the heart
+rate chart, and kept in this browser under `runlog.annotations`, keyed by the
+run — so the same file opened next month still has them on it. Nothing is sent
+anywhere, and storage is validated rather than trusted: an entry that is not a
+kind this build knows is dropped on read rather than repaired, because a
+repaired guess would sit on the page claiming the runner said it.
+
+The catalogue is one list in `src/model/annotations.ts`, and what makes a kind
+analysable is a window on its own entry rather than a branch in the code.
+
+**Fuelling pattern, a new card in *Synthesis*.** Where the *Event impact* card
+below it asks whether a particular gel did anything — the hard question, and the
+one a single run answers worst — this one asks the easy and more useful one: was
+there a plan, and did it hold. It reports when the fuel went in, the typical gap
+between one and the next, the longest stretch without any and where it fell, and
+how far the run carried on after the last of it. All of it is counting and
+subtraction over what the reader typed, so it works on a run of any length and
+has nothing to be uncertain about.
+
+The one thing it refuses to do is convert events into grams. A gel is commonly
+twenty to twenty-five grams of carbohydrate, brands vary by a factor of two, and
+"drink" covers both water and a bottle carrying more than a gel does — so
+turning five events into a figure per hour would mean inventing the number that
+matters most and setting it in the same type as the ones that were measured. The
+spacing is reported exactly and the amount is left to the reader. On a run under
+about ninety minutes the card also declines to measure the spacing against
+anything, because that is roughly where fuelling starts to change anything at
+all.
+
+**Event impact, a new beta card in *Synthesis*.** For every fuelling event
+marked on a run, it reads the stretch where that form of carbohydrate would be
+expected to act — five to fifteen minutes after a gel, sooner after a drink,
+notably later after food — and compares it with the five minutes before. Pace
+has the gradient taken out of it wherever the run recorded enough elevation to
+do so, and both windows are read the same way or neither is, so a hill is never
+reported as an effect of the gel. It refuses more than it reports: a window with
+under two minutes of running in it, a difference smaller than the sensors' own
+noise, a kind with no honest window to look in. A cramp or a shoe stop is marked
+on the charts and left out of the card entirely rather than scored. Its
+confidence never rises above medium, and the card says why in as many words —
+one run has no control group, and a decision to push, a hill ending or simply
+feeling better produce exactly this pattern.
+
 **A disclaimer, everywhere the page could read as advice.** The cards describe
 what a watch recorded and what can be inferred from it, and several of those
 inferences are about a runner's body — which is description, not diagnosis, and

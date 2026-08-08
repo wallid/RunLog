@@ -1,7 +1,17 @@
-import type { ActivityEvent, DerivedActivity, HrZone, Sample } from "@/model/activity";
-import type { TrackRegion } from "@/viz/Track";
+import type {
+  ActivityEvent,
+  DerivedActivity,
+  GradientCategory,
+  HrZone,
+  Sample,
+} from "@/model/activity";
+import { distanceAtTime } from "@/model/activity";
+import { gradientCategory } from "@/model/pipeline";
+import { kindSpec, type RunAnnotation } from "@/model/annotations";
+import type { TrackMarker, TrackRegion } from "@/viz/Track";
 import { bandDefinition, bandForZone, type IntensityBand } from "@/model/zones";
 import { collect, mean } from "@/lib/stats";
+import { rollingMean } from "@/lib/smoothing";
 import { formatDistanceShort } from "@/lib/format";
 
 /** Shared logic several widgets need, kept in one place rather than copied. */
@@ -117,6 +127,68 @@ export function fractionOfRun(seconds: number, totalSeconds: number): string {
 }
 
 /**
+ * The shortest stretch in a zone that counts as having been in it.
+ *
+ * Heart rate sitting near a boundary crosses it repeatedly without the effort
+ * changing at all. Anything shorter than this is that flicker, and counting it
+ * turns one sustained effort into a dozen entries.
+ */
+export const MIN_MEANINGFUL_ZONE_RUN_S = 20;
+
+/**
+ * How far apart in the run two kinds of ground were run.
+ *
+ * Gradient buckets pool seconds from wherever they happened to fall. When one
+ * category clustered early and another late, a heart-rate comparison between
+ * them is really a comparison between two moments of the run — and on any run
+ * with cardiac drift that timing difference swamps the gradient. It is how a
+ * card ends up reporting a lower heart rate uphill and calling it expected.
+ *
+ * Rather than test how far apart the two sat and give up, this removes the
+ * drift and answers the question that was actually being asked: was heart rate
+ * higher on this ground than it was on either side of it? Each second is
+ * measured against a local baseline — the run's own heart rate over the minutes
+ * around it — so a climb early in a run is compared with the early run and a
+ * climb late in one with the late run.
+ *
+ * Returns the mean deviation from that baseline, in bpm, for each category.
+ * A category with too few seconds to average is absent rather than zero.
+ */
+const HR_BASELINE_WINDOW_S = 300;
+
+export function terrainHrDeviation(
+  activity: DerivedActivity,
+): Partial<Record<GradientCategory, number>> {
+  if (!activity.availableMetrics.has("heartRate")) return {};
+
+  const baseline = rollingMean(
+    activity.samples.map((sample) => sample.hrBpm),
+    HR_BASELINE_WINDOW_S,
+  );
+
+  const sums = new Map<GradientCategory, { total: number; count: number }>();
+  for (let i = 0; i < activity.samples.length; i++) {
+    const sample = activity.samples[i];
+    const category = gradientCategory(sample.gradientPct);
+    const local = baseline[i];
+    if (category === undefined || sample.hrBpm === undefined || local === undefined) {
+      continue;
+    }
+    const entry = sums.get(category) ?? { total: 0, count: 0 };
+    entry.total += sample.hrBpm - local;
+    entry.count += 1;
+    sums.set(category, entry);
+  }
+
+  const out: Partial<Record<GradientCategory, number>> = {};
+  for (const [category, { total, count }] of sums) {
+    // A handful of seconds averages to noise, so those categories say nothing.
+    if (count >= 30) out[category] = total / count;
+  }
+  return out;
+}
+
+/**
  * Whether a metric moved enough to be worth mentioning.
  *
  * These floors keep the explanations honest: below them a difference is inside
@@ -168,6 +240,55 @@ export function zoneRegions(activity: DerivedActivity): TrackRegion[] {
   }
 
   return regions;
+}
+
+/**
+ * One colour for every reader-added event, whatever its kind. A colour per
+ * category would demand a legend entry per category on every chart that shows
+ * them; the marker's tooltip and the editor's list name each event instead.
+ */
+export const ANNOTATION_COLOR = "var(--accent-ink)";
+
+/**
+ * Markers for the runner's own events, for any track that wants them.
+ *
+ * A card that only speaks about some of them — the fuelling ones, say — passes
+ * the subset it is talking about, so its chart and its sentences agree.
+ */
+export function annotationMarkers(
+  activity: DerivedActivity,
+  annotations: readonly RunAnnotation[] | undefined = activity.annotations,
+): TrackMarker[] {
+  return (annotations ?? []).map((annotation) => ({
+    t: annotation.t,
+    label: `${kindSpec(annotation.kind)?.label ?? "Event"} at ${formatDistanceShort(
+      distanceAtTime(activity, annotation.t),
+    )}`,
+    detail: annotation.note,
+    color: ANNOTATION_COLOR,
+  }));
+}
+
+/**
+ * How close the cursor counts as being "at" an event.
+ *
+ * Generous, because the reader is aiming at a moment rather than a second, and
+ * the keyboard moves the cursor five seconds at a time.
+ */
+const AT_EVENT_S = 15;
+
+/** The event the cursor is sitting on, for a readout to name. */
+export function annotationAt(
+  activity: DerivedActivity,
+  t: number,
+): RunAnnotation | undefined {
+  let nearest: { annotation: RunAnnotation; distance: number } | undefined;
+  for (const annotation of activity.annotations ?? []) {
+    const distance = Math.abs(annotation.t - t);
+    if (distance > AT_EVENT_S) continue;
+    if (!nearest || distance < nearest.distance) nearest = { annotation, distance };
+  }
+  return nearest?.annotation;
 }
 
 /** The intensities a run actually spent time in, in order. */

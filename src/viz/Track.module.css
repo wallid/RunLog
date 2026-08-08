@@ -68,6 +68,62 @@
   pointer-events: none;
 }
 
+/* The cap on a marker. Ringed in the card's own background so it stays legible
+   against a dense chart rather than dissolving into whatever it lands on. */
+.markerCap {
+  stroke: var(--surface-card);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+/*
+ * The name of the event the cursor has reached.
+ *
+ * Dark pill rather than the accent, because it is a label on the chart and not
+ * a thing on the chart: it has to be readable over a heart-rate line, a zone
+ * wash and a bare track alike, and only one colour does that everywhere. It
+ * sits low, beside the cap it belongs to, and never takes the pointer — the
+ * reader is pointing at the run underneath it.
+ */
+.markerLabel {
+  position: absolute;
+  bottom: 10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 15rem;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--text-primary);
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+/* Against either edge the pill would hang off the card, so it anchors to the
+   marker instead of centring on it. */
+.markerLabel[data-align="start"] {
+  transform: none;
+}
+
+.markerLabel[data-align="end"] {
+  transform: translateX(-100%);
+}
+
+.markerLabelText {
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.markerLabelDetail {
+  overflow: hidden;
+  opacity: 0.75;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .axis {
   width: 100%;
   margin-top: 2px;

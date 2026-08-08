@@ -1,7 +1,7 @@
 import { defineWidget } from "../contract";
-import type { GradientBucket } from "@/model/activity";
+import type { GradientBucket, GradientCategory } from "@/model/activity";
 import { ProportionBars } from "@/viz/primitives";
-import { TERRAIN_COLORS } from "../helpers";
+import { NOISE_FLOOR, TERRAIN_COLORS, terrainHrDeviation } from "../helpers";
 import { formatDistance, formatDuration, formatPercent } from "@/lib/format";
 import shared from "../shared.module.css";
 
@@ -16,6 +16,8 @@ interface Result {
   buckets: GradientBucket[];
   totalDistanceM: number;
   totalTimeS: number;
+  /** Mean bpm above or below the local baseline, per kind of ground. */
+  hrDeviation: Partial<Record<GradientCategory, number>>;
 }
 
 const LABELS = {
@@ -39,7 +41,12 @@ export const gradientZonesWidget = defineWidget<Result>({
     const totalTimeS = buckets.reduce((a, b) => a + b.timeS, 0);
     if (totalDistanceM <= 0) return null;
 
-    return { buckets, totalDistanceM, totalTimeS };
+    return {
+      buckets,
+      totalDistanceM,
+      totalTimeS,
+      hrDeviation: terrainHrDeviation(activity),
+    };
   },
 
   narrate(result) {
@@ -47,20 +54,43 @@ export const gradientZonesWidget = defineWidget<Result>({
     const flat = result.buckets.find((b) => b.category === "flat");
     const downhill = result.buckets.find((b) => b.category === "downhill");
 
-    const observations = [];
-    if (uphill) {
-      observations.push({
-        text: `${formatPercent(uphill.distanceM / result.totalDistanceM)} of the distance was uphill, covering ${formatDistance(uphill.distanceM)}.`,
-      });
-    }
+    // Every category the run actually covered gets a line, so the card always
+    // says something rather than falling silent on a route with no climbs.
+    const observations = (["uphill", "flat", "downhill"] as const)
+      .map((category) => result.buckets.find((b) => b.category === category))
+      .filter((bucket): bucket is GradientBucket => bucket !== undefined)
+      .map((bucket) => ({
+        text: `${formatPercent(bucket.distanceM / result.totalDistanceM)} of the distance was ${LABELS[bucket.category].toLowerCase()}, covering ${formatDistance(bucket.distanceM)}.`,
+      }));
 
     const explanations = [];
-    if (uphill?.avgHr !== undefined && flat?.avgHr !== undefined) {
-      const difference = uphill.avgHr - flat.avgHr;
-      if (Math.abs(difference) >= 3) {
+    const uphillDeviation = result.hrDeviation.uphill;
+    const flatDeviation = result.hrDeviation.flat;
+
+    if (uphillDeviation !== undefined && flatDeviation !== undefined) {
+      // Measured against the heart rate either side of each stretch rather than
+      // against the run average. Comparing raw bucket averages would mostly
+      // measure when the hills fell in the run: on a session where heart rate
+      // climbs twenty beats, terrain run early looks easy whatever it cost.
+      const difference = uphillDeviation - flatDeviation;
+      const raw =
+        uphill?.avgHr !== undefined && flat?.avgHr !== undefined
+          ? uphill.avgHr - flat.avgHr
+          : undefined;
+
+      if (Math.abs(difference) >= NOISE_FLOOR.hrBpm) {
         explanations.push({
-          text: `Heart rate averaged ${Math.abs(Math.round(difference))} bpm ${difference > 0 ? "higher" : "lower"} on uphill ground than on flat, which is the expected direction for a change in gradient.`,
-          confidence: "high" as const,
+          text:
+            difference > 0
+              ? `Set against the heart rate on either side of them, the uphill stretches ran ${Math.abs(Math.round(difference))} bpm higher than the flat ones. That is the direction a climb produces: the same speed costs more on rising ground.`
+              : `Set against the heart rate on either side of them, the uphill stretches ran ${Math.abs(Math.round(difference))} bpm lower than the flat ones — the opposite of what a climb costs. Easing off on the hills is the ordinary reason.`,
+          confidence: "medium" as const,
+          relatedMetrics: ["gradient" as const, "heartRate" as const],
+        });
+      } else if (raw !== undefined && Math.abs(raw) >= NOISE_FLOOR.hrBpm) {
+        explanations.push({
+          text: `Raw averages put heart rate ${Math.abs(Math.round(raw))} bpm ${raw > 0 ? "higher" : "lower"} uphill than on the flat, but that gap disappears once each stretch is compared with the heart rate around it rather than with the run as a whole. It reflects when the hills came in this run, not what they cost.`,
+          confidence: "medium" as const,
           relatedMetrics: ["gradient" as const, "heartRate" as const],
         });
       }

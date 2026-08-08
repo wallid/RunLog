@@ -49,7 +49,12 @@ export const fastStartWidget = defineWidget<Result>({
       ],
       explanations: [
         {
-          text: "Starting quicker than the pace you go on to hold raises early effort, which can make the later part of a run harder than it needed to be. Whether that matters depends on the session: a race or a progression run is meant to start differently from an easy one.",
+          // A candidate reason for this run's opening, not general advice — the
+          // advice belongs in teaching, where it is not asked to carry a
+          // confidence about a claim it is not making.
+          text: settled
+            ? `Pace came back to the middle-of-run figure by ${formatDistanceShort(metrics.settleDistanceM)} and stayed there, which is the shape of an opening run on feel before settling rather than a change of plan mid-run.`
+            : "Pace never came back to the middle-of-run figure for long enough to call it settled, so the opening reads less as a fast start than as the run gradually slowing from it.",
           confidence: result.event.confidence,
           relatedMetrics: ["pace", "heartRate"],
         },
@@ -58,6 +63,10 @@ export const fastStartWidget = defineWidget<Result>({
         {
           title: "Why the opening is compared with the middle",
           text: "The middle of a run is the fairest comparison because it excludes both the opening and any finishing effort. Comparing the first kilometre against the whole-run average would fold the fast start into the number it is being measured against.",
+        },
+        {
+          title: "A fast start is not automatically a mistake",
+          text: "Starting quicker than the pace you go on to hold raises early effort, which can make the later part of a run harder than it needed to be. Whether that matters depends on the session: a race or a progression run is meant to start differently from an easy one, and this card takes no view on which yours was.",
         },
       ],
     };

@@ -1,4 +1,6 @@
 import type { DerivedActivity, Sample } from "@/model/activity";
+import { kindSpec } from "@/model/annotations";
+import { annotationAt } from "./helpers";
 import {
   formatDistance,
   formatDuration,
@@ -65,6 +67,7 @@ export function CursorReadout({
   const activeEvent = activity.events.find(
     (event) => sample.t >= event.startT && sample.t <= event.endT,
   );
+  const marked = annotationAt(activity, sample.t);
 
   return (
     <div className={styles.readout}>
@@ -76,6 +79,14 @@ export function CursorReadout({
           </div>
         ))}
       </dl>
+      {/* The reader's own note comes first: they put it there, and it is the
+          one line on the readout the file could not have produced. */}
+      {marked && (
+        <p className={styles.readoutContext}>
+          You marked here: <strong>{kindSpec(marked.kind)?.label ?? "Event"}</strong>
+          {marked.note ? ` — ${marked.note}` : ""}
+        </p>
+      )}
       {activeEvent && (
         <p className={styles.readoutContext}>
           This position is inside: <strong>{activeEvent.label}</strong>

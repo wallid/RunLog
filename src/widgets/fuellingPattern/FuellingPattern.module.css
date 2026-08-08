@@ -1,0 +1,73 @@
+/* One row per stretch between two fuelling events. Three columns rather than
+   four: what the stretch was, how far it ran, how long it lasted — and the
+   longest one is picked out, because it is the row the card is really about. */
+
+.table {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.head {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.headRight {
+  composes: head;
+  text-align: end;
+}
+
+.interval {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.where {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+}
+
+.value {
+  padding: var(--space-2) 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-align: end;
+}
+
+.gap {
+  composes: value;
+  color: var(--text-primary);
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* The longest stretch is the one worth noticing, and it is named in the legend
+   and drawn on the track in the same colour. */
+.gapLongest {
+  composes: gap;
+  color: var(--accent-ink);
+}
+
+@media (max-width: 560px) {
+  .table {
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .interval,
+  .value,
+  .gap,
+  .gapLongest {
+    font-size: 0.82rem;
+  }
+}

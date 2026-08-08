@@ -3,7 +3,14 @@ import type { Sample } from "@/model/activity";
 import { Track } from "@/viz/Track";
 import { Legend } from "@/viz/primitives";
 import { buildPath, linearScale } from "@/viz/scales";
-import { BAND_COLORS, bandsUsed, zoneRegions } from "../helpers";
+import {
+  ANNOTATION_COLOR,
+  annotationMarkers,
+  BAND_COLORS,
+  bandsUsed,
+  NOISE_FLOOR,
+  zoneRegions,
+} from "../helpers";
 import { bandDefinition, bandZoneRange } from "@/model/zones";
 import { collect, mean } from "@/lib/stats";
 import { formatDistanceShort, formatHeartRate } from "@/lib/format";
@@ -66,7 +73,7 @@ export const heartRateTimelineWidget = defineWidget<Result>({
       },
     ];
 
-    if (Number.isFinite(change) && Math.abs(change) >= 3) {
+    if (Number.isFinite(change) && Math.abs(change) >= NOISE_FLOOR.hrBpm) {
       observations.push({
         text: `The second half averaged ${formatHeartRate(Math.abs(change))} ${change > 0 ? "higher" : "lower"} than the first.`,
         evidence: [],
@@ -75,13 +82,20 @@ export const heartRateTimelineWidget = defineWidget<Result>({
 
     const explanations = [];
     if (Number.isFinite(change) && change >= 5) {
-      const paceChange = activity.summary.drift?.pacePct ?? 0;
+      // A run with no pace series has no drift result, and treating that as
+      // "pace was level" would turn a missing measurement into a finding. The
+      // three cases are genuinely different and are said differently.
+      const paceChange = activity.summary.drift?.pacePct;
+      const paceHeld = paceChange !== undefined && Math.abs(paceChange) < 3;
+
       explanations.push({
         text:
-          Math.abs(paceChange) < 3
-            ? "Pace stayed close to level while heart rate rose, which is the pattern associated with duration, heat, hydration or accumulating fatigue rather than a change in speed."
-            : "Pace also changed across the run, so the rise reflects a change in effort as well as anything happening physiologically.",
-        confidence: (Math.abs(paceChange) < 3 ? "medium" : "low") as "medium" | "low",
+          paceChange === undefined
+            ? "Heart rate rose across the run. Without a pace series in this file there is no way to tell whether the runner also sped up, which is the first thing that would have to be ruled out before reading this as drift."
+            : paceHeld
+              ? "Pace stayed close to level while heart rate rose, which is the pattern associated with duration, heat, hydration or accumulating fatigue rather than a change in speed."
+              : "Pace also changed across the run, so the rise reflects a change in effort as well as anything happening physiologically.",
+        confidence: (paceHeld ? "medium" : "low") as "medium" | "low",
         relatedMetrics: ["heartRate" as const, "pace" as const],
       });
     }
@@ -115,6 +129,7 @@ export const heartRateTimelineWidget = defineWidget<Result>({
     // Shaded by intensity rather than by zone, which is all a wash pale enough
     // to keep this card's own line legible can carry. See `zoneRegions`.
     const regions = zoneRegions(activity);
+    const markers = annotationMarkers(activity);
 
     // A little headroom above and below keeps the line off the edges.
     const padding = Math.max(4, (result.max - result.min) * 0.1);
@@ -128,6 +143,7 @@ export const heartRateTimelineWidget = defineWidget<Result>({
           showAxis
           ariaLabel="Heart rate through the run"
           regions={regions}
+          markers={markers}
         >
           {(scale, height) => {
             const y = linearScale(
@@ -183,6 +199,15 @@ export const heartRateTimelineWidget = defineWidget<Result>({
               label: `${bandDefinition(band).name} · ${bandZoneRange(band)}`,
               color: BAND_COLORS[band],
             })),
+            ...(markers.length > 0
+              ? [
+                  {
+                    label: "Your events",
+                    color: ANNOTATION_COLOR,
+                    shape: "dashed" as const,
+                  },
+                ]
+              : []),
           ]}
         />
 

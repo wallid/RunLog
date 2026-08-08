@@ -21,6 +21,8 @@ import styles from "./PowerStory.module.css";
 interface Result {
   avg: number;
   max: number;
+  /** The highest smoothed value — the peak the drawn line actually reaches. */
+  sustainedMax: number;
   low: number;
   high: number;
   smoothed: (number | undefined)[];
@@ -67,7 +69,20 @@ export const powerStoryWidget = defineWidget<Result>({
     const secondHalf = collect(activity.samples.slice(midpoint), (s) => s.powerW);
 
     const max = Math.max(...values);
-    const peak = activity.samples.find((s) => s.powerW === max);
+    // The peak reported is the smoothed one, because the smoothed line is what
+    // is drawn. A one-second spike of three times the average is a sampling
+    // artefact the reader cannot find anywhere on the chart, and quoting it as
+    // the run's peak invites them to look for it.
+    let peakIndex = 0;
+    let sustainedMax = -Infinity;
+    for (let i = 0; i < smoothed.length; i++) {
+      const value = smoothed[i];
+      if (value !== undefined && value > sustainedMax) {
+        sustainedMax = value;
+        peakIndex = i;
+      }
+    }
+    const peak = activity.samples[peakIndex];
 
     return {
       avg,
@@ -101,6 +116,7 @@ export const powerStoryWidget = defineWidget<Result>({
       ),
       firstHalf: firstHalf.length > 0 ? mean(firstHalf) : NaN,
       secondHalf: secondHalf.length > 0 ? mean(secondHalf) : NaN,
+      sustainedMax,
       peakT: peak?.t ?? 0,
       peakDistanceM: peak?.distanceM ?? 0,
     };
@@ -109,8 +125,14 @@ export const powerStoryWidget = defineWidget<Result>({
   narrate(result, activity) {
     const observations = [
       {
-        text: `Power averaged ${formatPower(result.avg)}, peaking at ${formatPower(result.max)} at ${formatDistanceShort(result.peakDistanceM)}.`,
-        evidence: [{ label: "Peak power", startT: result.peakT, endT: result.peakT }],
+        text: `Power averaged ${formatPower(result.avg)}, and its highest sustained ${SMOOTHING_S} seconds came at ${formatDistanceShort(result.peakDistanceM)}, averaging ${formatPower(result.sustainedMax)}. The highest single second of the run read ${formatPower(result.max)}.`,
+        evidence: [
+          {
+            label: "Highest sustained power",
+            startT: result.peakT,
+            endT: result.peakT + SMOOTHING_S,
+          },
+        ],
       },
     ];
 
@@ -151,7 +173,12 @@ export const powerStoryWidget = defineWidget<Result>({
     return {
       information: [
         { label: "Average", value: formatPower(result.avg) },
-        { label: "Maximum", value: formatPower(result.max) },
+        {
+          label: "Highest sustained",
+          value: formatPower(result.sustainedMax),
+          note: `${SMOOTHING_S}-second average`,
+        },
+        { label: "Highest second", value: formatPower(result.max), note: "unsmoothed" },
         { label: "First half", value: formatPower(result.firstHalf) },
         { label: "Second half", value: formatPower(result.secondHalf) },
       ],

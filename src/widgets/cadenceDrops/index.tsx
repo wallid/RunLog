@@ -70,7 +70,14 @@ export const cadenceDropsWidget = defineWidget<Result>({
       baselineSpm: events[0].metrics.baselineSpm,
       totalS,
       deepest: drops.reduce((a, b) => (b.deficitSpm > a.deficitSpm ? b : a)),
-      fractionOfRunning: activity.movingS > 0 ? totalS / activity.movingS : 0,
+      // A drop's duration can include stopped seconds, so those come out before
+      // it is expressed as a share of the time spent running — otherwise the
+      // numerator counts seconds the denominator does not.
+      fractionOfRunning:
+        activity.movingS > 0
+          ? drops.reduce((a, drop) => a + (drop.durationS - drop.stoppedS), 0) /
+            activity.movingS
+          : 0,
     };
   },
 

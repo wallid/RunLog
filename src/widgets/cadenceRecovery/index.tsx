@@ -140,8 +140,8 @@ export const cadenceRecoveryWidget = defineWidget<Result>({
           text: "How quickly cadence comes back after an interruption is mostly a decision, not a measurement of fitness: a runner resumes their rhythm when the road clears or the hill ends. Read it as a record of how the run was interrupted and resumed, not as a fitness test.",
         },
         {
-          title: "What counts as returned",
-          text: "Cadence has to reach within two steps per minute of the run's median and hold there for ten seconds. Without the holding requirement, a single quick stride on the way through the range would be recorded as a full recovery, which would make every drop look shorter than it was.",
+          title: "What counts as returned, and from when",
+          text: "Cadence has to reach within two steps per minute of the run's median and hold there for ten seconds. Without the holding requirement, a single quick stride on the way through the range would be recorded as a full recovery. The clock starts at the lowest point of the drop rather than at its end, because a drop is defined as ending when cadence climbs back past the drop threshold — which is already most of the way back, so timing from there would return a second or two on almost every drop and measure nothing but the gap between two thresholds.",
         },
       ],
     };
@@ -219,9 +219,9 @@ export const cadenceRecoveryWidget = defineWidget<Result>({
         </ul>
 
         <p className={shared.note}>
-          A drop counts as recovered once cadence is back within two steps per minute of the
-          run&rsquo;s median of {formatCadence(result.baselineSpm)} and holds there for ten
-          seconds.
+          Timed from the lowest point of each drop until cadence is back within two steps
+          per minute of the run&rsquo;s median of {formatCadence(result.baselineSpm)} and
+          holds there for ten seconds.
           {result.neverRecovered > 0 &&
             ` ${result.neverRecovered} ${result.neverRecovered === 1 ? "drop is" : "drops are"} not listed here, having never returned.`}
         </p>

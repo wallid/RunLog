@@ -5,6 +5,7 @@ import { itemForFile } from "@/library/import";
 import { RunList } from "@/library/RunList";
 import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
+import { Benefits } from "./Benefits";
 import { SocialProof } from "./SocialProof";
 import { useWindowDrop } from "./useWindowDrop";
 import { DISCLAIMER } from "@/disclaimer";
@@ -13,13 +14,16 @@ import styles from "./DropZone.module.css";
 /**
  * The way in.
  *
- * One screen, no scroll: what the page is for on the left, the two ways to
- * start in the middle, and where to find a file on the right. The three points
- * are the reasons to hand over a file at all, so they are claims about what the
- * reader gets rather than a description of the software. The one thing below
- * the fold is the proof strip — the visit count and the testimonials — which
- * is allowed to exist because it lengthens nothing above it and is needed by
- * nobody who already has a file in hand.
+ * One screen, no scroll, for the part that matters before anything is on
+ * screen: what the page is for on the left, the two ways to start in the
+ * middle, and where to find a file on the right. The three points are the
+ * reasons to hand over a file at all, so they are claims about what the reader
+ * gets rather than a description of the software. Below that fold the page
+ * makes good on two of those claims with real charts (`Benefits`, drawn from
+ * the same demo run the button opens), then closes with the proof strip — the
+ * visit count and the testimonials. Both are allowed to exist below the fold
+ * because they lengthen nothing above it and are needed by nobody who already
+ * has a file in hand.
  *
  * Three columns because a reader arrives holding one of three things —
  * interest, a file, or a file they cannot lay hands on — and none of those is a
@@ -208,6 +212,8 @@ export function DropZone() {
             collapsing it would move the other two. */}
         <div className={styles.guideColumn}>{!choosing && <SourceGuide />}</div>
       </main>
+
+      <Benefits />
 
       <SocialProof />
 

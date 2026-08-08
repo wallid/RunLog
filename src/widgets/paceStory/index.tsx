@@ -8,7 +8,7 @@ import {
   formatPaceDelta,
   formatPaceWithUnit,
 } from "@/lib/format";
-import { mainClimb } from "../helpers";
+import { ANNOTATION_COLOR, annotationMarkers, mainClimb } from "../helpers";
 import shared from "../shared.module.css";
 
 /**
@@ -156,6 +156,8 @@ export const paceStoryWidget = defineWidget<Result>({
   },
 
   View({ result, activity }) {
+    const markers = annotationMarkers(activity);
+
     return (
       <div>
         <p className={shared.trackLabel}>Faster is higher</p>
@@ -165,6 +167,7 @@ export const paceStoryWidget = defineWidget<Result>({
           widgetId="pace-story"
           showAxis
           ariaLabel="Pace through the run, drawn with faster pace higher"
+          markers={markers}
         >
           {(scale, height) => {
             // Inverted: a lower seconds-per-kilometre reading sits higher.
@@ -223,6 +226,15 @@ export const paceStoryWidget = defineWidget<Result>({
               color: "var(--text-muted)",
               shape: "dashed",
             },
+            ...(markers.length > 0
+              ? [
+                  {
+                    label: "Your events",
+                    color: ANNOTATION_COLOR,
+                    shape: "dashed" as const,
+                  },
+                ]
+              : []),
           ]}
         />
 

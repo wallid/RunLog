@@ -45,6 +45,9 @@ interface Result {
 /** The signals this card can watch, when the file happens to carry them. */
 const WATCHABLE: MetricType[] = ["heartRate", "pace", "cadence", "power"];
 
+const BEFORE_COLOR = "var(--zone-2-soft)";
+const AFTER_COLOR = "var(--zone-4-soft)";
+
 export const fatigueOnsetWidget = defineWidget<Result>({
   id: "fatigue-onset",
   title: "Fatigue onset",
@@ -149,14 +152,14 @@ export const fatigueOnsetWidget = defineWidget<Result>({
             {
               startT: 0,
               endT: onset.t,
-              color: "var(--zone-2-soft)",
+              color: BEFORE_COLOR,
               label: "Before",
               behind: true,
             },
             {
               startT: onset.t,
               endT: last,
-              color: "var(--zone-4-soft)",
+              color: AFTER_COLOR,
               label: "After",
               behind: true,
             },
@@ -168,8 +171,8 @@ export const fatigueOnsetWidget = defineWidget<Result>({
 
         <Legend
           items={[
-            { label: "Before", color: "var(--zone-2-soft)" },
-            { label: "After", color: "var(--zone-4-soft)" },
+            { label: "Before", color: BEFORE_COLOR },
+            { label: "After", color: AFTER_COLOR },
             { label: "Possible onset", color: "var(--zone-5)", shape: "dashed" },
           ]}
         />

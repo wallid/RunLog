@@ -1,6 +1,6 @@
 import { defineWidget } from "../contract";
 import type { GradientBucket, GradientCategory } from "@/model/activity";
-import { NOISE_FLOOR, TERRAIN_COLORS } from "../helpers";
+import { NOISE_FLOOR, TERRAIN_COLORS, terrainHrDeviation } from "../helpers";
 import { formatDuration, formatHeartRate, formatPaceWithUnit, formatPower } from "@/lib/format";
 import shared from "../shared.module.css";
 import styles from "./EffortVersusTerrain.module.css";
@@ -17,6 +17,8 @@ interface Result {
   flat?: GradientBucket;
   uphill?: GradientBucket;
   downhill?: GradientBucket;
+  /** Mean bpm above or below the local baseline, per kind of ground. */
+  hrDeviation: Partial<Record<GradientCategory, number>>;
 }
 
 const LABELS: Record<GradientCategory, string> = {
@@ -46,6 +48,7 @@ export const effortVersusTerrainWidget = defineWidget<Result>({
       flat: buckets.find((b) => b.category === "flat"),
       uphill: buckets.find((b) => b.category === "uphill"),
       downhill: buckets.find((b) => b.category === "downhill"),
+      hrDeviation: terrainHrDeviation(activity),
     };
   },
 
@@ -56,15 +59,21 @@ export const effortVersusTerrainWidget = defineWidget<Result>({
 
     if (flat?.avgPaceSecPerKm && uphill?.avgPaceSecPerKm) {
       const paceDelta = uphill.avgPaceSecPerKm - flat.avgPaceSecPerKm;
+      const uphillDeviation = result.hrDeviation.uphill;
+      const flatDeviation = result.hrDeviation.flat;
       const hrDelta =
-        uphill.avgHr !== undefined && flat.avgHr !== undefined
-          ? uphill.avgHr - flat.avgHr
+        uphillDeviation !== undefined && flatDeviation !== undefined
+          ? uphillDeviation - flatDeviation
           : undefined;
 
+      // Heart rate is quoted against each stretch's own local baseline, not as a
+      // raw bucket average. Raw averages compare the part of the run the hills
+      // fell in with the part they did not, which on a drifting run says more
+      // about the clock than about the ground.
       const hrPhrase =
         hrDelta === undefined || Math.abs(hrDelta) < NOISE_FLOOR.hrBpm
-          ? "heart rate was effectively unchanged"
-          : `heart rate was ${Math.abs(Math.round(hrDelta))} bpm ${hrDelta > 0 ? "higher" : "lower"}`;
+          ? "heart rate was no different from its level around them"
+          : `heart rate ran ${Math.abs(Math.round(hrDelta))} bpm ${hrDelta > 0 ? "above" : "below"} its level around them`;
 
       observations.push({
         // A difference inside the noise of the sensors is not a difference, and
@@ -75,15 +84,15 @@ export const effortVersusTerrainWidget = defineWidget<Result>({
             : `Uphill pace averaged ${Math.abs(Math.round(paceDelta))} seconds per kilometre ${paceDelta > 0 ? "slower" : "faster"} than flat ground, while ${hrPhrase}.`,
       });
 
-      if (paceDelta > 5 && hrDelta !== undefined && hrDelta > 2) {
+      if (paceDelta > NOISE_FLOOR.paceSecPerKm && hrDelta !== undefined && hrDelta > 2) {
         explanations.push({
           text: "Slowing down while working harder is what climbing normally looks like: the pace difference reflects the ground rather than a drop in effort.",
           confidence: "high" as const,
           relatedMetrics: ["gradient" as const, "pace" as const, "heartRate" as const],
         });
-      } else if (paceDelta > 5 && hrDelta !== undefined && hrDelta <= 0) {
+      } else if (paceDelta > NOISE_FLOOR.paceSecPerKm && hrDelta !== undefined && hrDelta <= 0) {
         explanations.push({
-          text: "Pace fell uphill without heart rate rising, which suggests effort was eased on the climbs rather than held.",
+          text: "Pace fell uphill without heart rate rising above its level around those stretches, which suggests effort was eased on the climbs rather than held.",
           confidence: "medium" as const,
           relatedMetrics: ["gradient" as const, "pace" as const, "heartRate" as const],
         });
@@ -92,11 +101,19 @@ export const effortVersusTerrainWidget = defineWidget<Result>({
 
     if (downhill?.avgPaceSecPerKm && flat?.avgPaceSecPerKm) {
       const delta = flat.avgPaceSecPerKm - downhill.avgPaceSecPerKm;
-      if (Math.abs(delta) >= 5) {
+      if (Math.abs(delta) >= NOISE_FLOOR.paceSecPerKm) {
         observations.push({
           text: `Downhill running was ${Math.abs(Math.round(delta))} seconds per kilometre ${delta > 0 ? "faster" : "slower"} than flat.`,
         });
       }
+    }
+
+    // Neither comparison firing is itself the finding: the ground this run
+    // covered did not separate into kinds that ran differently.
+    if (observations.length === 0) {
+      observations.push({
+        text: `Pace was within ${NOISE_FLOOR.paceSecPerKm} seconds per kilometre across every kind of ground this run covered, so the terrain did not separate into stretches that ran differently.`,
+      });
     }
 
     return {

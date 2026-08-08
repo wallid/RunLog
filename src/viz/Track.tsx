@@ -28,7 +28,42 @@ export interface TrackRegion {
 export interface TrackMarker {
   t: number;
   label: string;
+  /** A second line under the label, for whatever the reader wrote. */
+  detail?: string;
   color?: string;
+}
+
+/**
+ * How near the cursor has to come to a marker before the track names it.
+ *
+ * In pixels rather than seconds, because the distance axis is not linear in
+ * time: a fixed number of seconds is a different gap on the screen depending on
+ * how fast that stretch was run.
+ */
+const MARKER_REACH_PX = 12;
+
+/**
+ * The marker the cursor has reached, if it has reached one.
+ *
+ * A one-pixel dashed line is not something anyone can point at, so what is
+ * actually being pointed at is the run — and the track answers with whichever
+ * marker that lands on. Because the cursor is shared, passing a gel on the
+ * heart-rate chart names it on every other chart at the same time.
+ */
+export function nearestMarker(
+  markers: readonly TrackMarker[],
+  toPixels: (t: number) => number,
+  cursorX: number | null,
+): { marker: TrackMarker; x: number } | null {
+  if (cursorX === null) return null;
+  let nearest: { marker: TrackMarker; x: number; distance: number } | null = null;
+  for (const marker of markers) {
+    const x = toPixels(marker.t);
+    const distance = Math.abs(x - cursorX);
+    if (distance > MARKER_REACH_PX) continue;
+    if (!nearest || distance < nearest.distance) nearest = { marker, x, distance };
+  }
+  return nearest;
 }
 
 interface TrackProps {
@@ -151,6 +186,11 @@ export function Track({
   const frontRegions = regions.filter((r) => !r.behind);
   const cursorX = cursorT === null ? null : scale.toPixels(cursorT);
 
+  const activeMarker = useMemo(
+    () => nearestMarker(markers, scale.toPixels, cursorX),
+    [markers, scale, cursorX],
+  );
+
   return (
     <div
       className={styles.wrapper}
@@ -172,7 +212,11 @@ export function Track({
         aria-valuemin={0}
         aria-valuemax={activity.samples[activity.samples.length - 1]?.t ?? 0}
         aria-valuenow={cursorT ?? 0}
-        aria-valuetext={cursorReadout(scale, cursorT)}
+        aria-valuetext={
+          activeMarker
+            ? `${cursorReadout(scale, cursorT)}, ${activeMarker.marker.label}`
+            : cursorReadout(scale, cursorT)
+        }
       >
         <svg width={width} height={height} className={styles.svg} aria-hidden="true">
           {!drawn && (
@@ -220,18 +264,36 @@ export function Track({
             />
           )}
 
-          {markers.map((marker) => (
-            <line
-              key={marker.label + marker.t}
-              x1={scale.toPixels(marker.t)}
-              x2={scale.toPixels(marker.t)}
-              y1={0}
-              y2={height}
-              stroke={marker.color ?? "var(--border-strong)"}
-              strokeWidth={1}
-              strokeDasharray="2 3"
-            />
-          ))}
+          {markers.map((marker) => {
+            const x = scale.toPixels(marker.t);
+            const active = activeMarker?.marker === marker;
+            const color = marker.color ?? "var(--border-strong)";
+            return (
+              <g key={marker.label + marker.t}>
+                <line
+                  x1={x}
+                  x2={x}
+                  y1={0}
+                  y2={height}
+                  stroke={color}
+                  strokeWidth={active ? 2 : 1}
+                  strokeDasharray={active ? undefined : "2 3"}
+                />
+                {/* A cap at the foot of the line, so a marker reads as
+                    something placed there rather than as a fold in the chart.
+                    At the foot and not the head because the cursor's own dot
+                    sits at the top and the two would collide. */}
+                <circle
+                  cx={x}
+                  cy={height - 4}
+                  r={active ? 5 : 3.5}
+                  fill={color}
+                  className={styles.markerCap}
+                />
+                <title>{marker.label}</title>
+              </g>
+            );
+          })}
 
           {cursorX !== null && (
             <g>
@@ -246,6 +308,33 @@ export function Track({
             </g>
           )}
         </svg>
+
+        {/* Positioned by a pixel taken from the SVG's own axis, which does not
+            mirror on a right-to-left page — so this is one of the few places a
+            physical `left` is the correct property rather than a logical one.
+            Real markup rather than an SVG `<title>`: the drawing is hidden from
+            assistive technology, and the name of the event a reader has just
+            stopped on is exactly the part that should not be. */}
+        {activeMarker && (
+          <div
+            className={styles.markerLabel}
+            style={{ left: `${activeMarker.x}px` }}
+            data-align={
+              activeMarker.x < 72
+                ? "start"
+                : activeMarker.x > width - 72
+                  ? "end"
+                  : "center"
+            }
+          >
+            <span className={styles.markerLabelText}>{activeMarker.marker.label}</span>
+            {activeMarker.marker.detail && (
+              <span className={styles.markerLabelDetail}>
+                {activeMarker.marker.detail}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {showAxis && <Axis scale={scale} width={width} height={AXIS_HEIGHT} />}

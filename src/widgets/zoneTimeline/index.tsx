@@ -3,7 +3,12 @@ import type { HrZone } from "@/model/activity";
 import { Track, type TrackRegion } from "@/viz/Track";
 import { Legend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
-import { findRuns, ZONE_COLORS, type Run } from "../helpers";
+import {
+  findRuns,
+  MIN_MEANINGFUL_ZONE_RUN_S,
+  ZONE_COLORS,
+  type Run,
+} from "../helpers";
 import { formatDistanceShort, formatDuration, formatDurationWords } from "@/lib/format";
 import shared from "../shared.module.css";
 
@@ -21,8 +26,12 @@ interface Result {
   transitions: number;
 }
 
-/** Zone flickering across a boundary is noise, not a change of effort. */
-const MIN_MEANINGFUL_RUN_S = 20;
+/**
+ * Zone flickering across a boundary is noise, not a change of effort. Shared
+ * with the bubbles card so the two cannot disagree about what counts as having
+ * been in a zone.
+ */
+const MIN_MEANINGFUL_RUN_S = MIN_MEANINGFUL_ZONE_RUN_S;
 
 export const zoneTimelineWidget = defineWidget<Result>({
   id: "zone-timeline",

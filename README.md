@@ -173,8 +173,6 @@ any kind, per the licence below.
 
 ## Licence
 
-[PolyForm Noncommercial 1.0.0](LICENSE) — free to use, study, modify and
-share for any noncommercial purpose. Commercial use (including selling the
-software or charging for access to it) is not permitted.
+MIT.
 
 Map tiles © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.

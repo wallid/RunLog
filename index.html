@@ -3,14 +3,113 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Canonical host. This is the address every crawler is told to index, so it
+      must be one that actually resolves. It is `runlogapp.com` as of the day
+      that domain's DNS was pointed at Pages; the pages.dev address still
+      serves the same build and is what the deploy step reports, but it is not
+      the one to be indexed under. The host appears here, in `robots.txt` and
+      in `sitemap.xml` — those three places are the whole of it.
+    -->
+    <link rel="canonical" href="https://runlogapp.com/" />
+
     <title>Run Log — understand your run</title>
     <meta
       name="description"
-      content="Upload a run. Explore the moments. Understand the data."
+      content="A free, open-source run explorer. Drop in a file from your watch and read what actually happened — what changed, where, and why. Nothing is uploaded; it all runs in your browser."
     />
+
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#fc5200" />
+    <meta name="color-scheme" content="light" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Run Log" />
+    <meta property="og:url" content="https://runlogapp.com/" />
+    <meta property="og:title" content="Run Log — your run, explained" />
+    <meta
+      property="og:description"
+      content="Drop in a file from your watch and read what actually happened — what changed, where, and why. Free, open source, and nothing leaves your browser."
+    />
+    <meta
+      property="og:image"
+      content="https://runlogapp.com/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Run Log — a pace chart from a recorded run, annotated with what changed and where."
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Run Log — your run, explained" />
+    <meta
+      name="twitter:description"
+      content="Drop in a file from your watch and read what actually happened. Free, open source, and nothing leaves your browser."
+    />
+    <meta
+      name="twitter:image"
+      content="https://runlogapp.com/og-image.png"
+    />
+
+    <!--
+      Structured data. The page is one application rather than a set of
+      articles, so `WebApplication` is the honest type; the free price is stated
+      because a zero-cost offer is the one property that changes how the result
+      is rendered in search.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Run Log",
+        "url": "https://runlogapp.com/",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Any modern web browser",
+        "browserRequirements": "Requires JavaScript.",
+        "description": "A free, open-source run explorer that turns a FIT or GPX file from a running watch into an interactive explanation of what happened during the run. Files are parsed in the browser and never uploaded.",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "license": "https://opensource.org/licenses/MIT"
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      Crawlers that do not run JavaScript — and readers who have turned it off —
+      otherwise see an empty page, because every word of the landing screen is
+      rendered by React. This is the same claim the app makes, written plainly,
+      so the page says something true without a script running.
+    -->
+    <noscript>
+      <h1>Run Log — your run, explained</h1>
+      <p>
+        Drop in a file from your running watch and read what actually happened
+        during the run: what changed, where it changed, and what might account
+        for it. Run Log reads FIT and GPX files, shows moments rather than
+        averages, and shows its working for every claim it makes.
+      </p>
+      <p>
+        Nothing is uploaded. There is no account and no server — your file is
+        parsed by your own browser and stays on your own machine. Run Log is
+        free and open source.
+      </p>
+      <p>
+        Run Log needs JavaScript to read and draw a run, so please enable it to
+        use the app.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

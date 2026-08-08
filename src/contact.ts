@@ -9,12 +9,11 @@
  * reading it, and the person reading it does not have their personal mailbox
  * printed at the bottom of a public page.
  *
- * NOTE: `runlog.app` is not registered yet, and the live site is on a
- * `pages.dev` subdomain, which cannot receive mail. Until the domain exists
- * and forwarding is set up, this link goes nowhere — register the domain, add
- * an email route to your own mailbox, then this works with no code change.
+ * NOTE: `runlogapp.com` is registered but email forwarding is not set up yet.
+ * Until an Email Routing rule points these addresses at a real mailbox, this
+ * link goes nowhere — add the route, then this works with no code change.
  */
-export const CONTACT_EMAIL = "feedback@runlog.app";
+export const CONTACT_EMAIL = "feedback@runlogapp.com";
 
 /**
  * Where a business writes to buy one of the ad slots on the page. Separate
@@ -22,7 +21,7 @@ export const CONTACT_EMAIL = "feedback@runlog.app";
  * different people later without touching the page. Same caveat as above:
  * dead until the domain is registered and a route forwards it somewhere.
  */
-export const ADVERTISING_EMAIL = "marketing@runlog.app";
+export const ADVERTISING_EMAIL = "marketing@runlogapp.com";
 
 /** The `mailto:` a reader's mail client opens, with the subject filled in. */
 export function contactHref(subject = "Run Log feedback"): string {

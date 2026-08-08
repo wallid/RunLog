@@ -1,0 +1,8 @@
+# Run Log is one public page with nothing behind a login, so everything is
+# crawlable. The host below must match the canonical in index.html; see the
+# comment there before changing it.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://runlogapp.com/sitemap.xml

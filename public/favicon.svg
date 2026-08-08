@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Run Log">
+  <!--
+    The wordmark's accent dot, on its own. The app has no logo beyond that dot
+    and the words next to it, and words are unreadable at 16px, so the dot is
+    the only part of the mark that survives being a favicon. Sized to fill the
+    tile rather than sit inside it, because a small dot on a large square reads
+    as a rendering fault at tab size.
+  -->
+  <rect width="64" height="64" rx="14" fill="#f4f3f1" />
+  <circle cx="32" cy="32" r="17" fill="#fc5200" />
+</svg>

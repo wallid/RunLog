@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "An open-source visual run explorer that turns wearable activity data into a clear, interactive explanation of what happened during a run.",
-  "license": "MIT",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

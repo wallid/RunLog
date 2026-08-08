@@ -1,5 +1,6 @@
 import { defineWidget } from "../contract";
 import { Track } from "@/viz/Track";
+import { Legend } from "@/viz/primitives";
 import { buildPath, linearScale } from "@/viz/scales";
 import { collect, mean, median, percentile } from "@/lib/stats";
 import {
@@ -214,8 +215,18 @@ export const paceStoryWidget = defineWidget<Result>({
           }}
         </Track>
 
+        <Legend
+          items={[
+            { label: "Pace", color: "var(--metric-pace)", shape: "line" },
+            {
+              label: `Median pace · ${formatPaceWithUnit(result.median)}`,
+              color: "var(--text-muted)",
+              shape: "dashed",
+            },
+          ]}
+        />
+
         <p className={shared.note}>
-          The dashed line marks the median pace of {formatPaceWithUnit(result.median)}.
           Stopped sections leave a gap, because pace while standing still is not a
           meaningful number.
         </p>

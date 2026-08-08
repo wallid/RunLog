@@ -4,8 +4,12 @@ import { App } from "./App";
 import { ErrorBoundary } from "./observability/ErrorBoundary";
 import { initSentry, setCrashReportsEnabled } from "./observability/sentry";
 import { sendsCrashReports, useSettingsStore } from "./state/settingsStore";
+import { forgetRetiredKeys } from "./state/storage";
+import { restoreLanguage } from "./i18n/googleTranslate";
 import "./styles/global.css";
 import "leaflet/dist/leaflet.css";
+
+forgetRetiredKeys();
 
 // Started before the first render so a fault during mount is still reported.
 // With no DSN in the build this does nothing at all — see observability/sentry.
@@ -17,6 +21,11 @@ initSentry(sendsCrashReports(useSettingsStore.getState()));
 useSettingsStore.subscribe((settings) =>
   setCrashReportsEnabled(sendsCrashReports(settings)),
 );
+
+// Started before the first render so the upload screen arrives already
+// translated rather than flickering through English. With no language chosen
+// this does nothing at all — no script, no cookie, no request.
+restoreLanguage(useSettingsStore.getState().language);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

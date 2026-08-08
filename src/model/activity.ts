@@ -41,6 +41,13 @@ export interface Sample {
   speedMps?: number;
   /** Derived from smoothed speed; undefined while stopped. */
   paceSecPerKm?: number;
+  /**
+   * Pace with the gradient taken out — the level pace of equal metabolic cost.
+   *
+   * Present only where both a pace and a gradient are, which means it is absent
+   * while stopped and on any run recorded without elevation.
+   */
+  gradeAdjustedPaceSecPerKm?: number;
   gradientPct?: number;
   hrBpm?: number;
   hrZone?: HrZone;
@@ -88,6 +95,13 @@ export interface Split {
   distanceM: number;
   durationS: number;
   paceSecPerKm: number;
+  /**
+   * The same split's pace with its gradient taken out.
+   *
+   * Absent when the split has too little gradient coverage to adjust honestly,
+   * so a run without elevation simply has none of these.
+   */
+  gradeAdjustedPaceSecPerKm?: number;
   avgHr?: number;
   dominantZone?: HrZone;
   avgPowerW?: number;
@@ -164,6 +178,23 @@ export interface GradientBucket {
   avgCadenceSpm?: number;
 }
 
+/**
+ * How much flat ground a stretch of tilted ground was worth.
+ *
+ * Computed by `gradeAdjustmentOver` in `model/gradeAdjusted.ts`, which is also
+ * where the model behind it and its limits are set out. Kept as a factor and a
+ * pair of distances rather than an adjusted pace, so each holder can apply it
+ * to the pace it already reports.
+ */
+export interface GradeAdjustment {
+  /** Flat-equivalent metres per metre actually covered. 1 on level ground. */
+  factor: number;
+  actualDistanceM: number;
+  flatEquivalentDistanceM: number;
+  /** The share of the distance whose gradient was known. */
+  coverage: number;
+}
+
 export interface BestEffort {
   id: string;
   /** e.g. "Fastest 1 km", "Fastest 60 seconds". */
@@ -199,6 +230,8 @@ export interface ActivitySummary {
   /** Seconds spent in each heart-rate zone. */
   zoneTime: Record<HrZone, number>;
   gradientBuckets: GradientBucket[];
+  /** What the whole run's ground was worth in flat ground. */
+  gradeAdjustment?: GradeAdjustment;
   drift?: DriftResult;
   consistency?: ConsistencyResult;
   bestEfforts: BestEffort[];

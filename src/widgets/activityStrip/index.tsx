@@ -1,5 +1,7 @@
+import { useRef, useState } from "react";
 import { defineWidget } from "../contract";
 import type { DerivedActivity, HrZone } from "@/model/activity";
+import { Legend, ScaleLegend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
 import { ZONE_COLORS } from "../helpers";
 import { collect, mean } from "@/lib/stats";
@@ -119,25 +121,89 @@ export const activityStripWidget = defineWidget<Result>({
     const highlight = useSelectionStore((state) => state.highlight);
     const selectedZone = highlight?.kind === "zone" ? highlight.zone : undefined;
 
+    const stripRef = useRef<HTMLDivElement>(null);
+    const [focusIndex, setFocusIndex] = useState(0);
+
+    const moveFocus = (to: number) => {
+      const last = result.blocks.length - 1;
+      const next = Math.max(0, Math.min(last, to));
+      setFocusIndex(next);
+      stripRef.current?.querySelectorAll<HTMLButtonElement>("[data-mark]")[next]?.focus();
+    };
+
+    const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // A jump is a minute of running rather than a fixed count, so holding an
+      // arrow with Shift covers the run at the same rate whatever its length.
+      const jump = Math.max(1, Math.round(60 / result.blockSeconds));
+      const moves: Record<string, number> = {
+        ArrowRight: focusIndex + 1,
+        ArrowLeft: focusIndex - 1,
+        ArrowDown: focusIndex + jump,
+        ArrowUp: focusIndex - jump,
+        Home: 0,
+        End: result.blocks.length - 1,
+      };
+      const next = moves[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      moveFocus(next);
+    };
+
     const paceRange = paceExtent(activity);
+    const painted = result.blocks.map((block) => paint(block, result.colouredBy, paceRange));
+
+    // Only what the strip actually drew gets a key, so the legend never
+    // promises a colour the reader cannot find.
+    const zonesShown = [
+      ...new Set(painted.flatMap((p) => (p.kind === "zone" ? [p.zone] : []))),
+    ].sort();
+    const extras: { label: string; color: string }[] = [];
+    if (painted.some((p) => p.kind === "stopped")) {
+      extras.push({ label: "Stopped", color: STOPPED_COLOR });
+    }
+    if (painted.some((p) => p.kind === "missing")) {
+      extras.push({ label: "No reading", color: MISSING_COLOR });
+    }
 
     return (
       <div>
-        <div className={styles.strip} role="list" aria-label="The run in blocks">
-          {result.blocks.map((block) => {
+        {/*
+          One tab stop, not ninety.
+
+          Every block is a button, because every block is clickable — but a
+          reader tabbing through the page should not have to press Tab ninety
+          times to get past one chart. So the strip holds a single stop and the
+          arrow keys walk along the run inside it, which is the same gesture
+          the timeline answers to.
+        */}
+        <div
+          ref={stripRef}
+          className={styles.strip}
+          role="group"
+          aria-label="The run in blocks. Use the arrow keys to move along it."
+          onKeyDown={onKeyDown}
+        >
+          {result.blocks.map((block, index) => {
             const dimmed =
               selectedZone !== undefined && block.zone !== undefined && block.zone !== selectedZone;
             return (
               <button
                 key={block.index}
                 type="button"
-                role="listitem"
+                data-mark=""
+                tabIndex={index === focusIndex ? 0 : -1}
                 className={`${styles.block} ${dimmed ? styles.dimmed : ""}`}
-                style={{
-                  background: blockColor(block, result.colouredBy, paceRange),
-                }}
+                style={
+                  {
+                    background: painted[index].color,
+                    // Its place along the run, which the stylesheet turns into
+                    // the order the strip fills in.
+                    "--item": block.index,
+                  } as React.CSSProperties
+                }
                 title={blockTitle(block)}
                 aria-label={blockTitle(block)}
+                onFocus={() => setFocusIndex(index)}
                 onClick={() =>
                   focusRegion(
                     block.startT,
@@ -156,11 +222,32 @@ export const activityStripWidget = defineWidget<Result>({
           <span className="numeric">{formatDistanceShort(activity.distanceM)}</span>
         </div>
 
+        {result.colouredBy === "zone" ? (
+          <Legend
+            label="Colour shows heart-rate zone"
+            items={[
+              ...zonesShown.map((zone) => ({
+                label: `Zone ${zone}`,
+                color: ZONE_COLORS[zone],
+              })),
+              ...extras,
+            ]}
+          />
+        ) : (
+          // Pace has no named steps, so the ramp is keyed by its ends: the
+          // fastest and slowest running in this run, in the reader's own units.
+          <ScaleLegend
+            label="Colour shows pace"
+            steps={[1, 2, 3, 4, 5].map((step) => ZONE_COLORS[step as HrZone])}
+            lowLabel={`Slower · ${formatPaceWithUnit(paceRange.slow)}`}
+            highLabel={`Faster · ${formatPaceWithUnit(paceRange.fast)}`}
+            extras={extras}
+          />
+        )}
+
         <p className={shared.note}>
-          {result.colouredBy === "zone"
-            ? "Darker blocks are higher heart-rate zones."
-            : "Darker blocks are faster running."}{" "}
-          Click any block to move the timeline there.
+          Each block is {result.blockSeconds} seconds of running, in the order it
+          happened. Click any block to move the timeline there.
         </p>
       </div>
     );
@@ -194,23 +281,39 @@ function paceExtent(activity: DerivedActivity): { fast: number; slow: number } {
   };
 }
 
-function blockColor(
+/**
+ * Stopped and unrecorded are different facts, so they are different greys.
+ * Sharing one would put two meanings behind a single entry in the key.
+ */
+const STOPPED_COLOR = "var(--border-strong)";
+const MISSING_COLOR = "var(--surface-inset)";
+
+type Paint =
+  | { kind: "zone"; zone: HrZone; color: string }
+  | { kind: "pace"; color: string }
+  | { kind: "stopped"; color: string }
+  | { kind: "missing"; color: string };
+
+/** The colour a block is drawn in, and what that colour is saying. */
+function paint(
   block: Block,
   colouredBy: "zone" | "pace",
   paceRange: { fast: number; slow: number },
-): string {
-  if (block.stopped) return "var(--surface-sunken)";
+): Paint {
+  if (block.stopped) return { kind: "stopped", color: STOPPED_COLOR };
 
   if (colouredBy === "zone") {
-    return block.zone ? ZONE_COLORS[block.zone] : "var(--surface-sunken)";
+    return block.zone
+      ? { kind: "zone", zone: block.zone, color: ZONE_COLORS[block.zone] }
+      : { kind: "missing", color: MISSING_COLOR };
   }
 
-  if (block.pace === undefined) return "var(--surface-sunken)";
+  if (block.pace === undefined) return { kind: "missing", color: MISSING_COLOR };
   // Faster running takes a darker step of the same ramp, so the order reads.
   const span = Math.max(1, paceRange.slow - paceRange.fast);
   const position = 1 - Math.max(0, Math.min(1, (block.pace - paceRange.fast) / span));
   const step = Math.min(5, Math.max(1, Math.round(position * 4) + 1)) as HrZone;
-  return ZONE_COLORS[step];
+  return { kind: "pace", color: ZONE_COLORS[step] };
 }
 
 function blockTitle(block: Block): string {

@@ -289,12 +289,29 @@ button.barButton:hover {
   font-size: 0.78rem;
 }
 
-/* Legend */
+/* Legend
+
+   The key sits directly under the chart it belongs to, close enough to be read
+   as part of it. Its title says what the colour encodes; the entries name the
+   values. Both stay in text ink — a legend written in the series colour is
+   harder to read and says nothing the swatch has not already said. */
+.legendBlock {
+  margin-top: var(--space-3);
+}
+
+.legendTitle {
+  margin-bottom: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
-  margin-top: var(--space-3);
 }
 
 .legendItem {
@@ -305,10 +322,57 @@ button.barButton:hover {
   font-size: 0.78rem;
 }
 
+.legendValue {
+  color: var(--text-muted);
+}
+
+/* Each swatch is drawn as the mark it stands for. */
 .legendSwatch {
+  flex: none;
+}
+
+/* The hairline is what keeps a pale swatch — a 20%-opacity shading band, a soft
+   zone tint — findable on a white card. It is faint enough to disappear against
+   a saturated fill. */
+.swatch_block {
   width: 11px;
   height: 11px;
   border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(23, 23, 26, 0.09);
+}
+
+.swatch_line,
+.swatch_dashed {
+  width: 15px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+/* An ordered ramp: the steps joined so they read as one scale, and only the
+   ends labelled, because no single step is meant to be looked up. */
+.scaleLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.scaleEnd {
+  color: var(--text-secondary);
+}
+
+.scaleRamp {
+  display: flex;
+  overflow: hidden;
+  width: 108px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+.scaleRamp > span {
+  flex: 1;
 }
 
 /* Hero figure */
@@ -339,8 +403,23 @@ button.barButton:hover {
 }
 
 /* Scatter */
+/*
+ * A scatter is drawn into a fixed 640-unit box and scaled by CSS, which keeps
+ * it measurement-free and identical on the server. The catch is that scaling
+ * takes the axis labels with it: inside a card on a 360px phone the box lands
+ * at roughly 0.45×, and a 10px tick renders at four and a half pixels.
+ *
+ * So below its natural width the chart scrolls rather than shrinks. The text
+ * stays the size it was drawn, the geometry stays honest, and a reader on a
+ * phone swipes the plot instead of squinting at it. The vertical padding is
+ * what keeps the trend dots from being clipped, since a box that scrolls in
+ * one axis cannot stay visible in the other.
+ */
 .scatterWrapper {
   margin: var(--space-2) 0;
+  padding: var(--space-1) 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 /* The drawing space is fixed and the box scales it, so the chart needs no
@@ -348,19 +427,21 @@ button.barButton:hover {
 .scatter {
   display: block;
   width: 100%;
+  /* The width below which the ticks stop being legible; past it the wrapper
+     scrolls instead of scaling further down. */
+  min-width: 420px;
   height: auto;
-  overflow: visible;
 }
 
 .scatterTick {
   fill: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .scatterAxisLabel {
   fill: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
@@ -375,6 +456,122 @@ button.barButton:hover {
   margin-top: var(--space-2);
   color: var(--text-muted);
   font-size: 0.78rem;
+}
+
+/*
+ * Arrival.
+ *
+ * Every rule below hangs off `[data-reveal="true"]`, which the card sets when
+ * it reaches the reader — so a figure animates once, in front of someone, and
+ * a card still four screens down spends nothing. Where a mark encodes a
+ * quantity it is drawn along that quantity: bars grow lengthways, bubbles grow
+ * from the centre out, the trend line draws in the direction it is read.
+ *
+ * All of them fill `backwards` rather than `both`. The final keyframe is only
+ * ever the element's own resting state, so there is nothing to hold on to
+ * afterwards — and holding it would freeze the transforms these elements use
+ * for hover and selection.
+ */
+:global([data-reveal="true"]) .stat {
+  animation: riseIn var(--duration-arrive) var(--ease-out) backwards;
+  animation-delay: calc(var(--item, 0) * 40ms);
+}
+
+:global([data-reveal="true"]) .metricRow {
+  animation: riseIn var(--duration-arrive) var(--ease-out) backwards;
+  animation-delay: calc(var(--item, 0) * 35ms);
+}
+
+.barFill {
+  transform-origin: left center;
+}
+
+:global([data-reveal="true"]) .barFill {
+  animation: growAcross 0.55s var(--ease-out) backwards;
+  animation-delay: calc(80ms + var(--item, 0) * var(--stagger));
+}
+
+:global([data-reveal="true"]) .bubbleItem {
+  animation: popIn 0.42s var(--ease-pop) backwards;
+  animation-delay: calc(var(--item, 0) * 55ms);
+}
+
+:global([data-reveal="true"]) .panel {
+  animation: riseIn var(--duration-arrive) var(--ease-out) backwards;
+}
+
+/* The arrow is the claim the two panels are there to support, so it lands
+   after both of them. */
+:global([data-reveal="true"]) .comparisonArrow {
+  animation: riseIn var(--duration-arrive) var(--ease-out) 0.16s backwards;
+}
+
+:global([data-reveal="true"]) .hero {
+  animation: heroIn 0.55s var(--ease-out) backwards;
+}
+
+:global([data-reveal="true"]) .scatterCloud {
+  animation: fadeIn 0.6s var(--ease-out) backwards;
+}
+
+.scatterTrend {
+  /* The line is normalised to a length of 1 by `pathLength`, so one dash the
+     length of the whole line, pulled fully aside, hides it exactly. */
+  stroke-dasharray: 1;
+}
+
+:global([data-reveal="true"]) .scatterTrend {
+  animation: drawLine var(--duration-draw) var(--ease-soft) 0.15s backwards;
+}
+
+.scatterTrendDot {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Each dot lands roughly as the line reaches it. */
+:global([data-reveal="true"]) .scatterTrendDot {
+  animation: popIn 0.3s var(--ease-pop) backwards;
+  animation-delay: calc(0.28s + var(--item, 0) * 70ms);
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.96);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes growAcross {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 560px) {

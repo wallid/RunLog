@@ -1,6 +1,7 @@
 import { defineWidget } from "../contract";
 import type { GradientBucket } from "@/model/activity";
 import { Track } from "@/viz/Track";
+import { Legend } from "@/viz/primitives";
 import { buildPath, linearScale } from "@/viz/scales";
 import { rollingMean } from "@/lib/smoothing";
 import { collect, mean, percentile } from "@/lib/stats";
@@ -228,9 +229,20 @@ export const powerStoryWidget = defineWidget<Result>({
           }}
         </Track>
 
+        <Legend
+          items={[
+            { label: "Power", color: "var(--metric-power)", shape: "line" },
+            {
+              label: `Run average · ${formatPower(result.avg)}`,
+              color: "var(--text-muted)",
+              shape: "dashed",
+            },
+          ]}
+        />
+
         <p className={shared.note}>
           Smoothed over {SMOOTHING_S} seconds, because second-to-second power is far
-          spikier than anything a runner feels. The dashed line is the run average.
+          spikier than anything a runner feels.
         </p>
 
         <div className={styles.section}>

@@ -1,0 +1,51 @@
+.readout,
+.readoutIdle {
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+}
+
+.readoutIdle {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.readoutGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.readoutEntry dt {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 550;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.readoutEntry dd {
+  margin: 1px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.readoutContext {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .readoutGrid {
+    grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  }
+
+  .readoutEntry dd {
+    font-size: 0.92rem;
+  }
+}

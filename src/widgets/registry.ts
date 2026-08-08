@@ -3,6 +3,7 @@ import runSummary from "./runSummary";
 import storyMoments from "./storyMoments";
 import timeline from "./timeline";
 import routeMap from "./routeMap";
+import routeFlythrough from "./routeFlythrough";
 import activityStrip from "./activityStrip";
 import zoneBubbles from "./zoneBubbles";
 import zoneTimeline from "./zoneTimeline";
@@ -29,6 +30,7 @@ import powerStory from "./powerStory";
 import elevationStory from "./elevationStory";
 import gradientZones from "./gradientZones";
 import effortVersusTerrain from "./effortVersusTerrain";
+import gradeAdjustedPace from "./gradeAdjustedPace";
 import splits from "./splits";
 import stopsAndWalking from "./stopsAndWalking";
 import bestSections from "./bestSections";
@@ -61,6 +63,10 @@ export const WIDGETS: ErasedWidget[] = [
   erase(storyMoments),
   erase(timeline),
   erase(routeMap),
+  // After the map, because it assumes the reader has seen the shape of the
+  // route once already: this is the same ground with the timeline attached to
+  // it, which is a thing to explore rather than a thing to read.
+  erase(routeFlythrough),
   erase(activityStrip),
 
   // Effort
@@ -99,6 +105,11 @@ export const WIDGETS: ErasedWidget[] = [
   erase(elevationStory),
   erase(gradientZones),
   erase(effortVersusTerrain),
+  // Last in the terrain section because it is the section's conclusion: having
+  // shown what the ground did and what it cost, this is the ground taken back
+  // out again. It also sets up the splits list immediately below it, which is
+  // the thing the adjustment most changes the reading of.
+  erase(gradeAdjustedPace),
 
   // Structure
   erase(splits),

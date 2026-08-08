@@ -2,6 +2,33 @@
   width: 100%;
 }
 
+/*
+ * The sweep that uncovers the metric layer.
+ *
+ * It scales from its left edge rather than animating a width, so the work
+ * stays on the compositor and a track carrying nine hundred points still
+ * uncovers at frame rate. `backwards` and not `both`: once the sweep is over
+ * the rect must go back to being an ordinary full-size clip, because the
+ * element it clips outlives the animation.
+ */
+.wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+}
+
+.wrapper[data-draw="running"] .wipe {
+  animation: wipe var(--duration-draw) var(--ease-soft) backwards;
+}
+
+@keyframes wipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .track {
   position: relative;
   width: 100%;

@@ -3,6 +3,7 @@ import { CircleMarker, MapContainer, Polyline, TileLayer, useMap } from "react-l
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import { defineWidget } from "../contract";
 import type { HrZone } from "@/model/activity";
+import { Legend, ScaleLegend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
 import { ZONE_COLORS } from "../helpers";
 import { bounds as trackBounds } from "@/lib/geo";
@@ -169,6 +170,13 @@ export const routeMapWidget = defineWidget<Result>({
             bounds={result.bounds}
             boundsOptions={{ padding: [24, 24] }}
             scrollWheelZoom={false}
+            // A map inside a scrolling article is a trap on a phone: a swipe
+            // that starts on it pans the map instead of moving the page, and
+            // there is no way to tell beforehand which one you will get. The
+            // route is already fitted to the frame, so dragging is a
+            // convenience rather than the point — it is dropped where the
+            // pointer is coarse, and the zoom control still works.
+            dragging={!coarsePointer()}
             className={styles.map}
             attributionControl
           >
@@ -236,6 +244,28 @@ export const routeMapWidget = defineWidget<Result>({
           </MapContainer>
         </div>
 
+        {result.colouredBy === "zone" ? (
+          <Legend
+            label="Line colour shows heart-rate zone"
+            items={[
+              ...zonesDrawn(result.segments).map((zone) => ({
+                label: `Zone ${zone}`,
+                color: ZONE_COLORS[zone],
+              })),
+              ...(result.segments.some((segment) => segment.zone === undefined)
+                ? [{ label: "No reading", color: "var(--text-muted)" }]
+                : []),
+            ]}
+          />
+        ) : (
+          <ScaleLegend
+            label="Line colour shows pace"
+            steps={[1, 2, 3, 4, 5].map((step) => ZONE_COLORS[step as HrZone])}
+            lowLabel="Slower than median"
+            highLabel="Faster than median"
+          />
+        )}
+
         <div className={styles.markers}>
           <span>
             <span className={styles.dotStart} aria-hidden="true" /> Start
@@ -244,16 +274,21 @@ export const routeMapWidget = defineWidget<Result>({
             <span className={styles.dotEnd} aria-hidden="true" /> Finish
           </span>
           {cursorT !== null && (
-            <button type="button" className={styles.clear} onClick={() => setCursor(null)}>
-              Hide cursor
-            </button>
+            <>
+              <span>
+                <span className={styles.dotCursor} aria-hidden="true" /> Cursor
+              </span>
+              <button type="button" className={styles.clear} onClick={() => setCursor(null)}>
+                Hide cursor
+              </button>
+            </>
           )}
         </div>
 
         <p className={shared.note}>
           {result.colouredBy === "zone"
-            ? "The line is coloured by heart-rate zone, using the same scale as the rest of the page."
-            : "The line is coloured by pace relative to this run's median."}{" "}
+            ? "The line uses the same zone colours as the rest of the page."
+            : "Pace is compared against this run's own median, not against a target."}{" "}
           {cursorT !== null &&
             `The cursor marker is at ${formatDistanceShort(activity.samples[Math.round(cursorT)]?.distanceM ?? 0)}.`}
         </p>
@@ -275,6 +310,24 @@ function FitBounds({ bounds }: { bounds: LatLngBoundsExpression }) {
     map.fitBounds(bounds, { padding: [24, 24] });
   }, [map, bounds]);
   return null;
+}
+
+/**
+ * Whether the pointer is a finger rather than a mouse.
+ *
+ * Guarded for the server, where the widget is rendered in the tests and there
+ * is no `matchMedia` — and where the answer would be meaningless anyway.
+ */
+function coarsePointer(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+/** The zones the polyline actually used, so the key lists only those. */
+function zonesDrawn(segments: Segment[]): HrZone[] {
+  return [
+    ...new Set(segments.flatMap((segment) => (segment.zone ? [segment.zone] : []))),
+  ].sort();
 }
 
 /** Buckets pace into the same five steps the zone ramp uses. */

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { readStored } from "./storage";
+import { findLanguage } from "@/i18n/languages";
 
 /**
  * Runner-supplied context.
@@ -37,6 +38,17 @@ export interface Settings {
    * location is not something to disclose on someone's behalf.
    */
   weatherLookup?: boolean;
+  /**
+   * Translate the page into this language, through Google's widget. Undefined
+   * means English, as written, and contacts nobody.
+   *
+   * Off until chosen, for the same reason as the weather lookup: translating
+   * hands the visible text of the page to a third party, and that is the
+   * reader's decision rather than a default. The browser's own language
+   * preference is used to *suggest* a language, never to select one — a
+   * request header is not consent.
+   */
+  language?: string;
 }
 
 interface SettingsState extends Settings {
@@ -44,6 +56,7 @@ interface SettingsState extends Settings {
   setShowExperimental: (show: boolean) => void;
   setCrashReports: (send: boolean) => void;
   setWeatherLookup: (enabled: boolean) => void;
+  setLanguage: (language: string | undefined) => void;
 }
 
 function loadSettings(): Settings {
@@ -64,6 +77,11 @@ function loadSettings(): Settings {
     if (parsed.crashReports === false) settings.crashReports = false;
     // Only an explicit yes is stored, so the default stays off.
     if (parsed.weatherLookup === true) settings.weatherLookup = true;
+    // Refuse a stored code that is not one this build offers: an unknown code
+    // would load the widget on every visit and translate into nothing.
+    if (typeof parsed.language === "string" && findLanguage(parsed.language)) {
+      settings.language = parsed.language;
+    }
     return settings;
   } catch {
     return {};
@@ -88,8 +106,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
    * reaches storage is still only what was actually chosen.
    */
   const update = (change: Settings): Settings => {
-    const { maxHr, showExperimental, crashReports, weatherLookup } = { ...get(), ...change };
-    const next: Settings = { maxHr, showExperimental, crashReports, weatherLookup };
+    const { maxHr, showExperimental, crashReports, weatherLookup, language } = {
+      ...get(),
+      ...change,
+    };
+    const next: Settings = {
+      maxHr,
+      showExperimental,
+      crashReports,
+      weatherLookup,
+      language,
+    };
     persist(next);
     return next;
   };
@@ -101,6 +128,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     setShowExperimental: (showExperimental) => set(() => update({ showExperimental })),
     setCrashReports: (crashReports) => set(() => update({ crashReports })),
     setWeatherLookup: (weatherLookup) => set(() => update({ weatherLookup })),
+    setLanguage: (language) => set(() => update({ language })),
   };
 });
 

@@ -5,15 +5,78 @@
   border-bottom: 1px solid var(--border);
   background: rgba(244, 243, 241, 0.82);
   backdrop-filter: blur(14px) saturate(1.4);
+  /* The masthead settles onto the page as the run opens, which is what turns
+     the switch from the upload screen into an arrival rather than a cut. */
+  animation: headerIn var(--duration-arrive) var(--ease-out) backwards;
 }
 
+@keyframes headerIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -100%, 0);
+  }
+}
+
+/* Reading progress: a hairline on the masthead's own bottom edge, sitting over
+   the border rather than beside it, so it costs the layout nothing. */
+.progress {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.progressFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* A literal rather than `--header-height`: this row is what that token is
+   measured from, so reading it back here would be a loop. */
 .inner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-4);
-  min-height: var(--header-height);
+  min-height: 4.5rem;
   padding: var(--space-3) 0;
+}
+
+/* The front door, restated: the same dot-and-name that heads the landing
+   page, pressed to go back to it. Quieter than the run's own title beside it,
+   because this row is about the run and the wordmark is only the exit. */
+.home {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  transition: color 0.12s ease;
+}
+
+.home:hover {
+  color: var(--text-primary);
+}
+
+.homeMark {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .identity {
@@ -58,6 +121,7 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
@@ -85,24 +149,19 @@
   color: #fff;
 }
 
-.badge {
-  display: inline-grid;
-  place-items: center;
-  min-width: 17px;
-  height: 17px;
-  margin-left: var(--space-2);
-  padding: 0 5px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 700;
-}
-
 .settingsBlock {
   padding-top: var(--space-4);
   margin-top: var(--space-4);
   border-top: 1px solid var(--border);
+}
+
+/* The divider separates one setting from the next, so the first one has
+   nothing to be separated from — and the panel already draws its own top
+   edge, which the block's rule would otherwise double. */
+.panel > .settingsBlock:first-child {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
 }
 
 /* A switch built from a real checkbox, so it keeps native keyboard behaviour
@@ -220,6 +279,26 @@
   outline: none;
 }
 
+/* A native select rather than a custom menu: fifty options is a lot to scroll,
+   and every platform already has a better answer for that than this page
+   does — type-ahead on a desktop, a full-screen wheel on a phone. */
+.settingsSelect {
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.settingsSelect:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
 .settingsUnit {
   margin-right: var(--space-2);
   color: var(--text-muted);
@@ -230,14 +309,14 @@
   padding: 8px 18px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--accent);
+  background: var(--accent-strong);
   color: #fff;
   font-size: 0.85rem;
   font-weight: 650;
 }
 
 .settingsSubmit:hover {
-  background: var(--accent-hover);
+  background: var(--accent-strong-hover);
 }
 
 .settingsReset {
@@ -277,14 +356,91 @@
   line-height: 1.6;
 }
 
+/*
+ * The masthead on a narrow screen.
+ *
+ * The identity keeps the first row nearly to itself — the wordmark shrinks to
+ * its dot beside it — and the figures drop below, so the run's name is not
+ * squeezed to three letters and an ellipsis by three numbers it is not more
+ * important than. The actions take the last row and spread across the full
+ * width, which is also what gives them a comfortable height to be tapped at.
+ *
+ * Nothing here is pinned to a guessed header height: the row is measured and
+ * published as `--header-height`, so anchors clear whatever it turns out to be.
+ */
 @media (max-width: 760px) {
+  .inner {
+    gap: var(--space-3);
+  }
+
+  /* The name goes; the dot stays as the way home. The label still says both. */
+  .homeText {
+    display: none;
+  }
+
+  .home {
+    padding: var(--space-3);
+    margin-left: calc(-1 * var(--space-3));
+  }
+
+  .identity {
+    flex: 1 1 0;
+  }
+
   .figures {
     order: 3;
     width: 100%;
     gap: var(--space-4);
   }
 
-  .inner {
-    gap: var(--space-3);
+  .actions {
+    order: 4;
+    width: 100%;
+  }
+
+  .action {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}
+
+/*
+ * Touch.
+ *
+ * A finger is about nine millimetres of contact against a mouse pointer's one
+ * pixel, so every control the page offers grows to a comfortable target where
+ * the pointer is coarse — and only there, since doing it everywhere would
+ * inflate a design that a mouse hits perfectly well already.
+ */
+@media (pointer: coarse) {
+  /* Buttons get their height from the floor in global.css; what they need here
+     is the width to go with it, so a 44px-tall pill is not also 44px of
+     padding around eight characters. */
+  .action,
+  .settingsReset,
+  .panelButton {
+    padding: 10px 16px;
+  }
+
+  .settingsInput {
+    min-height: 44px;
+    /* Under 16px, iOS Safari zooms the page in on focus and leaves it there. */
+    font-size: 1rem;
+  }
+
+  /* The switch is a checkbox, so no button rule reaches it. */
+  .switchInput,
+  .switchTrack {
+    width: 52px;
+    height: 30px;
+  }
+
+  .switchThumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  .switchInput:checked + .switchTrack .switchThumb {
+    transform: translateX(22px);
   }
 }

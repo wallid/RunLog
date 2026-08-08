@@ -49,13 +49,13 @@
 }
 
 .primary {
-  background: var(--accent);
+  background: var(--accent-strong);
   color: #fff;
   box-shadow: 0 2px 8px rgba(252, 82, 0, 0.28);
 }
 
 .primary:hover {
-  background: var(--accent-hover);
+  background: var(--accent-strong-hover);
   transform: translateY(-1px);
 }
 

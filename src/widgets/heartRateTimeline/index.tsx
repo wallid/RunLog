@@ -1,8 +1,10 @@
 import { defineWidget } from "../contract";
 import type { Sample } from "@/model/activity";
-import { Track, type TrackRegion } from "@/viz/Track";
+import { Track } from "@/viz/Track";
+import { Legend } from "@/viz/primitives";
 import { buildPath, linearScale } from "@/viz/scales";
-import { ZONE_SOFT_COLORS } from "../helpers";
+import { BAND_COLORS, bandsUsed, zoneRegions } from "../helpers";
+import { bandDefinition, bandZoneRange } from "@/model/zones";
 import { collect, mean } from "@/lib/stats";
 import { formatDistanceShort, formatHeartRate } from "@/lib/format";
 import shared from "../shared.module.css";
@@ -110,30 +112,9 @@ export const heartRateTimelineWidget = defineWidget<Result>({
   },
 
   View({ result, activity }) {
-    const zoneRegions: TrackRegion[] = [];
-    let current: TrackRegion | null = null;
-    let currentZone: number | null = null;
-
-    for (const sample of activity.samples) {
-      if (sample.hrZone === undefined) {
-        current = null;
-        currentZone = null;
-        continue;
-      }
-      if (current && currentZone === sample.hrZone) {
-        current.endT = sample.t + 1;
-        continue;
-      }
-      current = {
-        startT: sample.t,
-        endT: sample.t + 1,
-        color: ZONE_SOFT_COLORS[sample.hrZone],
-        label: `Zone ${sample.hrZone}`,
-        behind: true,
-      };
-      currentZone = sample.hrZone;
-      zoneRegions.push(current);
-    }
+    // Shaded by intensity rather than by zone, which is all a wash pale enough
+    // to keep this card's own line legible can carry. See `zoneRegions`.
+    const regions = zoneRegions(activity);
 
     // A little headroom above and below keeps the line off the edges.
     const padding = Math.max(4, (result.max - result.min) * 0.1);
@@ -146,7 +127,7 @@ export const heartRateTimelineWidget = defineWidget<Result>({
           widgetId="heart-rate-timeline"
           showAxis
           ariaLabel="Heart rate through the run"
-          regions={zoneRegions}
+          regions={regions}
         >
           {(scale, height) => {
             const y = linearScale(
@@ -189,9 +170,26 @@ export const heartRateTimelineWidget = defineWidget<Result>({
           }}
         </Track>
 
+        <Legend
+          label="What is drawn"
+          items={[
+            { label: "Heart rate", color: "var(--metric-heart)", shape: "line" },
+            {
+              label: `Run average · ${formatHeartRate(result.avg)}`,
+              color: "var(--text-muted)",
+              shape: "dashed",
+            },
+            ...bandsUsed(activity).map((band) => ({
+              label: `${bandDefinition(band).name} · ${bandZoneRange(band)}`,
+              color: BAND_COLORS[band],
+            })),
+          ]}
+        />
+
         <p className={shared.note}>
-          The dashed line marks the average of {formatHeartRate(result.avg)}. Shaded bands
-          behind the line show the heart-rate zone at each point.
+          The shaded bands behind the line are how hard the effort was at each
+          point — easy, steady or hard — so a value can be placed without
+          reading the number. The exact zone is on the timeline's readout.
         </p>
       </div>
     );

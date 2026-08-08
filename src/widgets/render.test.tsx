@@ -15,7 +15,6 @@ import {
 } from "./contract";
 import { StoryPage } from "./StoryPage";
 import { buildWidgets, countExperimental, groupWidgets } from "./buildWidgets";
-import { feedbackAsMarkdown } from "@/state/feedbackStore";
 import { TableOfContents } from "@/shell/TableOfContents";
 
 // Leaflet needs a live DOM with layout, which server rendering does not provide.
@@ -86,6 +85,50 @@ describe("every widget on the demo run", () => {
       );
       expect(markup.length).toBeGreaterThan(0);
       expect(markup).not.toContain("NaN");
+    });
+  }
+});
+
+/**
+ * Colour that carries meaning has to be readable without guessing, so every
+ * widget that paints more than one is required to render a key. The list is
+ * written out rather than derived, because the point is to fail loudly when a
+ * new chart is added without one.
+ */
+describe("colour keys", () => {
+  const MUST_KEY = [
+    "activity-strip",
+    "route-map",
+    "route-flythrough",
+    "splits",
+    "heart-rate-timeline",
+    "zone-timeline",
+    "heart-rate-zones",
+    "elevation-story",
+    // "stops-and-walking" belongs here too, but the demo run is continuous, so
+    // it declines to draw anything and there is nothing to key.
+    "pace-story",
+    "power-story",
+    "cadence-drops",
+    "interactive-timeline",
+  ];
+
+  for (const id of MUST_KEY) {
+    it(`${id} tells the reader what its colours mean`, () => {
+      const widget = WIDGETS.find((w) => w.id === id);
+      if (!widget) throw new Error(`no widget called ${id}`);
+      expect(isWidgetSupported(widget, activity)).toBe(true);
+
+      const result = widget.compute(activity);
+      expect(result, `${id} computed nothing on the demo run`).not.toBeNull();
+
+      const View = widget.View;
+      const markup = renderToStaticMarkup(
+        <View result={result as never} activity={activity} />,
+      );
+      // The class names are hashed by the CSS module transform, but the source
+      // name survives inside the hash.
+      expect(markup).toMatch(/legend|Legend/);
     });
   }
 });
@@ -223,31 +266,3 @@ describe("experimental sections", () => {
   });
 });
 
-describe("feedback", () => {
-  it("renders collected notes as Markdown ready to paste", () => {
-    const markdown = feedbackAsMarkdown([
-      {
-        widgetId: "pace-story",
-        widgetTitle: "Pace story",
-        rating: "too-much",
-        note: "The ribbon needs a scale.",
-        at: "2026-08-07T00:00:00.000Z",
-      },
-      {
-        widgetId: "splits",
-        widgetTitle: "Kilometre splits",
-        rating: "useful",
-        at: "2026-08-07T00:00:00.000Z",
-      },
-    ]);
-
-    expect(markdown).toContain("## Run Log feedback");
-    expect(markdown).toContain("**Pace story** — Too much detail");
-    expect(markdown).toContain("The ribbon needs a scale.");
-    expect(markdown).toContain("**Kilometre splits** — Useful");
-  });
-
-  it("produces nothing when there is nothing to say", () => {
-    expect(feedbackAsMarkdown([])).toBe("");
-  });
-});

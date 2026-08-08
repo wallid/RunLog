@@ -2,6 +2,7 @@ import { defineWidget } from "../contract";
 import type { ActivityEvent } from "@/model/activity";
 import { useSelectionStore } from "@/state/selectionStore";
 import { Track } from "@/viz/Track";
+import { Legend } from "@/viz/primitives";
 import { median } from "@/lib/stats";
 import {
   formatCadence,
@@ -151,6 +152,13 @@ export const cadenceDropsWidget = defineWidget<Result>({
             />
           )}
         </Track>
+
+        <Legend
+          items={[
+            { label: "Cadence drop", color: "var(--metric-cadence)" },
+            { label: "Rest of the run", color: "var(--border-strong)", shape: "line" },
+          ]}
+        />
 
         <ul className={shared.rows}>
           {result.drops.map((drop) => {

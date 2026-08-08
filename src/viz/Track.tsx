@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import type { DerivedActivity } from "@/model/activity";
 import { useSelectionStore } from "@/state/selectionStore";
+import { useInView } from "@/shell/useInView";
 import { createXScale, type XScale } from "./scales";
 import { formatDistanceShort, formatDuration } from "@/lib/format";
 import styles from "./Track.module.css";
@@ -64,6 +65,15 @@ export function Track({
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(720);
   const [dragStart, setDragStart] = useState<number | null>(null);
+
+  // The metric layer is uncovered left to right when the track first comes
+  // into view, which is the direction the run itself was made in: the reader
+  // watches the chart happen rather than finding it already there. Once it has
+  // played the clip is dropped entirely, so nothing a widget draws outside the
+  // plotting area — a label, a marker that overhangs — is clipped for good.
+  const [drawRef, inView] = useInView<HTMLDivElement>();
+  const [drawn, setDrawn] = useState(false);
+  const clipId = `track-wipe-${useId()}`;
 
   const xMode = useSelectionStore((state) => state.xMode);
   const cursorT = useSelectionStore((state) => state.cursorT);
@@ -142,7 +152,11 @@ export function Track({
   const cursorX = cursorT === null ? null : scale.toPixels(cursorT);
 
   return (
-    <div className={styles.wrapper}>
+    <div
+      className={styles.wrapper}
+      ref={drawRef}
+      data-draw={inView && !drawn ? "running" : undefined}
+    >
       <div
         ref={measure}
         className={styles.track}
@@ -161,16 +175,38 @@ export function Track({
         aria-valuetext={cursorReadout(scale, cursorT)}
       >
         <svg width={width} height={height} className={styles.svg} aria-hidden="true">
-          {behindRegions.map((region, index) => (
-            <RegionRect key={`behind-${index}`} region={region} scale={scale} height={height} />
-          ))}
+          {!drawn && (
+            <defs>
+              <clipPath id={clipId}>
+                {/* Generously larger than the track so the wipe never becomes a
+                    crop: it only has to sweep across, not to frame. */}
+                <rect
+                  className={styles.wipe}
+                  x={-24}
+                  y={-48}
+                  width={width + 48}
+                  height={height + 96}
+                  onAnimationEnd={() => setDrawn(true)}
+                />
+              </clipPath>
+            </defs>
+          )}
 
-          {children(scale, height)}
+          <g clipPath={drawn ? undefined : `url(#${clipId})`}>
+            {behindRegions.map((region, index) => (
+              <RegionRect key={`behind-${index}`} region={region} scale={scale} height={height} />
+            ))}
 
-          {frontRegions.map((region, index) => (
-            <RegionRect key={`front-${index}`} region={region} scale={scale} height={height} />
-          ))}
+            {children(scale, height)}
 
+            {frontRegions.map((region, index) => (
+              <RegionRect key={`front-${index}`} region={region} scale={scale} height={height} />
+            ))}
+          </g>
+
+          {/* The cursor, the selection and the markers answer the reader rather
+              than the data, so they are left out of the sweep and appear the
+              instant they are asked for. */}
           {selection && (
             <rect
               x={scale.toPixels(selection.startT)}

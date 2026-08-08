@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useActivityStore } from "./state/activityStore";
+import { useLibraryStore } from "./state/libraryStore";
 import { useSettingsStore } from "./state/settingsStore";
 import { DropZone } from "./upload/DropZone";
 import { StoryPage } from "./widgets/StoryPage";
@@ -7,6 +8,8 @@ import { buildWidgets, countExperimental, groupWidgets } from "./widgets/buildWi
 import { RunHeader } from "./shell/RunHeader";
 import { TableOfContents } from "./shell/TableOfContents";
 import { Tour } from "./tour/Tour";
+import { CONTACT_EMAIL, contactHref } from "./contact";
+import { DISCLAIMER } from "./disclaimer";
 import styles from "./App.module.css";
 
 export function App() {
@@ -14,6 +17,20 @@ export function App() {
   const activity = useActivityStore((state) => state.activity);
   const rebuild = useActivityStore((state) => state.rebuild);
   const maxHr = useSettingsStore((state) => state.maxHr);
+  const initLibrary = useLibraryStore((state) => state.init);
+
+  // What is already kept in this browser, read once. The upload screen needs
+  // the answer before it can decide whether it is a landing page or a list.
+  useEffect(() => {
+    void initLibrary();
+  }, [initLibrary]);
+
+  // Switching runs leaves the reader wherever they were in the last one,
+  // partway down a story that no longer exists.
+  const runId = activity?.id;
+  useEffect(() => {
+    if (runId) window.scrollTo(0, 0);
+  }, [runId]);
 
   // Changing the maximum heart rate changes every zone on the page, so the
   // model is rebuilt rather than patched.
@@ -48,25 +65,38 @@ export function App() {
   );
 
   // The upload screen is a landing page rather than a document: it brings its
-  // own full-height layout and carries no footer, so it fits one screen.
+  // own full-height layout, and everything needed to start fits one screen —
+  // only the proof strip hangs below the fold.
   if (status !== "ready" || !activity) {
     return <DropZone />;
   }
 
   return (
     <div className={styles.app}>
+      {/* The masthead carries four controls and the rail carries twenty links,
+          so a keyboard reader would otherwise tab through the whole apparatus
+          before reaching a word of the run. Visible as soon as it is focused,
+          and out of the way until then. */}
+      <a href="#run-story" className={styles.skipLink}>
+        Skip to the run
+      </a>
+
       <RunHeader
         activity={activity}
         groups={groups}
         experimentalCount={experimentalCount}
       />
 
-      <div className={styles.layout}>
+      {/* Keyed by the run, so switching to another one builds a new story
+          rather than reusing the last one's nodes. The reveal each card does on
+          first sight latches and never replays, so without this a reader
+          arriving at their second run would find every card already shown. */}
+      <div className={styles.layout} key={activity.id}>
         <aside className={styles.rail}>
           <TableOfContents groups={groups} />
         </aside>
 
-        <main className={styles.main}>
+        <main id="run-story" className={styles.main} tabIndex={-1}>
           <StoryPage activity={activity} groups={groups} />
         </main>
       </div>
@@ -87,6 +117,11 @@ function Footer() {
         <p>
           Run Log is open source and runs entirely in your browser. Map data ©
           OpenStreetMap contributors.
+        </p>
+        <p className={styles.disclaimer}>{DISCLAIMER}</p>
+        <p className={styles.contact}>
+          Something wrong or confusing?{" "}
+          <a href={contactHref()}>{CONTACT_EMAIL}</a>
         </p>
       </div>
     </footer>

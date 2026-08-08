@@ -1,7 +1,43 @@
 .app {
   display: flex;
-  min-height: 100vh;
+  /* Dynamic rather than fixed: on a phone `100vh` is the height the viewport
+     has once the browser's own bars have slid away, so a page sized against it
+     is taller than the screen from the moment it loads. */
+  min-height: 100dvh;
   flex-direction: column;
+}
+
+/*
+ * The skip link.
+ *
+ * Off-screen rather than hidden — `display: none` would take it out of the tab
+ * order, which is the one thing it exists to be in. It comes back to the top
+ * left when focused, above the sticky masthead.
+ */
+.skipLink {
+  position: fixed;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 60;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--text-primary);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 650;
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--space-5)));
+  transition: transform var(--duration-control) var(--ease-out);
+}
+
+.skipLink:focus-visible {
+  transform: none;
+}
+
+/* The landing target takes focus programmatically and should not draw a ring
+   for it: the reader asked to be put here and can see that they are. */
+.main:focus {
+  outline: none;
 }
 
 /*
@@ -60,4 +96,23 @@
   color: var(--text-muted);
   font-size: 0.8rem;
   text-align: center;
+}
+
+/* Kept to a readable measure — at footer size a full-width line is a ribbon
+   nobody finishes. */
+.disclaimer {
+  max-width: 60ch;
+  margin: var(--space-3) auto 0;
+}
+
+/* The one way to reach a person. Given room of its own rather than tucked into
+   the sentence above it, and a target big enough to hit with a thumb. */
+.contact {
+  margin-top: var(--space-3);
+}
+
+.contact a {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+  text-underline-offset: 3px;
 }

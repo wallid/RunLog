@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { useActivityStore } from "@/state/activityStore";
+import { useLibraryStore } from "@/state/libraryStore";
+import { labelFor } from "@/library/label";
 import styles from "./DropZone.module.css";
 
 /**
@@ -9,21 +11,25 @@ import styles from "./DropZone.module.css";
  * list has to be searchable rather than merely scrollable. Apple names each
  * route after the day it happened, which is the one thing a reader can pick
  * from, so the date is lifted out of the file name where there is one to lift.
+ *
+ * Picking one run stays the fast way in: it decompresses exactly that entry and
+ * asks nothing of the other four hundred. Keeping the whole export is offered
+ * beside it rather than instead of it, because it has to read every run in the
+ * archive and that is a wait worth choosing rather than being given.
  */
-
-/** `route_2024-03-16_7.42am.gpx`, and the plainer variants of it. */
-const DATE_IN_NAME = /(\d{4})-(\d{2})-(\d{2})/;
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
 
 export function ArchivePicker({ onPickAnother }: { onPickAnother: () => void }) {
   const choices = useActivityStore((state) => state.choices);
   const chooseEntry = useActivityStore((state) => state.chooseEntry);
   const reset = useActivityStore((state) => state.reset);
+  const libraryStatus = useLibraryStore((state) => state.status);
+  const importing = useLibraryStore((state) => state.importing);
+  const importAll = useLibraryStore((state) => state.importAll);
+  const cancelImport = useLibraryStore((state) => state.cancelImport);
+  const saveNotice = useLibraryStore((state) => state.saveNotice);
   const [query, setQuery] = useState("");
+
+  const canKeep = libraryStatus === "ready" || libraryStatus === "loading";
 
   const runs = useMemo(
     () =>
@@ -51,8 +57,23 @@ export function ArchivePicker({ onPickAnother }: { onPickAnother: () => void }) 
         <h2 className={styles.pickerTitle}>
           {runs.length} runs in that export
         </h2>
-        <p className={styles.pickerHint}>Pick the one you want to read.</p>
+        <p className={styles.pickerHint}>
+          {canKeep
+            ? "Pick the one you want to read, or keep them all for later."
+            : "Pick the one you want to read."}
+        </p>
       </div>
+
+      {/* While it runs, where it has got to; once it stops, what it did. The
+          second half matters as much as the first: a finished import that says
+          nothing looks exactly like one that never started. */}
+      {(importing || saveNotice) && (
+        <p className={styles.pickerHint} role="status">
+          {importing
+            ? `Reading run ${importing.done} of ${importing.total}`
+            : saveNotice}
+        </p>
+      )}
 
       {runs.length > 8 && (
         <input
@@ -84,23 +105,33 @@ export function ArchivePicker({ onPickAnother }: { onPickAnother: () => void }) 
       </ul>
 
       <div className={styles.pickerActions}>
-        <button type="button" className={styles.secondary} onClick={onPickAnother}>
-          Use a different file
-        </button>
-        <button type="button" className={styles.secondary} onClick={reset}>
-          Start over
-        </button>
+        {canKeep && (
+          <button
+            type="button"
+            className={styles.secondary}
+            onClick={() => void importAll(choices ?? [])}
+            disabled={importing !== null}
+          >
+            {importing
+              ? `Keeping ${importing.done} of ${importing.total}…`
+              : `Keep all ${runs.length} runs`}
+          </button>
+        )}
+        {importing ? (
+          <button type="button" className={styles.secondary} onClick={cancelImport}>
+            Stop
+          </button>
+        ) : (
+          <>
+            <button type="button" className={styles.secondary} onClick={onPickAnother}>
+              Use a different file
+            </button>
+            <button type="button" className={styles.secondary} onClick={reset}>
+              Start over
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
-}
-
-/** The day the run happened, where the file name gives it up. */
-function labelFor(name: string): string {
-  const match = DATE_IN_NAME.exec(name);
-  if (!match) return name.replace(/\.(fit|gpx)(\.gz)?$/i, "");
-  const [, year, month, day] = match;
-  const index = Number(month) - 1;
-  if (index < 0 || index > 11) return name;
-  return `${Number(day)} ${MONTHS[index]} ${year}`;
 }

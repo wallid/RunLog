@@ -1,12 +1,14 @@
 import { defineWidget } from "../contract";
-import type { Split } from "@/model/activity";
+import type { HrZone, Split } from "@/model/activity";
+import { Legend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
-import { ZONE_COLORS } from "../helpers";
+import { NOISE_FLOOR, ZONE_COLORS } from "../helpers";
 import {
   formatDistance,
   formatDuration,
   formatElevation,
   formatHeartRate,
+  formatPace,
   formatPaceWithUnit,
 } from "@/lib/format";
 import shared from "../shared.module.css";
@@ -69,6 +71,27 @@ export const splitsWidget = defineWidget<Result>({
       });
     }
 
+    // The list is ordered by where each kilometre fell, but a reader still
+    // reads the fastest one as the best. Where the terrain says otherwise, this
+    // is the one place they are looking at both figures at once.
+    const adjusted = result.splits.filter(
+      (split) =>
+        split.gradeAdjustedPaceSecPerKm !== undefined && !split.tags.includes("partial"),
+    );
+    if (adjusted.length >= 2 && fastest) {
+      const strongest = adjusted.reduce((a, b) =>
+        b.gradeAdjustedPaceSecPerKm! < a.gradeAdjustedPaceSecPerKm! ? b : a,
+      );
+      if (strongest.index !== fastest.index) {
+        observations.push({
+          text: `Kilometre ${strongest.index} was run harder than kilometre ${fastest.index}, despite being ${Math.round(strongest.paceSecPerKm - fastest.paceSecPerKm)} seconds per kilometre slower: on flat ground it would have been ${formatPaceWithUnit(strongest.gradeAdjustedPaceSecPerKm)}.`,
+          evidence: [
+            { label: `Kilometre ${strongest.index}`, startT: strongest.startT, endT: strongest.endT },
+          ],
+        });
+      }
+    }
+
     const explanations = [];
     if (slowest) {
       const reasons: string[] = [];
@@ -104,7 +127,7 @@ export const splitsWidget = defineWidget<Result>({
       teaching: [
         {
           title: "A slower split is not a worse split",
-          text: "Splits are decided by where the run happened to start, not by where the effort changed. A kilometre that climbs thirty metres and one that descends thirty metres are not comparable at all, even though they sit next to each other in the list.",
+          text: "Splits are decided by where the run happened to start, not by where the effort changed. A kilometre that climbs thirty metres and one that descends thirty metres are not comparable at all, even though they sit next to each other in the list. Where a split carries a figure in brackets, that is the pace the same kilometre would have been on flat ground — which is how to compare two of them fairly.",
         },
       ],
     };
@@ -118,71 +141,112 @@ export const splitsWidget = defineWidget<Result>({
     // without the bars starting from an arbitrary zero.
     const span = Math.max(1, result.slowestPace - result.fastestPace);
 
+    const zonesShown = [
+      ...new Set(result.splits.flatMap((s) => (s.dominantZone ? [s.dominantZone] : []))),
+    ].sort() as HrZone[];
+
     return (
-      <ul className={styles.list}>
-        {result.splits.map((split) => {
-          const selected = highlight?.kind === "split" && highlight.index === split.index;
-          const speedFraction = 1 - (split.paceSecPerKm - result.fastestPace) / span;
+      <div>
+        <ul className={styles.list}>
+          {result.splits.map((split, index) => {
+            const selected = highlight?.kind === "split" && highlight.index === split.index;
+            const speedFraction = 1 - (split.paceSecPerKm - result.fastestPace) / span;
 
-          return (
-            <li key={split.index}>
-              <button
-                type="button"
-                className={`${styles.split} ${selected ? styles.selected : ""}`}
-                onClick={() =>
-                  focusRegion(
-                    split.startT,
-                    split.endT,
-                    { kind: "split", index: split.index },
-                    "splits",
-                  )
-                }
-                aria-pressed={selected}
+            return (
+              <li
+                key={split.index}
+                // Its place in the list, which the stylesheet turns into the
+                // order the bars fill in.
+                style={{ "--item": Math.min(index, 12) } as React.CSSProperties}
               >
-                <span className={`${styles.number} numeric`}>
-                  {split.tags.includes("partial")
-                    ? formatDistance(split.distanceM)
-                    : `km ${split.index}`}
-                </span>
+                <button
+                  type="button"
+                  className={`${styles.split} ${selected ? styles.selected : ""}`}
+                  onClick={() =>
+                    focusRegion(
+                      split.startT,
+                      split.endT,
+                      { kind: "split", index: split.index },
+                      "splits",
+                    )
+                  }
+                  aria-pressed={selected}
+                >
+                  <span className={`${styles.number} numeric`}>
+                    {split.tags.includes("partial")
+                      ? formatDistance(split.distanceM)
+                      : `km ${split.index}`}
+                  </span>
 
-                <span className={styles.barArea}>
-                  <span className={styles.bar}>
-                    <span
-                      className={styles.barFill}
-                      style={{
-                        width: `${20 + speedFraction * 80}%`,
-                        background: split.dominantZone
-                          ? ZONE_COLORS[split.dominantZone]
-                          : "var(--metric-pace)",
-                      }}
-                    />
+                  <span className={styles.barArea}>
+                    <span className={styles.bar}>
+                      <span
+                        className={styles.barFill}
+                        style={{
+                          width: `${20 + speedFraction * 80}%`,
+                          background: split.dominantZone
+                            ? ZONE_COLORS[split.dominantZone]
+                            : "var(--metric-pace)",
+                        }}
+                      />
+                    </span>
+                    <span className={styles.tags}>
+                      {split.tags
+                        .filter((tag) => tag !== "partial")
+                        .map((tag) => (
+                          <span key={tag} className={shared.tag}>
+                            {TAG_LABELS[tag] ?? tag}
+                          </span>
+                        ))}
+                    </span>
                   </span>
-                  <span className={styles.tags}>
-                    {split.tags
-                      .filter((tag) => tag !== "partial")
-                      .map((tag) => (
-                        <span key={tag} className={shared.tag}>
-                          {TAG_LABELS[tag] ?? tag}
-                        </span>
-                      ))}
-                  </span>
-                </span>
 
-                <span className={styles.figures}>
-                  <span className={`${styles.pace} numeric`}>
-                    {formatPaceWithUnit(split.paceSecPerKm)}
+                  <span className={styles.figures}>
+                    <span className={`${styles.pace} numeric`}>
+                      {formatPaceWithUnit(split.paceSecPerKm)}
+                    </span>
+                    <span className={`${styles.detail} numeric`}>
+                      {/* Shown only where the ground actually moved the figure,
+                          so a flat run does not carry a bracket on every row
+                          repeating the pace beside it. */}
+                      {split.gradeAdjustedPaceSecPerKm !== undefined &&
+                        Math.abs(split.gradeAdjustedPaceSecPerKm - split.paceSecPerKm) >=
+                          NOISE_FLOOR.paceSecPerKm &&
+                        `(${formatPace(split.gradeAdjustedPaceSecPerKm)} flat) · `}
+                      {split.avgHr !== undefined && `${formatHeartRate(split.avgHr)}`}
+                      {split.gainM >= 3 && ` · +${Math.round(split.gainM)} m`}
+                      {split.stoppedS >= 5 && ` · ${formatDuration(split.stoppedS)} stopped`}
+                    </span>
                   </span>
-                  <span className={`${styles.detail} numeric`}>
-                    {split.avgHr !== undefined && `${formatHeartRate(split.avgHr)}`}
-                    {split.gainM >= 3 && ` · +${Math.round(split.gainM)} m`}
-                    {split.stoppedS >= 5 && ` · ${formatDuration(split.stoppedS)} stopped`}
-                  </span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <Legend
+          label="Bar length shows pace · colour shows the split's main zone"
+          items={
+            zonesShown.length > 0
+              ? [
+                  ...zonesShown.map((zone) => ({
+                    label: `Zone ${zone}`,
+                    color: ZONE_COLORS[zone],
+                  })),
+                  ...(result.splits.some((s) => s.dominantZone === undefined)
+                    ? [{ label: "No zone reading", color: "var(--metric-pace)" }]
+                    : []),
+                ]
+              : [{ label: "Pace", color: "var(--metric-pace)" }]
+          }
+        />
+
+        <p className={shared.note}>
+          Bars are drawn between this run's fastest and slowest split rather than
+          from zero, so a small spread still shows. The longest bar is the fastest
+          kilometre, not the best one.
+        </p>
+      </div>
     );
   },
 });

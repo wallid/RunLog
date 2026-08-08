@@ -1,0 +1,131 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.row {
+  display: grid;
+  /* The figures column is capped for the same reason the splits list caps its
+     own: "5:12/km run · +18 s/km" at `auto` pushes the row off a phone. */
+  grid-template-columns: 3.4rem 1fr minmax(0, auto);
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.row:hover {
+  background: var(--surface-hover);
+}
+
+.selected {
+  background: var(--accent-soft);
+}
+
+.number {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 620;
+}
+
+/* The marks sit a few pixels either side of their position, so the track keeps
+   a margin rather than clipping a kilometre that lands at one end of the scale. */
+.track {
+  position: relative;
+  height: 14px;
+  margin: 0 6px;
+}
+
+.rule {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+  border-radius: 1px;
+  background: var(--surface-sunken);
+}
+
+/* The gap between where a kilometre was run and what it was worth. Drawn under
+   both marks so neither is broken by it. */
+.connector {
+  position: absolute;
+  top: 50%;
+  height: 3px;
+  min-width: 1px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: var(--metric-pace);
+  opacity: 0.35;
+}
+
+.actual,
+.adjusted {
+  position: absolute;
+  top: 50%;
+  border-radius: 50%;
+}
+
+.actual {
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  background: var(--text-muted);
+}
+
+.adjusted {
+  width: 12px;
+  height: 12px;
+  transform: translate(-50%, -50%);
+  background: var(--metric-pace);
+}
+
+/* Rows fill in the order they were run, matching the splits list above them.
+   The card sets `data-reveal`; see the note in `primitives.module.css`. */
+:global([data-reveal="true"]) .connector,
+:global([data-reveal="true"]) .adjusted {
+  animation: appear 0.4s var(--ease-out) backwards;
+  animation-delay: calc(80ms + var(--item, 0) * 40ms);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.figures {
+  min-width: 0;
+  text-align: right;
+}
+
+.pace {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 640;
+}
+
+.detail {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: 2.8rem 1fr minmax(0, auto);
+    gap: var(--space-2);
+  }
+
+  .pace {
+    font-size: 0.85rem;
+  }
+}

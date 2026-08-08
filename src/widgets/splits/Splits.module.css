@@ -6,7 +6,10 @@
 
 .split {
   display: grid;
-  grid-template-columns: 3.4rem 1fr auto;
+  /* The last track is capped rather than left at `auto`: the detail line can
+     run to "142 bpm · +31 m · 0:24 stopped", and a max-content track that wide
+     pushes the whole row past the viewport on a phone. */
+  grid-template-columns: 3.4rem 1fr minmax(0, auto);
   align-items: center;
   gap: var(--space-3);
   width: 100%;
@@ -51,6 +54,21 @@
   display: block;
   height: 100%;
   border-radius: 3px;
+  transform-origin: left center;
+}
+
+/* Splits run down the card in the order they were run, so they fill in that
+   order too — the list replays the run rather than presenting its result. The
+   card sets `data-reveal`; see the note in `primitives.module.css`. */
+:global([data-reveal="true"]) .barFill {
+  animation: fillSplit 0.5s var(--ease-out) backwards;
+  animation-delay: calc(80ms + var(--item, 0) * 40ms);
+}
+
+@keyframes fillSplit {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 .tags {
@@ -60,6 +78,7 @@
 }
 
 .figures {
+  min-width: 0;
   text-align: right;
 }
 
@@ -73,11 +92,13 @@
   display: block;
   color: var(--text-muted);
   font-size: 0.72rem;
+  /* Wraps inside its own column instead of widening the row. */
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 560px) {
   .split {
-    grid-template-columns: 2.8rem 1fr auto;
+    grid-template-columns: 2.8rem 1fr minmax(0, auto);
     gap: var(--space-2);
   }
 

@@ -59,3 +59,23 @@
   letter-spacing: var(--tracking-label);
   text-transform: uppercase;
 }
+
+/* Four columns is a lot for a phone, and collapsing them would cost the card
+   the one thing it is for — the rows lining up. So the columns stay and the
+   type gives way instead: the metric name is the flexible column, so it wraps
+   to a second line rather than pushing the figures off the card. */
+@media (max-width: 560px) {
+  .table {
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .metric,
+  .value,
+  .after {
+    font-size: 0.82rem;
+  }
+
+  .delta {
+    font-size: 0.76rem;
+  }
+}

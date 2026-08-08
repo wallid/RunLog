@@ -26,9 +26,21 @@
 .sectionHeader {
   /* Clears the sticky masthead when a contents link jumps here. */
   scroll-margin-top: calc(var(--header-height) + var(--space-5));
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity var(--duration-arrive) var(--ease-out),
+    transform var(--duration-arrive) var(--ease-out);
 }
 
-/* A short accent tick, the one piece of colour a header earns. */
+.sectionHeader[data-reveal="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* A short accent tick, the one piece of colour a header earns. It draws
+   itself out from the left as the header lands, which is the smallest
+   possible flourish for the one mark that opens a section. */
 .sectionHeader::before {
   content: "";
   display: block;
@@ -37,6 +49,40 @@
   margin-bottom: var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--duration-arrive) var(--ease-out) 0.12s;
+}
+
+.sectionHeader[data-reveal="true"]::before {
+  transform: none;
+}
+
+/* The cards below a header follow it in rather than landing together: a short
+   cascade reads as one section arriving, where twenty simultaneous fades read
+   as the page finishing loading. Only the first few are staggered, because
+   past that the reader has scrolled and the delay would be a wait. */
+.cards > :nth-child(2) {
+  transition-delay: 60ms;
+}
+
+.cards > :nth-child(3) {
+  transition-delay: 120ms;
+}
+
+.cards > :nth-child(n + 4) {
+  transition-delay: 160ms;
+}
+
+@media print {
+  .sectionHeader {
+    opacity: 1;
+    transform: none;
+  }
+
+  .sectionHeader::before {
+    transform: none;
+  }
 }
 
 .sectionTitle {

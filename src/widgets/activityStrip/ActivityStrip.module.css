@@ -11,7 +11,50 @@
   padding: 0;
   border: none;
   border-radius: 2px;
+  transform-origin: bottom center;
   transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+/*
+ * A block is eight pixels wide because it is one of ninety along the run: its
+ * width *is* the data, and widening it would be drawing a different chart. So
+ * on a touch screen the strip gets taller instead, which is the one dimension
+ * that costs the encoding nothing and takes each block from an eight-pixel
+ * sliver to a target a thumb can land on.
+ *
+ * The blocks are still narrow, and that is allowed: the interactive timeline
+ * moves to any point in the run with a full-width drag, so nothing here is the
+ * only way to do anything.
+ */
+@media (pointer: coarse) {
+  .block {
+    height: 48px;
+  }
+}
+
+/* Between the blocks the ring would be invisible, so it is drawn outside and
+   over its neighbours rather than inset. */
+.block:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/*
+ * The strip fills the way the run happened: block by block from the start.
+ * Ninety blocks at seven milliseconds apart is a sweep of well under a second,
+ * so it reads as one gesture rather than as ninety things arriving.
+ */
+:global([data-reveal="true"]) .block {
+  animation: raiseBlock 0.32s var(--ease-out) backwards;
+  animation-delay: calc(var(--item, 0) * 7ms);
+}
+
+@keyframes raiseBlock {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
 }
 
 .block:hover {

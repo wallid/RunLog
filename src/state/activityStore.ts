@@ -7,6 +7,8 @@ import { ArchiveError, readArchive, type ArchiveEntry } from "@/upload/archive";
 import { reportParseFailure } from "@/observability/sentry";
 import { useSelectionStore } from "./selectionStore";
 import { useSettingsStore } from "./settingsStore";
+import { useLibraryStore } from "./libraryStore";
+import { getRunBlob } from "@/library/db";
 import { fetchRunWeather } from "@/weather/openMeteo";
 
 /**
@@ -37,6 +39,8 @@ interface ActivityState {
   /** Opens one run out of the archive currently being chosen from. */
   chooseEntry: (path: string) => Promise<void>;
   loadDemo: () => Promise<void>;
+  /** Reads a run back out of the library. */
+  openFromLibrary: (id: string) => Promise<void>;
   /** Recomputes the model against a new maximum heart rate. */
   rebuild: (maxHr: number | undefined) => void;
   /**
@@ -51,6 +55,12 @@ interface ActivityState {
 }
 
 const DEMO_URL = `${import.meta.env.BASE_URL}demo/Lunch_Run.fit`;
+
+async function fetchDemo(): Promise<Blob> {
+  const response = await fetch(DEMO_URL);
+  if (!response.ok) throw new Error("The demo run could not be downloaded.");
+  return response.blob();
+}
 
 export const useActivityStore = create<ActivityState>((set, get) => ({
   status: "idle",
@@ -116,20 +126,51 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   },
 
   loadDemo: async () => {
-    set({ status: "loading", error: null, fileName: "Lunch Run (demo)" });
+    set({ status: "loading", error: null, fileName: "Lunch Run (demo)", choices: null });
     useSelectionStore.getState().clearAll();
     try {
-      const response = await fetch(DEMO_URL);
-      if (!response.ok) throw new Error("The demo run could not be downloaded.");
-      const blob = await response.blob();
       // The demo goes through the same path as an upload, so it exercises the
-      // real parser rather than a pre-baked result.
-      const raw = await parseFile(blob, "Lunch_Run.fit");
-      const activity = buildActivity({ ...raw, name: raw.name ?? "Lunch Run" }, {
-        maxHr: currentMaxHr(),
+      // real parser rather than a pre-baked result. It is not kept: the library
+      // is for the reader's own runs, and a demo that quietly filed itself
+      // alongside them would be the page putting something there unasked.
+      await ingest(set, "Lunch_Run.fit", fetchDemo, {
+        defaultName: "Lunch Run",
+        persist: false,
       });
-      set({ status: "ready", raw, activity, error: null });
     } catch (error) {
+      set({ status: "error", raw: null, activity: null, error: messageFor(error) });
+    }
+  },
+
+  /**
+   * Reopens a run already in the library.
+   *
+   * The failure case is the interesting one. If a run is already on screen,
+   * a switch that cannot be completed leaves it there and says so — dropping
+   * the reader back to an empty page because the run they asked for next has
+   * gone would cost them the one they still had.
+   */
+  openFromLibrary: async (id) => {
+    const hadRun = get().activity !== null;
+    useSelectionStore.getState().clearAll();
+    set({ error: null });
+    if (!hadRun) set({ status: "loading", choices: null });
+
+    try {
+      const blob = await getRunBlob(id);
+      if (!blob) throw new Error("That run is no longer stored in this browser.");
+      const entry = useLibraryStore.getState().entries.find((run) => run.id === id);
+      const name = entry?.fileName ?? "run.fit";
+
+      set({ fileName: name });
+      await ingest(set, name, async () => blob, { persist: false });
+      useLibraryStore.getState().markOpened(id);
+    } catch (error) {
+      if (hadRun) {
+        // The run on screen is untouched; only the attempt to replace it failed.
+        set({ error: messageFor(error) });
+        return;
+      }
       set({ status: "error", raw: null, activity: null, error: messageFor(error) });
     }
   },
@@ -180,22 +221,42 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   },
 }));
 
+interface IngestOptions {
+  /** Used when the file itself carries no name. */
+  defaultName?: string;
+  /**
+   * Whether to keep this run in the library. False for the demo, which is not
+   * the reader's own run, and for a run being reopened out of the library,
+   * which is already in it.
+   */
+  persist?: boolean;
+}
+
 /**
  * The one path from bytes to a run on screen.
  *
- * An upload, an entry chosen out of an archive and the demo all go through it,
- * so none of them can drift into exercising a different parser or a different
- * set of settings than the others.
+ * An upload, an entry chosen out of an archive, a run reopened from the library
+ * and the demo all go through it, so none of them can drift into exercising a
+ * different parser or a different set of settings than the others.
  */
 async function ingest(
   set: (partial: Partial<ActivityState>) => void,
   name: string,
   open: () => Promise<Blob>,
+  options: IngestOptions = {},
 ): Promise<void> {
   const blob = await open();
-  const raw = await parseFile(blob, name);
+  const parsed = await parseFile(blob, name);
+  const raw = options.defaultName ? { ...parsed, name: parsed.name ?? options.defaultName } : parsed;
   const activity = buildActivity(raw, { maxHr: currentMaxHr() });
   set({ status: "ready", raw, activity, error: null, choices: null });
+
+  // Deliberately not awaited. Whether a run can be filed away has no bearing on
+  // whether it can be read, and making the reader wait on a write to find out
+  // would be paying for the library with the thing it was meant to speed up.
+  if (options.persist !== false) {
+    void useLibraryStore.getState().addOpened(blob, name, raw);
+  }
 }
 
 function currentMaxHr(): number | undefined {

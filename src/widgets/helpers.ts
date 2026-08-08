@@ -1,4 +1,6 @@
 import type { ActivityEvent, DerivedActivity, HrZone, Sample } from "@/model/activity";
+import type { TrackRegion } from "@/viz/Track";
+import { bandDefinition, bandForZone, type IntensityBand } from "@/model/zones";
 import { collect, mean } from "@/lib/stats";
 import { formatDistanceShort } from "@/lib/format";
 
@@ -12,12 +14,11 @@ export const ZONE_COLORS: Record<HrZone, string> = {
   5: "var(--zone-5)",
 };
 
-export const ZONE_SOFT_COLORS: Record<HrZone, string> = {
-  1: "var(--zone-1-soft)",
-  2: "var(--zone-2-soft)",
-  3: "var(--zone-3-soft)",
-  4: "var(--zone-4-soft)",
-  5: "var(--zone-5-soft)",
+/** The three washes, in the order they are read. */
+export const BAND_COLORS: Record<IntensityBand, string> = {
+  easy: "var(--zone-band-easy)",
+  steady: "var(--zone-band-steady)",
+  hard: "var(--zone-band-hard)",
 };
 
 export const TERRAIN_COLORS = {
@@ -128,3 +129,52 @@ export const NOISE_FLOOR = {
   cadenceSpm: 2,
   gradientPct: 0.5,
 } as const;
+
+/**
+ * Effort bands to lay behind a track, so how hard a stretch was is readable
+ * without a second chart.
+ *
+ * Grouped by intensity rather than by zone, because that is what the wash can
+ * actually say: a boundary is only drawn where the answer changes from easy to
+ * steady to hard. Runs without heart-rate zones get nothing rather than a grey
+ * stand-in.
+ */
+export function zoneRegions(activity: DerivedActivity): TrackRegion[] {
+  if (!activity.availableMetrics.has("hrZone")) return [];
+  const regions: TrackRegion[] = [];
+  let current: TrackRegion | null = null;
+  let currentBand: IntensityBand | null = null;
+
+  for (const sample of activity.samples) {
+    if (sample.hrZone === undefined) {
+      current = null;
+      currentBand = null;
+      continue;
+    }
+    const band = bandForZone(sample.hrZone);
+    if (current && currentBand === band) {
+      current.endT = sample.t;
+      continue;
+    }
+    current = {
+      startT: sample.t,
+      endT: sample.t,
+      color: BAND_COLORS[band],
+      label: bandDefinition(band).name,
+      behind: true,
+    };
+    currentBand = band;
+    regions.push(current);
+  }
+
+  return regions;
+}
+
+/** The intensities a run actually spent time in, in order. */
+export function bandsUsed(activity: DerivedActivity): IntensityBand[] {
+  const seen = new Set<IntensityBand>();
+  for (const sample of activity.samples) {
+    if (sample.hrZone !== undefined) seen.add(bandForZone(sample.hrZone));
+  }
+  return (["easy", "steady", "hard"] as const).filter((band) => seen.has(band));
+}

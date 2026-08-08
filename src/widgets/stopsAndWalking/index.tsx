@@ -1,7 +1,7 @@
 import { defineWidget } from "../contract";
 import type { ActivityEvent } from "@/model/activity";
 import { Track, type TrackRegion } from "@/viz/Track";
-import { ComparisonCards } from "@/viz/primitives";
+import { ComparisonCards, Legend } from "@/viz/primitives";
 import { useSelectionStore } from "@/state/selectionStore";
 import {
   formatDistanceShort,
@@ -147,6 +147,23 @@ export const stopsAndWalkingWidget = defineWidget<Result>({
         >
           {() => null}
         </Track>
+
+        <Legend
+          label="Marked on the run"
+          items={[
+            ...(result.stops.length > 0
+              ? [{ label: "Stopped", color: "var(--text-muted)" }]
+              : []),
+            ...(result.walks.length > 0
+              ? [
+                  {
+                    label: "Possible walking",
+                    color: "color-mix(in srgb, var(--metric-pace) 35%, transparent)",
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         <ul className={shared.rows} style={{ marginTop: "var(--space-4)" }}>
           {[...result.stops, ...result.walks]

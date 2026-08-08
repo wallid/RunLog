@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import styles from "./primitives.module.css";
 
 /**
@@ -8,7 +8,22 @@ import styles from "./primitives.module.css";
  * categories, blocks for intensity over time, cards for comparisons, dots for
  * distributions. Keeping them here means a widget picks a form rather than
  * inventing one.
+ *
+ * They also carry the page's motion. Each of these arrives by drawing the
+ * quantity it encodes — a bar grows along its length, a bubble grows from its
+ * centre, a trend line draws in the direction it is read — so the movement
+ * says the same thing the mark does. The `--item` custom property each one
+ * sets is its position in its own group, which the stylesheet turns into a
+ * short cascade. All of it is held until the card is on screen; see
+ * `useInView`.
  */
+
+/** Positions an item within its group, so the stylesheet can stagger it. */
+function stagger(index: number): CSSProperties {
+  // Capped: past a handful of items the cascade stops reading as a sequence
+  // and starts reading as the last rows being late.
+  return { "--item": Math.min(index, 8) } as CSSProperties;
+}
 
 /**
  * A row of labelled figures.
@@ -19,10 +34,10 @@ import styles from "./primitives.module.css";
 export function StatRow({ stats }: { stats: { label: string; value: string; note?: string }[] }) {
   return (
     <dl className={styles.statRow}>
-      {stats.map((stat) => {
+      {stats.map((stat, index) => {
         const [figure, unit] = splitUnit(stat.value);
         return (
-          <div key={stat.label} className={styles.stat}>
+          <div key={stat.label} className={styles.stat} style={stagger(index)}>
             <dt className={styles.statLabel}>{stat.label}</dt>
             <dd className={styles.statValue}>
               <span className="numeric">{figure}</span>
@@ -63,10 +78,10 @@ export function MetricRows({
 }) {
   return (
     <dl className={styles.metricRows}>
-      {rows.map((row) => {
+      {rows.map((row, index) => {
         const [figure, unit] = splitUnit(row.value);
         return (
-          <div key={row.label} className={styles.metricRow}>
+          <div key={row.label} className={styles.metricRow} style={stagger(index)}>
             <dt className={styles.metricLabel}>
               {row.accent && (
                 <span className={styles.metricDot} style={{ background: row.accent }} />
@@ -121,13 +136,13 @@ export function BubbleRow({
 
   return (
     <ul className={styles.bubbleRow}>
-      {bubbles.map((bubble) => {
+      {bubbles.map((bubble, index) => {
         // Area, not diameter, carries the value.
         const ratio = Math.sqrt(Math.max(0, bubble.value) / maxValue);
         const diameter = Math.max(minDiameter, ratio * maxDiameter);
         const Element = onSelect ? "button" : "div";
         return (
-          <li key={bubble.id} className={styles.bubbleItem}>
+          <li key={bubble.id} className={styles.bubbleItem} style={stagger(index)}>
             <Element
               className={`${styles.bubble} ${bubble.selected ? styles.bubbleSelected : ""}`}
               style={{
@@ -227,7 +242,7 @@ export function ProportionBars({
 }) {
   return (
     <ul className={styles.barRows}>
-      {rows.map((row) => {
+      {rows.map((row, index) => {
         const content = (
           <>
             <span className={styles.barLabel}>{row.label}</span>
@@ -244,7 +259,7 @@ export function ProportionBars({
           </>
         );
         return (
-          <li key={row.id} className={styles.barRow}>
+          <li key={row.id} className={styles.barRow} style={stagger(index)}>
             {onSelect ? (
               <button
                 type="button"
@@ -265,17 +280,107 @@ export function ProportionBars({
   );
 }
 
-/** A labelled key for any widget showing more than one colour. */
-export function Legend({ items }: { items: { label: string; color: string }[] }) {
+export interface LegendItem {
+  label: string;
+  color: string;
+  /** Matches the shape of the mark in the chart itself. */
+  shape?: "block" | "line" | "dashed";
+  /** An optional figure after the label, e.g. a share of the run. */
+  value?: string;
+}
+
+/**
+ * The key to whatever the colour in a chart means.
+ *
+ * Every widget that paints more than one colour carries one of these, because a
+ * colour a reader has to guess at is worse than no colour at all. The swatch is
+ * drawn in the same shape as the mark it stands for — a filled block for a
+ * region, a rule for a line, a dashed rule for a reference line — so the key
+ * can be matched to the chart without reading the label first.
+ *
+ * `label` says what the colour encodes rather than naming the entries, which is
+ * the part a legend usually leaves out: "Colour shows heart-rate zone" answers
+ * a question the list of zone names does not.
+ */
+export function Legend({ items, label }: { items: LegendItem[]; label?: string }) {
   return (
-    <ul className={styles.legend}>
-      {items.map((item) => (
-        <li key={item.label} className={styles.legendItem}>
-          <span className={styles.legendSwatch} style={{ background: item.color }} />
-          {item.label}
-        </li>
-      ))}
-    </ul>
+    <div className={styles.legendBlock}>
+      {label && <p className={styles.legendTitle}>{label}</p>}
+      <ul className={styles.legend}>
+        {items.map((item) => (
+          <li key={item.label} className={styles.legendItem}>
+            <span
+              className={`${styles.legendSwatch} ${styles[`swatch_${item.shape ?? "block"}`]}`}
+              style={swatchFill(item)}
+              data-swatch=""
+              aria-hidden="true"
+            />
+            <span>{item.label}</span>
+            {item.value && <span className={`${styles.legendValue} numeric`}>{item.value}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function swatchFill(item: LegendItem): CSSProperties {
+  if (item.shape === "dashed") {
+    return {
+      background: `repeating-linear-gradient(to right, ${item.color} 0 4px, transparent 4px 7px)`,
+    };
+  }
+  return { background: item.color };
+}
+
+/**
+ * The key to an ordered colour ramp.
+ *
+ * Where a legend names categories, this names a direction: the steps are shown
+ * joined, in order, with only the ends labelled. That is the honest shape for a
+ * scale nobody is meant to read individual values off — pace relative to the
+ * run, say — where five separate labelled swatches would imply five categories
+ * that do not exist.
+ */
+export function ScaleLegend({
+  steps,
+  lowLabel,
+  highLabel,
+  label,
+  extras = [],
+}: {
+  /** Colours in reading order, low to high. */
+  steps: string[];
+  lowLabel: string;
+  highLabel: string;
+  label?: string;
+  /** Keys set apart from the ramp, for values outside the scale — "Stopped". */
+  extras?: LegendItem[];
+}) {
+  return (
+    <div className={styles.legendBlock}>
+      {label && <p className={styles.legendTitle}>{label}</p>}
+      <div className={styles.scaleLegend}>
+        <span className={styles.scaleEnd}>{lowLabel}</span>
+        <span className={styles.scaleRamp} aria-hidden="true">
+          {steps.map((color, index) => (
+            <span key={index} style={{ background: color }} />
+          ))}
+        </span>
+        <span className={styles.scaleEnd}>{highLabel}</span>
+        {extras.map((extra) => (
+          <span key={extra.label} className={styles.legendItem}>
+            <span
+              className={`${styles.legendSwatch} ${styles[`swatch_${extra.shape ?? "block"}`]}`}
+              style={swatchFill(extra)}
+              data-swatch=""
+              aria-hidden="true"
+            />
+            {extra.label}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -405,38 +510,49 @@ export function Scatter({
 
         {/* Points outside the drawn range are left out rather than pinned to the
             edge: a stack of dots on the axis would read as data that was there. */}
-        {points
-          .filter(
-            (point) =>
-              point.x >= Math.min(...xDomain) &&
-              point.x <= Math.max(...xDomain) &&
-              point.y >= yDomain[0] &&
-              point.y <= yDomain[1],
-          )
-          .map((point, index) => (
-            <circle
-              key={index}
-              cx={toX(point.x)}
-              cy={toY(point.y)}
-              r={2.4}
-              fill={color}
-              fillOpacity={0.22}
-            />
-          ))}
+        {/* The cloud settles first and the trend is drawn over it afterwards,
+            which is the order the chart is meant to be read in: how much
+            scatter there is, and then which way it leans. */}
+        <g className={styles.scatterCloud}>
+          {points
+            .filter(
+              (point) =>
+                point.x >= Math.min(...xDomain) &&
+                point.x <= Math.max(...xDomain) &&
+                point.y >= yDomain[0] &&
+                point.y <= yDomain[1],
+            )
+            .map((point, index) => (
+              <circle
+                key={index}
+                cx={toX(point.x)}
+                cy={toY(point.y)}
+                r={2.4}
+                fill={color}
+                fillOpacity={0.22}
+              />
+            ))}
+        </g>
 
         {trend && trend.length >= 2 && (
           <g>
             <polyline
+              className={styles.scatterTrend}
               points={trend.map((p) => `${toX(p.x).toFixed(1)},${toY(p.y).toFixed(1)}`).join(" ")}
               fill="none"
               stroke={color}
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
+              /* Normalises the line's length to 1 so the dash that draws it can
+                 be written in CSS without measuring the geometry. */
+              pathLength={1}
             />
             {trend.map((p, index) => (
               <circle
                 key={`trend-${index}`}
+                className={styles.scatterTrendDot}
+                style={stagger(index)}
                 cx={toX(p.x)}
                 cy={toY(p.y)}
                 r={4}

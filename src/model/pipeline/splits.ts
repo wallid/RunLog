@@ -1,5 +1,6 @@
 import type { HrZone, Sample, Split, SplitTag } from "../activity";
 import { collect, lerpAt, mean } from "@/lib/stats";
+import { gradeAdjustmentOver } from "../gradeAdjusted";
 
 /** Kilometre splits with enough context to explain why each one was what it was. */
 
@@ -91,6 +92,13 @@ function buildSplit(
   const cadenceValues = collect(window, (s) => s.cadenceSpm);
   const gradientValues = collect(window, (s) => s.gradientPct);
 
+  // Split pace divided by what this kilometre's ground was worth in flat ground.
+  // Dividing the split's own pace rather than recomputing one from the window
+  // keeps the two figures differing by the terrain alone, including the stopped
+  // time both of them carry.
+  const paceSecPerKm = (durationS / distanceM) * 1000;
+  const gradeAdjustment = gradeAdjustmentOver(window);
+
   return {
     index,
     startT: from.t,
@@ -100,7 +108,10 @@ function buildSplit(
     distanceM,
     durationS,
     // Split pace uses elapsed time, so a stop inside a split shows up here.
-    paceSecPerKm: (durationS / distanceM) * 1000,
+    paceSecPerKm,
+    ...(gradeAdjustment
+      ? { gradeAdjustedPaceSecPerKm: paceSecPerKm / gradeAdjustment.factor }
+      : {}),
     avgHr: hrValues.length > 0 ? mean(hrValues) : undefined,
     dominantZone: dominantZone(window),
     avgPowerW: powerValues.length > 0 ? mean(powerValues) : undefined,

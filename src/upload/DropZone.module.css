@@ -1,10 +1,18 @@
 /*
- * The landing screen: a thin bar, then one hero that fills the viewport.
+ * The landing screen: a thin bar, then one hero that fills the viewport, then
+ * the proof strip below the fold (its styles live with its component).
  *
  * Everything is sized against the viewport height rather than a fixed scale, so
- * the screen holds its shape on a laptop without a scrollbar appearing. Below
- * the breakpoint the two columns stack and the page is allowed to scroll, which
- * is the only honest thing to do on a phone.
+ * the screen holds its shape on a laptop without a scrollbar appearing. The
+ * hero goes from three columns to two to one as the width runs out, and once it
+ * is stacked the page is allowed to scroll, which is the only honest thing to
+ * do on a phone.
+ *
+ * The page is plain, and that is a decision rather than an omission. Scenery
+ * was tried here — ridge lines along the bottom, a wash of colour behind the
+ * hero, an example card below the fold — and all of it read as decoration on a
+ * screen whose only job is to get one file opened. The two white cards are the
+ * only figures here, and they carry further against nothing.
  */
 .screen {
   display: flex;
@@ -43,16 +51,72 @@
   font-size: 0.78rem;
 }
 
+/*
+ * Three stations, and the widest screen shows them as three.
+ *
+ * The reader arrives with one of three things: interest, a file, or a file they
+ * cannot find. Those are the pitch, the drop card and the export guide, and
+ * they are peers — so where there is room they sit side by side rather than in
+ * a stack. The guide used to hang off the bottom of the upload column, which
+ * made the one screen this page is sized to fit into a screen that scrolled.
+ *
+ * Stacked at every width below that, in the order the questions are asked.
+ */
 .hero {
   display: grid;
   flex: 1;
   align-content: center;
   align-items: center;
   gap: clamp(2rem, 5vw, 4.5rem);
+  grid-template-areas:
+    "pitch"
+    "start"
+    "guide";
   width: 100%;
   max-width: 62rem;
   margin: 0 auto;
   padding-bottom: clamp(1.5rem, 6vh, 3.5rem);
+}
+
+.pitch {
+  grid-area: pitch;
+}
+
+.guideColumn {
+  grid-area: guide;
+}
+
+/*
+ * The landing screen composes itself: the claim, then the reasons, then the
+ * thing to do about it. It is the same order the page is read in, and it is
+ * the only place in the product where motion runs on load rather than on
+ * arrival — there is nothing here to scroll to yet.
+ */
+.title {
+  animation: enter 0.55s var(--ease-out) backwards;
+}
+
+.lede {
+  animation: enter 0.55s var(--ease-out) 0.08s backwards;
+}
+
+.points {
+  animation: enter 0.55s var(--ease-out) 0.16s backwards;
+}
+
+.start {
+  animation: enter 0.55s var(--ease-out) 0.2s backwards;
+}
+
+.guideColumn {
+  animation: enter 0.55s var(--ease-out) 0.26s backwards;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
 }
 
 /* Left: why this is worth a file. */
@@ -98,8 +162,9 @@
   line-height: 1.55;
 }
 
-/* Right: the only thing on the screen to do. */
+/* Middle: the only thing on the screen to do. */
 .start {
+  grid-area: start;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -160,7 +225,7 @@
   padding: 12px 26px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--accent);
+  background: var(--accent-strong);
   color: #fff;
   font-size: 0.92rem;
   font-weight: 650;
@@ -171,32 +236,83 @@
 }
 
 .dropzone:hover:not(:disabled) .primary {
-  background: var(--accent-hover);
+  background: var(--accent-strong-hover);
   box-shadow: 0 4px 14px rgba(252, 82, 0, 0.32);
 }
 
-/* The demo is a way past the file requirement, not a second call to action, so
-   it reads as a link rather than a button. */
-.secondary {
-  align-self: center;
-  padding: 4px 2px;
+/*
+ * The demo, as its own card.
+ *
+ * For anyone who does not have a file to hand — which on a first visit is most
+ * people — this is the way in, so it gets a card of its own rather than a line
+ * of small print. It is a solid card against the dashed one above it: the same
+ * weight, obviously a different kind of thing, and there is nothing to read
+ * before knowing which of the two applies to you.
+ */
+.demoCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
   border: none;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  text-decoration-color: var(--border-strong);
-  text-underline-offset: 4px;
-  transition: color 0.14s ease;
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  text-align: left;
+  transition:
+    box-shadow var(--duration-control) var(--ease-out),
+    transform var(--duration-control) var(--ease-out);
 }
 
-.secondary:hover:not(:disabled) {
-  color: var(--text-primary);
-  text-decoration-color: currentColor;
+.demoCard:hover:not(:disabled) {
+  box-shadow: var(--shadow-raised);
+  transform: translateY(-1px);
+}
+
+.demoGlyph {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  /* The triangle reads as centred only once it is nudged off centre. */
+  padding-left: 2px;
+}
+
+.demoText {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.demoTitle {
+  font-size: 0.98rem;
+  font-weight: 660;
+  letter-spacing: var(--tracking-heading);
+}
+
+.demoHint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.demoArrow {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  transition: transform var(--duration-control) var(--ease-out);
+}
+
+.demoCard:hover:not(:disabled) .demoArrow {
+  transform: translateX(3px);
 }
 
 .dropzone:disabled,
-.secondary:disabled {
+.demoCard:disabled {
   opacity: 0.55;
   cursor: progress;
 }
@@ -213,11 +329,14 @@
 /*
  * The export guide.
  *
- * Chips choose a source and the steps swap in place under them; the box keeps
- * its height whether or not one is open, so picking a source never shifts the
- * card above it.
+ * Chips choose a source and a panel opens under them. The panel is anchored
+ * rather than laid out: it floats over the page from the chip row, so it takes
+ * no room while closed — which on a screen sized to the viewport is worth more
+ * than the alternative of holding an empty strip open for it — and displaces
+ * nothing above it when opened.
  */
 .guide {
+  position: relative;
   padding-top: var(--space-4);
   border-top: 1px solid var(--border);
 }
@@ -242,7 +361,10 @@
 }
 
 .sourceChip {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px 5px 9px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-pill);
   background: none;
@@ -255,20 +377,153 @@
     color 0.12s ease;
 }
 
+/* Drawn in the chip's own colour, so the glyph inverts with the chip when it is
+   the one selected. Held back slightly, because it is there to be recognised at
+   a glance rather than read. */
+.sourceIcon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--text-muted);
+  transition: color 0.12s ease;
+}
+
+.sourceChip:hover .sourceIcon,
+.sourceChip[aria-expanded="true"] .sourceIcon {
+  color: currentColor;
+}
+
 .sourceChip:hover {
   border-color: var(--text-muted);
   color: var(--text-primary);
 }
 
-.sourceChip[aria-pressed="true"] {
+.sourceChip[aria-expanded="true"] {
   border-color: var(--text-primary);
   background: var(--text-primary);
   color: #fff;
 }
 
-.guideSteps {
-  min-height: 4.25rem;
-  padding-top: var(--space-3);
+/*
+ * The panel, as a card.
+ *
+ * It is the third white card on the screen and reads as one deliberately: the
+ * two above it are the things to do, and this is the thing to read before doing
+ * either. Capped and scrollable only as insurance — on a short laptop screen a
+ * panel that runs off the bottom is worse than one with a scrollbar.
+ */
+.panel {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: min(24rem, 52vh);
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-raised);
+  animation: panelIn var(--duration-control) var(--ease-out);
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+/* Which export to take, where an app offers more than one. A quieter control
+   than the chips above: the source has already been chosen, and this only
+   varies it. */
+.routeTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.routeTab {
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 620;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.routeTab:hover {
+  color: var(--text-primary);
+}
+
+.routeTab[aria-pressed="true"] {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+/*
+ * What the file brings with it.
+ *
+ * This is the part of the guide that argues for one route over another, so it
+ * sits above the steps rather than under them — by the time someone is reading
+ * instructions the choice is already made.
+ */
+.carries {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.carriesLabel {
+  margin-right: 2px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 640;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.carry {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Absent metrics stay in the row and are struck through. Colour is not doing
+   the work here — the line is, and the label carries it for a reader who gets
+   neither. */
+.carry[data-carried="false"] {
+  background: none;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-decoration: line-through;
+  text-decoration-color: var(--border-strong);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .steps {
@@ -290,6 +545,13 @@
   counter-increment: step;
 }
 
+/* The words that are literally on the button being described. Bolding them lets
+   the click path be followed without reading the sentence around it. */
+.step b {
+  color: var(--text-primary);
+  font-weight: 640;
+}
+
 .step::before {
   content: counter(step);
   position: absolute;
@@ -301,13 +563,14 @@
   height: 16px;
   border-radius: 50%;
   background: var(--surface-inset);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 0.62rem;
   font-weight: 700;
 }
 
 .guideNote {
-  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.78rem;
   line-height: 1.5;
@@ -415,6 +678,25 @@
   border-top: 1px solid var(--border);
 }
 
+/* The two ways out of the picker. They read as links rather than buttons: the
+   list is the decision, and these are only the ways of not making it. */
+.secondary {
+  padding: 4px 2px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  transition: color var(--duration-quick) var(--ease-out);
+}
+
+.secondary:hover {
+  color: var(--text-primary);
+  text-decoration-color: currentColor;
+}
+
 /* The drop overlay. The window is the target, so the confirmation covers it. */
 .overlay {
   position: fixed;
@@ -437,14 +719,97 @@
   font-weight: 650;
 }
 
+/*
+ * Two columns: the pitch, and the upload with the guide beneath it.
+ *
+ * The middle width cannot hold three columns without one of them becoming a
+ * gutter, so the guide goes back under the upload — but as its own grid row
+ * rather than as more of the upload column, which is what lets the panel float
+ * out of the flow here without lengthening anything.
+ */
 @media (min-width: 880px) {
   .hero {
     grid-template-columns: 1.05fr 0.95fr;
+    grid-template-areas:
+      "pitch start"
+      "pitch guide";
+    column-gap: clamp(2rem, 5vw, 4.5rem);
+    row-gap: var(--space-4);
+  }
+
+  .pitch {
+    align-self: center;
+  }
+
+  .start,
+  .guideColumn {
+    width: 100%;
+    max-width: 24rem;
+    margin-left: auto;
+  }
+}
+
+/*
+ * Three columns, which is the arrangement this screen is really for.
+ *
+ * The guide stops being a footnote to the upload and becomes the third thing
+ * on the page, level with the other two. It gets the room to stack its sources
+ * as a list rather than wrap them into a ragged block, and its panel opens in
+ * the flow — the column is the shortest of the three, so the space the panel
+ * needs is space the page is already spending.
+ */
+@media (min-width: 1180px) {
+  .hero {
+    max-width: 72rem;
+    grid-template-columns: 1fr 0.9fr 0.78fr;
+    grid-template-areas: "pitch start guide";
+    column-gap: clamp(2rem, 4vw, 3.5rem);
   }
 
   .start {
-    max-width: 24rem;
+    max-width: 22rem;
     margin-left: auto;
+  }
+
+  .guideColumn {
+    max-width: none;
+    margin-left: 0;
+  }
+
+  /* Nothing sits above it here, so the rule that divided it from the demo card
+     has nothing left to divide. */
+  .guide {
+    /* Holds the chips still while the panel opens and closes under them. The
+       reserve is free in this layout: the column is shorter than the two beside
+       it either way, so nothing on the page moves for it. */
+    min-height: min(21rem, 42vh);
+    padding-top: 0;
+    border-top: none;
+  }
+
+  /* Side by side and wrapped, not one per line. Down a column these are five
+     rows of one word each — a long list of a short thing. Packed, they are a
+     block the eye takes in at once, which is all a set of five is for. */
+  .guideRow {
+    gap: 5px;
+  }
+
+  .sourceChip {
+    padding: 4px 10px 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .guideLabel {
+    margin-bottom: var(--space-2);
+  }
+
+  /* In the flow, and quieter than the two cards beside it — this is a thing to
+     read rather than a thing to press. */
+  .panel {
+    position: static;
+    max-height: none;
+    margin-top: var(--space-3);
+    box-shadow: var(--shadow-card);
   }
 }
 
@@ -466,10 +831,37 @@
   .points {
     margin-bottom: var(--space-6);
   }
+
+  /* Stacked, there is nothing below the guide to float over and the page
+     scrolls anyway, so the panel goes back into the flow. A layer that has to
+     be dismissed before the page can be used again is the wrong thing on a
+     phone. */
+  .panel {
+    position: static;
+    max-height: none;
+    padding: var(--space-4) 0 0;
+    background: none;
+    box-shadow: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .overlay {
     backdrop-filter: none;
   }
+}
+
+/* The small print at the very end of the page, styled like the footer the run
+   page has, so leaving either screen reads the same. */
+.landingFooter {
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.landingFooter p {
+  max-width: 60ch;
+  margin: 0 auto;
 }

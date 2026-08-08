@@ -1,0 +1,208 @@
+/*
+ * The kept-runs list.
+ *
+ * One component in two settings, so the differences are held here rather than
+ * in the markup: on the landing screen it is a card in the middle column, and
+ * inside the masthead panel it is a plain block on the panel's own surface with
+ * a height it cannot exceed.
+ */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  text-align: left;
+}
+
+.list[data-variant="landing"] {
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: 0 1px 2px rgba(23, 23, 26, 0.06), 0 6px 18px rgba(23, 23, 26, 0.06);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.hint,
+.progress,
+.notice {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.notice {
+  color: var(--accent-ink);
+}
+
+.search {
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 22rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+/* Inside the masthead the panel already scrolls; a second scrolling box within
+   it traps a flick of the wheel in whichever one the pointer happens to be
+   over. */
+.list[data-variant="panel"] .items {
+  max-height: none;
+  overflow-y: visible;
+}
+
+/* The row is a button and a remove control side by side rather than nested,
+   because a button inside a button is not something a keyboard can reach. */
+.item {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.item:hover {
+  background: var(--surface-hover);
+}
+
+.open {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.itemMeta {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.65rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.remove {
+  align-self: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 6px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: 6px;
+}
+
+.empty {
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.quiet,
+.destructive {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quiet:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.destructive {
+  background: var(--accent-strong);
+  color: #fff;
+}
+
+.destructive:hover {
+  background: var(--accent-strong-hover);
+}

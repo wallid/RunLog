@@ -8,6 +8,26 @@
   height: 340px;
 }
 
+/*
+ * The route settles onto the tiles a moment after the map itself arrives.
+ *
+ * Everything Leaflet draws — the line, the start and end markers — lives in
+ * the overlay pane, so fading that one element carries the whole route without
+ * touching how Leaflet manages the paths underneath. Drawing the line end to
+ * end was tempting and rejected: Leaflet rewrites path geometry on every pan
+ * and zoom, and an animation tied to that geometry would replay itself every
+ * time the reader moved the map.
+ */
+:global([data-reveal="true"]) .mapShell :global(.leaflet-overlay-pane) {
+  animation: routeIn 0.7s var(--ease-out) 0.15s backwards;
+}
+
+@keyframes routeIn {
+  from {
+    opacity: 0;
+  }
+}
+
 .markers {
   display: flex;
   align-items: center;
@@ -23,8 +43,10 @@
   gap: var(--space-2);
 }
 
+/* The three point markers, keyed in the shapes Leaflet draws them in. */
 .dotStart,
-.dotEnd {
+.dotEnd,
+.dotCursor {
   width: 10px;
   height: 10px;
   border: 2px solid var(--surface-card);
@@ -37,6 +59,10 @@
 
 .dotEnd {
   background: var(--text-primary);
+}
+
+.dotCursor {
+  background: var(--accent);
 }
 
 .clear {

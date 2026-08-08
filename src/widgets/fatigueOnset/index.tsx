@@ -1,5 +1,5 @@
 import { defineWidget } from "../contract";
-import { HeroFigure } from "@/viz/primitives";
+import { HeroFigure, Legend } from "@/viz/primitives";
 import { Track } from "@/viz/Track";
 import {
   formatCadence,
@@ -165,6 +165,14 @@ export const fatigueOnsetWidget = defineWidget<Result>({
         >
           {() => null}
         </Track>
+
+        <Legend
+          items={[
+            { label: "Before", color: "var(--zone-2-soft)" },
+            { label: "After", color: "var(--zone-4-soft)" },
+            { label: "Possible onset", color: "var(--zone-5)", shape: "dashed" },
+          ]}
+        />
 
         <div className={styles.table}>
           <span className={styles.head}>Signal</span>

@@ -1,6 +1,7 @@
 import { defineWidget, type Explanation, type Observation } from "../contract";
 import type { ActivityEvent } from "@/model/activity";
 import { Track, type TrackRegion } from "@/viz/Track";
+import { Legend } from "@/viz/primitives";
 import { buildPath, linearScale } from "@/viz/scales";
 import { useSelectionStore } from "@/state/selectionStore";
 import { meanOver } from "../helpers";
@@ -186,6 +187,29 @@ export const elevationStoryWidget = defineWidget<Result>({
             );
           }}
         </Track>
+
+        <Legend
+          label="What is drawn"
+          items={[
+            { label: "Elevation", color: "var(--metric-elevation)", shape: "line" },
+            ...(result.climbs.length > 0
+              ? [
+                  {
+                    label: `Climb (${result.climbs.length})`,
+                    color: "color-mix(in srgb, var(--terrain-uphill) 22%, transparent)",
+                  },
+                ]
+              : []),
+            ...(result.descents.length > 0
+              ? [
+                  {
+                    label: `Descent (${result.descents.length})`,
+                    color: "color-mix(in srgb, var(--terrain-downhill) 18%, transparent)",
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         {result.climbs.length > 0 ? (
           <ul className={shared.rows} style={{ marginTop: "var(--space-4)" }}>

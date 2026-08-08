@@ -21,3 +21,23 @@ export function readStored(key: string, legacyKey: string): string | null {
     return null;
   }
 }
+
+/**
+ * Keys written by features that no longer exist.
+ *
+ * The per-card feedback control kept the reader's notes in the browser. It has
+ * been replaced by an email link, so nothing reads these any more — and leaving
+ * someone's written opinions sitting in storage that nothing will ever open
+ * again is not a promise this page should keep making. They are dropped on the
+ * first load after the upgrade.
+ */
+const RETIRED_KEYS = ["runlog.feedback", "run-story.feedback"];
+
+export function forgetRetiredKeys(): void {
+  if (typeof localStorage === "undefined") return;
+  try {
+    for (const key of RETIRED_KEYS) localStorage.removeItem(key);
+  } catch {
+    // Same as above: disabled storage is not a fault worth reporting.
+  }
+}

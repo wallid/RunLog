@@ -58,6 +58,75 @@ export const ZONE_DEFINITIONS: ZoneDefinition[] = [
 
 export const ALL_ZONES: HrZone[] = [1, 2, 3, 4, 5];
 
+/**
+ * The three intensities the five zones group into.
+ *
+ * Five zones is a finer grid than the body actually works on. What separates
+ * running is where the effort sits relative to the two thresholds — below the
+ * first, between them, above the second — which is the easy/steady/hard split
+ * coaches describe and the one polarised training is argued in. The five-zone
+ * scale maps onto it cleanly enough: 1 and 2 are below, 3 straddles, 4 and 5
+ * are above.
+ *
+ * It earns its place here twice. It is what a reader is usually trying to work
+ * out — whether a stretch was easy or hard, not whether it was Zone 2 or Zone
+ * 3 — and it is what the page can colour honestly, because three background
+ * washes can be told apart and five cannot.
+ */
+export type IntensityBand = "easy" | "steady" | "hard";
+
+export interface IntensityBandDefinition {
+  band: IntensityBand;
+  name: string;
+  zones: HrZone[];
+  description: string;
+}
+
+export const INTENSITY_BANDS: IntensityBandDefinition[] = [
+  {
+    band: "easy",
+    name: "Easy",
+    zones: [1, 2],
+    description:
+      "Below the first threshold: conversational, and sustainable for as long as the legs hold out.",
+  },
+  {
+    band: "steady",
+    name: "Steady",
+    zones: [3],
+    description:
+      "Between the thresholds: comfortably hard, the pace of a long tempo rather than a race.",
+  },
+  {
+    band: "hard",
+    name: "Hard",
+    zones: [4, 5],
+    description:
+      "Above the second threshold: effort that is being spent rather than sustained, and is on a clock.",
+  },
+];
+
+export function bandForZone(zone: HrZone): IntensityBand {
+  return zone <= 2 ? "easy" : zone === 3 ? "steady" : "hard";
+}
+
+export function bandDefinition(band: IntensityBand): IntensityBandDefinition {
+  return INTENSITY_BANDS.find((definition) => definition.band === band)!;
+}
+
+/** "Zone 4 · Hard" — the zone said with the thing a reader wants from it. */
+export function zoneWithBand(zone: HrZone): string {
+  return `Zone ${zone} · ${bandDefinition(bandForZone(zone)).name}`;
+}
+
+/** "Zones 1–2", or "Zone 3" where an intensity covers only one. */
+export function bandZoneRange(band: IntensityBand): string {
+  const { zones } = bandDefinition(band);
+  return zones.length === 1
+    ? `Zone ${zones[0]}`
+    : `Zones ${zones[0]}–${zones[zones.length - 1]}`;
+}
+
 export function zoneForHeartRate(bpm: number, maxHr: number): HrZone {
   if (maxHr <= 0) return 1;
   const fraction = bpm / maxHr;

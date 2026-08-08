@@ -67,14 +67,63 @@ svg {
   display: block;
 }
 
+/* The accent written as text, rather than the accent itself: at body size the
+   brand orange sits at 3.3:1 on the page, which is a legible graphic and an
+   illegible sentence. */
 a {
-  color: var(--accent);
+  color: var(--accent-ink);
 }
 
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+/*
+ * Touch targets.
+ *
+ * The design runs to small, quiet controls, which is right on a trackpad and
+ * wrong under a thumb. Rather than growing every button everywhere, the floor
+ * is raised only where the pointer is actually coarse: the same pill reads as
+ * a 28px chip on a laptop and a 44px one on a phone, and the layout absorbs it
+ * because every row of actions already wraps.
+ *
+ * The exception is anything inside a chart. A block in the activity strip is
+ * eight pixels wide because it is one of ninety along the run — its size is
+ * the data. Those carry `data-mark`, and the run can be navigated instead from
+ * the timeline, which is a full-width target.
+ */
+@media (pointer: coarse) {
+  button:not([data-mark]),
+  a[role="button"],
+  summary,
+  [role="tab"] {
+    min-height: 44px;
+  }
+}
+
+/*
+ * Windows high-contrast and any other forced-colours mode.
+ *
+ * Forced colours throw away every background, which is most of what this page
+ * uses to say things: a legend swatch becomes invisible, and so does the fill
+ * of a bar. `forced-color-adjust: none` on the marks themselves keeps the data
+ * painted, since the colour there is information rather than decoration, while
+ * everything else takes the system palette as intended.
+ */
+@media (forced-colors: active) {
+  [data-mark],
+  [data-swatch],
+  svg [fill]:not([fill="none"]),
+  svg [stroke]:not([stroke="none"]) {
+    forced-color-adjust: none;
+  }
+
+  /* Shadows do not render, so the cards need a real edge to stay separate. */
+  [data-card] {
+    border: 1px solid CanvasText;
+  }
 }
 
 /** The reading column the whole story sits in. */
@@ -93,12 +142,38 @@ a {
     scroll-behavior: auto;
   }
 
+  /* Delays are flattened alongside durations: a staggered reveal whose delay
+     survived would leave a card holding back rows it had already decided to
+     show. */
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
+}
+
+/* Google Translate brings its own furniture: a banner across the top, a
+   hover bubble, and a highlight on every phrase it has touched. All three are
+   built for a page that has no design of its own. The banner is the one that
+   actually breaks something — it pushes the document down by setting `top` on
+   the body inline, which slides a sticky masthead off the screen. */
+body > .skiptranslate,
+.goog-te-banner-frame,
+#goog-gt-tt {
+  display: none !important;
+}
+
+body {
+  /* Beats the inline `top: 40px` the banner sets, which outlives the banner. */
+  top: 0 !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
 }
 
 /* Leaflet's own chrome is toned down to sit inside a card rather than on top

@@ -16,6 +16,31 @@
   background: var(--surface-sunken);
 }
 
+/* The small panels inside a card arrive left to right, in the order they are
+   read. The card sets `data-reveal`; see the note in `primitives.module.css`. */
+:global([data-reveal="true"]) .cards > * {
+  animation: panelIn var(--duration-arrive) var(--ease-out) backwards;
+}
+
+:global([data-reveal="true"]) .cards > :nth-child(2) {
+  animation-delay: 60ms;
+}
+
+:global([data-reveal="true"]) .cards > :nth-child(3) {
+  animation-delay: 120ms;
+}
+
+:global([data-reveal="true"]) .cards > :nth-child(n + 4) {
+  animation-delay: 170ms;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
 .cardTitle {
   color: var(--text-muted);
   font-size: 0.7rem;
@@ -55,11 +80,16 @@
   border-radius: var(--radius-md);
   background: none;
   text-align: left;
-  transition: background 0.12s ease;
+  transition:
+    background var(--duration-quick) ease,
+    transform var(--duration-quick) var(--ease-out);
 }
 
+/* A rows list is a set of places on the run the reader can jump to, and the
+   nudge is what says so before they click. */
 button.row:hover {
   background: var(--surface-hover);
+  transform: translateX(3px);
 }
 
 .rowSelected {

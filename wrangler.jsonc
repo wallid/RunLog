@@ -2,7 +2,17 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "runlog",
   // Vite writes the static bundle here; `npm run deploy` uploads this directory
-  // as-is. There is no Worker in front of it — the app is entirely client-side.
+  // as-is. Runs are still parsed entirely client-side: the one piece of server
+  // code is `functions/api/stats.ts`, a visit counter, which wrangler picks up
+  // from `functions/` automatically at deploy time.
   "pages_build_output_dir": "dist",
-  "compatibility_date": "2026-08-07"
+  "compatibility_date": "2026-08-07",
+  // The counter's storage. One key ("visits"), created with
+  // `wrangler kv namespace create runlog-stats`.
+  "kv_namespaces": [
+    {
+      "binding": "STATS",
+      "id": "bc5b7d931069411196ea56a2c41eee2e"
+    }
+  ]
 }

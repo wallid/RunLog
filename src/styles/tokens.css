@@ -23,33 +23,93 @@
   --surface-hover: #f1f0ed;
   --surface-inset: #ebe9e5;
 
-  /* Ink */
+  /*
+   * Ink.
+   *
+   * Every one of these clears 4.5:1 against both the page and a card, which is
+   * the threshold for text at the sizes this product actually uses — the muted
+   * tone carries notes, captions and axis labels at 0.7–0.8rem, so it is the
+   * one that has to be checked rather than the one that can be assumed. It was
+   * lighter, and failed at 3.0:1; this is the lightest grey that passes.
+   */
   --text-primary: #17171a;
   --text-secondary: #5f5f66;
-  --text-muted: #93939c;
+  --text-muted: #6e6e77;
 
   /* Hairlines. Cards carry no border at all; these are for dividers inside. */
   --border: #ebe9e6;
   --border-strong: #ddd9d4;
   --gridline: #f0eeeb;
 
-  /* The single accent. */
+  /*
+   * The single accent.
+   *
+   * `--accent` is the brand orange and stays exactly as it is, because it is
+   * used for things that are seen rather than read: a route line, a progress
+   * hairline, a focus ring, the fill of a bar. Against white it sits at 3.3:1,
+   * which is the bar for a graphic and well under the bar for words.
+   *
+   * So there are two more. `--accent-strong` is what goes behind white text on
+   * a button — the same hue, dark enough that the label clears 4.5:1 — and
+   * `--accent-ink` is the accent written *as* text, on a page or on the soft
+   * tint. Neither is a second brand colour; they are the same colour at the
+   * contrast the job needs.
+   */
   --accent: #fc5200;
   --accent-hover: #e04800;
+  --accent-strong: #d04200;
+  --accent-strong-hover: #b93b00;
   --accent-soft: #fff1e9;
   --accent-ink: #b03900;
 
-  /* Heart-rate zones: one hue, light to dark, order carried by lightness. */
-  --zone-1: #f4915a;
-  --zone-2: #ee7328;
-  --zone-3: #dd5208;
-  --zone-4: #ab4208;
-  --zone-5: #7d3106;
-  --zone-1-soft: #fdece1;
-  --zone-2-soft: #fbe2d1;
-  --zone-3-soft: #f8d5be;
-  --zone-4-soft: #f0c9b1;
-  --zone-5-soft: #e6bda6;
+  /*
+   * Heart-rate zones: gold to deep red, in three families.
+   *
+   * This was a single-hue orange ramp carrying its order in lightness alone,
+   * and it did not survive contact with a real run. Neighbouring zones sat at
+   * 1.27:1 against each other and the background wash at 1.08:1 — a reader
+   * looking at a chart could see that the shading changed without being able
+   * to say which way, which is the whole job.
+   *
+   * So the order is still lightness, monotonically, but hue now carries a
+   * second thing: which of the three intensities a zone belongs to. Zones 1
+   * and 2 are gold, zone 3 is orange, zones 4 and 5 are red — the easy,
+   * steady and hard grouping runners already train by, and the one the
+   * `INTENSITY_BANDS` in `model/zones.ts` name. Within a family the step is
+   * lightness; between families the hue moves as well, so the boundaries a
+   * reader cares most about are the ones that separate hardest.
+   *
+   * Neighbours now clear 1.55:1 and the background steps 1.13:1, both roughly
+   * double what they were, and every pair is separated for deuteranopia by
+   * more than the old ramp's best pair. Gold, orange and red are all warm on
+   * purpose: effort is the one thing on this page allowed to be warm, and the
+   * cool slots stay with pace, elevation and power.
+   */
+  --zone-1: #eeab0c;
+  --zone-2: #d5860a;
+  --zone-3: #c85410;
+  --zone-4: #a32318;
+  --zone-5: #6e1210;
+
+  /*
+   * The wash a zone gets when it is the background rather than the mark.
+   *
+   * There are three of these and not five, and that is the point. A wash pale
+   * enough to keep a chart line legible on top of it has very little room left
+   * to be five different things: five steps inside that room came out 1.08:1
+   * apart, which is nothing. Three steps get the whole range each, so they
+   * land 1.18:1 and 1.28:1 apart — and they are steps in lightness, which is
+   * the one channel that still works for a reader who cannot separate gold
+   * from red.
+   *
+   * So the background answers "how hard" and the line colour answers "which
+   * zone". Zones 1 and 2 share the easy wash, 3 has steady to itself, 4 and 5
+   * share hard. The darkest of them still leaves every metric line at 2.3:1,
+   * which is where the old five-step ramp already was.
+   */
+  --zone-band-easy: #fdf5d3;
+  --zone-band-steady: #fadfa8;
+  --zone-band-hard: #f4bda4;
 
   /* Metric identities: fixed slots, assigned in order. */
   --metric-heart: #dd5208;
@@ -63,10 +123,12 @@
   --terrain-flat: #c9c5be;
   --terrain-downhill: #2a78d6;
 
-  /* Confidence, used for the uncertainty labels rather than as series colour. */
+  /* Confidence, used for the uncertainty labels rather than as series colour.
+     Each is checked against the tint it is actually printed on, which for the
+     low tag is the inset grey rather than the card. */
   --confidence-high: #157a3e;
   --confidence-medium: #8a6410;
-  --confidence-low: #6a6a72;
+  --confidence-low: #5c5c65;
 
   /* Layout */
   --column-width: 46rem;
@@ -94,6 +156,28 @@
   /* Barely-there lift. Two layers: a tight contact shadow and a wide soft one. */
   --shadow-card: 0 1px 2px rgba(23, 23, 26, 0.04), 0 6px 20px rgba(23, 23, 26, 0.05);
   --shadow-raised: 0 2px 4px rgba(23, 23, 26, 0.05), 0 12px 32px rgba(23, 23, 26, 0.08);
+
+  /*
+   * Motion. One vocabulary, so a bar growing, a card arriving and a chart
+   * drawing itself all move as though the same hand made them.
+   *
+   * Everything decelerates: nothing on this page is meant to feel launched.
+   * The durations are named for the job rather than the number — a hover is
+   * quick enough not to be noticed, an arrival is slow enough to be followed,
+   * and a chart drawing itself gets longer still because that one is meant to
+   * be watched.
+   */
+  --ease-out: cubic-bezier(0.22, 0.68, 0.24, 1);
+  --ease-soft: cubic-bezier(0.33, 0, 0.15, 1);
+  /* Barely overshoots. Reserved for things that grow from nothing — a bubble,
+     a dot on a trend line — where landing dead on the value looks stopped. */
+  --ease-pop: cubic-bezier(0.34, 1.42, 0.5, 1);
+  --duration-quick: 0.14s;
+  --duration-control: 0.24s;
+  --duration-arrive: 0.5s;
+  --duration-draw: 0.85s;
+  /* Between successive items in a list, bar chart or row of bubbles. */
+  --stagger: 45ms;
 
   --font-sans:
     "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;

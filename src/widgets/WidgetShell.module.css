@@ -19,6 +19,32 @@
    */
   overflow: clip;
   overflow-clip-margin: 28px;
+
+  /*
+   * Cards arrive as the reader reaches them.
+   *
+   * The movement is small on purpose: a card that slides a long way announces
+   * itself, and there are twenty of these on a page. A short rise and a fade
+   * is enough to say the card is new without asking to be watched.
+   */
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity var(--duration-arrive) var(--ease-out),
+    transform var(--duration-arrive) var(--ease-out);
+}
+
+.scene[data-reveal="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Nothing on a printed page scrolls into view, so every card is simply there. */
+@media print {
+  .scene {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .flipper {

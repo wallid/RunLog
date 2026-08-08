@@ -1,22 +1,39 @@
 import { useEffect, useRef } from "react";
 import { useActivityStore } from "@/state/activityStore";
+import { useLibraryStore } from "@/state/libraryStore";
+import { itemForFile } from "@/library/import";
+import { RunList } from "@/library/RunList";
 import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
+import { SocialProof } from "./SocialProof";
 import { useWindowDrop } from "./useWindowDrop";
+import { DISCLAIMER } from "@/disclaimer";
 import styles from "./DropZone.module.css";
 
 /**
  * The way in.
  *
- * One screen, no scroll: what the page is for on the left, the way to start on
- * the right. The three points are the reasons to hand over a file at all, so
- * they are claims about what the reader gets rather than a description of the
- * software.
+ * One screen, no scroll: what the page is for on the left, the two ways to
+ * start in the middle, and where to find a file on the right. The three points
+ * are the reasons to hand over a file at all, so they are claims about what the
+ * reader gets rather than a description of the software. The one thing below
+ * the fold is the proof strip — the visit count and the testimonials — which
+ * is allowed to exist because it lengthens nothing above it and is needed by
+ * nobody who already has a file in hand.
+ *
+ * Three columns because a reader arrives holding one of three things —
+ * interest, a file, or a file they cannot lay hands on — and none of those is a
+ * follow-on from another. The guide was under the drop card and made the column
+ * long enough to push the screen past the fold, which is the one thing this
+ * layout exists to avoid.
  *
  * Handing the file over is deliberately hard to get wrong — a drop anywhere on
  * the window counts, so does a paste, so does clicking the card — because the
  * step before it is already the awkward one, and the guide underneath is there
- * for exactly that reason.
+ * for exactly that reason. Anyone with no file at all is not stuck either: the
+ * demo is its own card beside the drop target rather than a line of small
+ * print under it, since on a first visit it is often the more useful of the
+ * two.
  *
  * The file is read locally and never uploaded anywhere, which is worth saying
  * plainly on the screen where a runner hands over their data — it is the third
@@ -36,7 +53,7 @@ const VALUE_POINTS = [
   },
   {
     title: "Nothing is uploaded",
-    body: "No account, no server. Your file is read in this browser and never leaves this machine.",
+    body: "No account, no server. Your files are read in this browser, kept in this browser, and never leave this machine — remove them whenever you like.",
   },
 ];
 
@@ -48,13 +65,31 @@ export function DropZone() {
   const choices = useActivityStore((state) => state.choices);
   const loadFile = useActivityStore((state) => state.loadFile);
   const loadDemo = useActivityStore((state) => state.loadDemo);
+  const openFromLibrary = useActivityStore((state) => state.openFromLibrary);
+
+  const libraryStatus = useLibraryStore((state) => state.status);
+  const kept = useLibraryStore((state) => state.entries);
+  const importing = useLibraryStore((state) => state.importing);
+  const importAll = useLibraryStore((state) => state.importAll);
 
   const busy = status === "loading";
   const choosing = status === "choosing" && choices !== null;
+  // Nothing kept, or nowhere to keep it, and this is the screen it always was.
+  const hasLibrary = libraryStatus === "ready" && kept.length > 0;
 
+  /**
+   * One file is a run to read; several are a collection to keep.
+   *
+   * Opening the first of a dozen dropped files and discarding the rest is the
+   * behaviour this replaces, and it was never what the drop meant.
+   */
   const handleFiles = (files: FileList | null | undefined) => {
-    const file = files?.[0];
-    if (file && !busy) void loadFile(file);
+    if (!files || files.length === 0 || busy || importing) return;
+    if (files.length === 1) {
+      void loadFile(files[0]);
+      return;
+    }
+    void importAll(Array.from(files).map(itemForFile));
   };
 
   const dragging = useWindowDrop(handleFiles);
@@ -94,6 +129,7 @@ export function DropZone() {
             type="file"
             accept=".fit,.gpx,.gz,.zip,application/gpx+xml,application/zip"
             className={styles.input}
+            multiple
             onChange={(event) => handleFiles(event.target.files)}
             disabled={busy}
           />
@@ -115,19 +151,45 @@ export function DropZone() {
                 </span>
                 <span className={styles.primary}>Choose a file</span>
                 <span className={styles.dropHint}>
-                  FIT or GPX — or the whole export zip from Apple Health or Strava.
-                  You can paste one too.
+                  FIT or GPX — one, several at once, or the whole export zip from
+                  Apple Health or Strava. You can paste one too.
                 </span>
               </button>
 
-              <button
-                type="button"
-                className={styles.secondary}
-                onClick={() => void loadDemo()}
-                disabled={busy}
-              >
-                Or look at a demo run
-              </button>
+              {/* Progress for a drop of several files, which has no picker to
+                  report into. */}
+              {importing && (
+                <p className={styles.error} role="status">
+                  Reading run {importing.done} of {importing.total}…
+                </p>
+              )}
+
+              {/* A reader with runs already kept here is not on a first visit,
+                  so the list takes the place the demo held: it is the thing
+                  they came back for. */}
+              {hasLibrary ? (
+                <RunList variant="landing" onOpen={(id) => void openFromLibrary(id)} />
+              ) : (
+                /* The other way in, given the same weight as the card above it
+                   because for most first visits it is the one that applies. */
+                <button
+                  type="button"
+                  className={styles.demoCard}
+                  onClick={() => void loadDemo()}
+                  disabled={busy}
+                >
+                  <span className={styles.demoGlyph} aria-hidden="true">
+                    <PlayIcon />
+                  </span>
+                  <span className={styles.demoText}>
+                    <span className={styles.demoTitle}>See a demo run</span>
+                    <span className={styles.demoHint}>No file needed</span>
+                  </span>
+                  <span className={styles.demoArrow} aria-hidden="true">
+                    →
+                  </span>
+                </button>
+              )}
             </>
           )}
 
@@ -136,12 +198,25 @@ export function DropZone() {
               {error}
             </p>
           )}
-
-          {/* Someone already looking at a list of their own runs has solved the
-              problem the guide exists for. */}
-          {!choosing && <SourceGuide />}
         </div>
+
+        {/* Beside the upload rather than under it: the two are answers to
+            different questions, and stacking them made a screen that is meant
+            to fit into one that scrolls. Someone already looking at a list of
+            their own runs has solved the problem the guide exists for, so it
+            stands down while the picker is up — the column stays, because
+            collapsing it would move the other two. */}
+        <div className={styles.guideColumn}>{!choosing && <SourceGuide />}</div>
       </main>
+
+      <SocialProof />
+
+      {/* Below the proof strip, where the small print belongs: the screen
+          above makes claims about what a reader gets, so the page ends by
+          saying what it is not. */}
+      <footer className={styles.landingFooter}>
+        <p>{DISCLAIMER}</p>
+      </footer>
 
       {dragging && (
         <div className={styles.overlay} aria-hidden="true">
@@ -149,6 +224,14 @@ export function DropZone() {
         </div>
       )}
     </div>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+      <path d="M7.5 5.2 15 10l-7.5 4.8Z" fill="currentColor" />
+    </svg>
   );
 }
 

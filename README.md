@@ -6,7 +6,7 @@
 
 Most running apps show you totals and charts, then leave you to work out what they mean. Run Log walks through a single run and explains what changed, where, and what might account for it.
 
-Everything runs in your browser. There is no account and no upload — your activity file is read locally and never leaves the machine. Two things talk to a server, both narrow and both listed in Settings: the hosted build sends anonymous crash reports carrying a stack trace and nothing from your run, and a weather lookup you have to switch on yourself sends a position rounded to about eleven kilometres, so the page can tell you what the wind and heat were doing.
+Everything runs in your browser. There is no account and no upload — your activity files are read locally and never leave the machine. Runs you open are kept in this browser's own storage so they are one click away next time, and **Remove all stored runs** in Settings deletes them. Three things talk to a server, all narrow and all listed in Settings: the hosted build sends anonymous crash reports carrying a stack trace and nothing from your run; a weather lookup you have to switch on yourself sends a position rounded to about eleven kilometres, so the page can tell you what the wind and heat were doing; and choosing a language in Settings hands the visible text of the page to Google Translate. Leave that last one alone and nothing about the page is sent anywhere.
 
 ---
 
@@ -16,7 +16,7 @@ For one activity file, the page answers five questions in order:
 
 A contents rail on the left tracks where you are and lets you jump straight to a section; on narrow screens it collapses into a **Contents** button in the masthead.
 
-Each card shows only what happened. Press the **ⓘ** and the card turns over to reveal what the metric means — and to ask how the section is working for you.
+Each card shows only what happened. Press the **ⓘ** and the card turns over to reveal what the metric means.
 
 1. **What happened?** — the totals, and a run-type badge.
 2. **Where did it happen?** — a draggable timeline and a real map, both synced.
@@ -74,9 +74,9 @@ src/
 │   ├── activity.ts   the source-independent model every widget reads
 │   ├── zones.ts      heart-rate zones from a configurable maximum
 │   └── pipeline/     normalise → derive → split → detect events → rank moments
-├── state/            small Zustand stores (activity, selection, settings, feedback)
+├── state/            small Zustand stores (activity, selection, settings)
 ├── observability/    crash reporting: the gates, the scrubber, the boundary
-├── shell/            masthead, contents rail, scroll-spy, feedback panel
+├── shell/            masthead, contents rail, scroll-spy
 ├── tour/             the first-run walkthrough: steps, spotlight geometry
 ├── viz/              Track primitive, SVG shapes, scales
 └── widgets/          one directory per widget: compute, narrate, view
@@ -116,9 +116,15 @@ FIT files are self-describing: every data message is preceded by a definition de
 
 **Unsettled work is opt-in.** Sections whose thresholds are still judgement calls are marked `status: "beta"` and left out by default, so the page you get first is only what the project stands behind. Turn on **Show experimental sections** in Settings to see them; they carry a Beta badge and a caveat.
 
-**Feedback stays local.** Each card's back asks how the section is working. Answers are kept in the browser and can be copied out as Markdown to paste into an issue — there is nowhere to send them, and adding somewhere would undo the promise that your run stays on your machine.
+**Feedback is an email address, not a form.** There is no rating widget on the cards and nothing stored about what you thought of them. If a section is wrong or confusing, the footer carries an address to write to — which keeps the page free of controls that collect opinions it has nowhere to send, and keeps the promise that nothing about your run is sent anywhere.
+
+**The library keeps files, not conclusions.** What a runner actually has is an export — a Strava zip, or every route an iPhone has recorded — and reading one run out of it meant unpacking the same archive again on the next visit. So runs are kept in IndexedDB, and what is kept is the original FIT or GPX exactly as it arrived. Nothing derived: the model built from a run is a sample per second and would dwarf the file it came from, so opening a run from the library re-parses it rather than trusting a cached result, which also means a run kept last month gets this month's analysis. Metadata and files live in separate object stores because IndexedDB materialises a whole record to read any part of it — one store would mean pulling every stored activity file into memory just to draw a list of names. Identity is the SHA-256 of the stored bytes rather than the start time, because re-importing the same export is the ordinary way to add the runs recorded since last time, and only a content hash can tell that apart from four hundred duplicates.
+
+This is the one thing the page keeps between visits that came out of a runner's own data, so it is built to be taken back: every row in the list removes itself, Settings removes all of them at once, and what that deletes is this browser's copy — your own files are untouched. A browser that refuses storage, such as a private window, is not an error case; the library reports itself unavailable, every part of the interface that would offer one stands down, and the page behaves exactly as it did before there was one. Safari may evict browser storage after about seven days without a visit, which is worth knowing and costs nothing: the library is a convenience over files you still have.
 
 **The weather lookup is opt-in, and rounded.** A run's conditions explain a great deal — heat drives cardiovascular drift, and a headwind shortens a stride exactly the way fatigue does — but finding them out means telling somebody else where you were and when, which is the one thing this project most wants to keep local. So it is off until you switch it on, and what goes out is a coordinate rounded to one decimal place: a cell about eleven kilometres across, coarser than the weather grid itself, so the rounding costs no accuracy at all. Your route, your file and every measurement in it stay here. The request builder is a pure function in [`src/weather/openMeteo.ts`](src/weather/openMeteo.ts) and is unit-tested to prove a precise position cannot reach the URL, because that guarantee would otherwise fail silently. Everything it produces is labelled **Estimated**: an hourly reanalysis grid several kilometres wide, measured ten metres up, knows nothing about the lane you were actually in.
+
+**Translation is machine translation, and it says so.** Fifty languages is not something one person can write and keep true. This page argues about thresholds and confidence, and it changes every release; a hand-maintained translation of that would be quietly wrong in most languages within a version or two, and a wrong explanation is worse than an English one. So **Language** in Settings hands the page to Google's website translator instead — and the cost is stated where the choice is made rather than in a policy nobody opens. Nothing loads until a language is picked: there is no script tag in the HTML, and a reader who stays in English never contacts Google at all. What goes over when they do pick one is the visible text — the headings, the observations, the run's own name and the figures written into sentences. The activity file is never part of it. The switch is driven through the widget's own control rather than by reloading with a cookie set, because the run only exists in memory and a reload would throw it away. Google merges and replaces text nodes as it works, which is enough to unmount a React tree mid-update, so `src/i18n/googleTranslate.ts` teaches `removeChild` and `insertBefore` to tolerate a node that has already been taken away — applied on the first switch and never to a reader who has not asked for it.
 
 **Crash reporting is the other thing that talks to a server, and it is built as an exception.** A fault on someone else's browser is otherwise invisible: the reader sees a broken page and closes the tab. So the hosted build reports crashes — behind three gates. A build with no `VITE_SENTRY_DSN` never loads the SDK at all, which covers local development and every fork. The runner can switch it off in Settings, and that takes effect immediately rather than at the next reload. And everything sent passes through [`src/observability/scrub.ts`](src/observability/scrub.ts) first.
 
@@ -152,6 +158,18 @@ Register it in `src/widgets/registry.ts`. Keeping `compute` and `narrate` pure m
 | GPX | ✅ | ✅ | ✅ Garmin extension | ✅ when recorded | ✅ Strava extension |
 
 Sparse metrics are interpolated across gaps of up to 15 seconds; longer gaps are treated as recording interruptions rather than filled in.
+
+## Disclaimer
+
+Run Log describes recorded data; it is not medical, coaching or training
+advice. Everything on the page is read or inferred from a consumer device —
+optical heart rate, modelled power, a smoothed barometric trace — and any of it
+can be wrong, individually or together. The experimental sections go further
+and say so on every card: they apply published research outside the conditions
+it was tested under. Nothing here diagnoses, treats or prevents anything. For a
+symptom, an injury, or a reading that worries you, see a qualified professional
+rather than a chart. The software itself is provided as-is, without warranty of
+any kind, per the licence below.
 
 ## Licence
 

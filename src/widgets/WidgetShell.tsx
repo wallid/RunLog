@@ -7,8 +7,8 @@ import type {
   WidgetStatus,
 } from "./contract";
 import { confidenceLabel, PROVENANCE_LABELS } from "./contract";
+import { useInView } from "@/shell/useInView";
 import { StatRow } from "@/viz/primitives";
-import { FeedbackControl } from "./FeedbackControl";
 import styles from "./WidgetShell.module.css";
 
 /**
@@ -50,11 +50,17 @@ export function WidgetShell({
 }) {
   const [flipped, setFlipped] = useState(false);
   const { frontRef, backRef, height } = useFaceHeight(flipped);
+  // The card rises into place as the reader reaches it, and everything drawn
+  // inside it takes its cue from the same flag: bars grow, bubbles arrive and
+  // charts draw themselves only once the card they belong to is on screen.
+  const [revealRef, revealed] = useInView<HTMLElement>();
 
   return (
     <section
       className={styles.scene}
       id={id}
+      ref={revealRef}
+      data-reveal={revealed ? "true" : "false"}
       aria-labelledby={`${id}-title`}
       data-tour={tourAnchor ? "card" : undefined}
     >
@@ -66,6 +72,7 @@ export function WidgetShell({
         <div
           className={`${styles.face} ${styles.front}`}
           ref={frontRef}
+          data-card=""
           aria-hidden={flipped}
           inert={flipped}
         >
@@ -133,6 +140,7 @@ export function WidgetShell({
         <div
           className={`${styles.face} ${styles.back}`}
           ref={backRef}
+          data-card=""
           aria-hidden={!flipped}
           inert={!flipped}
         >
@@ -202,8 +210,6 @@ export function WidgetShell({
               so treat what it says with more caution than the rest of the page.
             </p>
           )}
-
-          <FeedbackControl widgetId={id} widgetTitle={title} />
 
           <button
             type="button"

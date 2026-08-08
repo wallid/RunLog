@@ -11,6 +11,7 @@ import type {
   Split,
 } from "../activity";
 import { estimateMaxHr } from "../zones";
+import { gradeAdjustmentOver } from "../gradeAdjusted";
 import { normalize } from "./normalize";
 import { derive } from "./derive";
 import { computeSplits } from "./splits";
@@ -149,6 +150,7 @@ function buildSummary(
     maxElevationM: elevations.length > 0 ? Math.max(...elevations) : undefined,
     zoneTime: countZoneTime(samples),
     gradientBuckets: buildGradientBuckets(samples),
+    gradeAdjustment: gradeAdjustmentOver(samples),
     drift: computeDrift(samples),
     consistency: computeConsistency(samples),
     bestEfforts: computeBestEfforts(samples),

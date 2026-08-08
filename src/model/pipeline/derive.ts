@@ -3,6 +3,7 @@ import type { HrZone, Sample } from "../activity";
 import { rollingMean, rollingMedian, type Series } from "@/lib/smoothing";
 import { median } from "@/lib/stats";
 import { zoneForHeartRate } from "../zones";
+import { gradeAdjustedPace } from "../gradeAdjusted";
 
 /**
  * Turns normalised series into the per-second samples widgets read.
@@ -80,6 +81,8 @@ export function derive(
     // rather than becoming a very large one.
     if (isMoving && paceSpeedHere !== undefined && paceSpeedHere > 0.1) {
       sample.paceSecPerKm = 1000 / paceSpeedHere;
+      const adjusted = gradeAdjustedPace(sample.paceSecPerKm, sample.gradientPct);
+      if (adjusted !== undefined) sample.gradeAdjustedPaceSecPerKm = adjusted;
     }
 
     if (sample.hrBpm !== undefined && options.maxHr) {

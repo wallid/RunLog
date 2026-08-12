@@ -303,9 +303,14 @@ export function EventEditor({
   );
 }
 
-/** The catalogue in reading order, nutrition first, one row per category. */
+/**
+ * The catalogue in reading order, nutrition first, one row per category.
+ *
+ * Every category in the catalogue has to appear here or its kinds are
+ * unreachable, which is what the test below this file's component checks.
+ */
 function groupedKinds(): [EventCategory, typeof EVENT_KINDS][] {
-  const order: EventCategory[] = ["nutrition", "body", "kit", "other"];
+  const order: EventCategory[] = ["nutrition", "body", "test", "kit", "other"];
   return order
     .map(
       (category) =>

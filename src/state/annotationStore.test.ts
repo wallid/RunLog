@@ -142,6 +142,54 @@ describe("adding, changing and removing", () => {
   });
 });
 
+describe("readings, which are their figure", () => {
+  it("stores a lactate reading with its value", async () => {
+    const store = await freshStore();
+    store.getState().add("fit-1", { t: 1800, kind: "lactate", value: 3.84 });
+    expect(store.getState().byRun["fit-1"][0].value).toBe(3.8);
+  });
+
+  it("refuses a reading with no figure, or one no meter could produce", async () => {
+    const store = await freshStore();
+    store.getState().add("fit-1", { t: 1800, kind: "lactate" });
+    store.getState().add("fit-1", { t: 1800, kind: "lactate", value: 380 });
+    expect(store.getState().byRun).toEqual({});
+  });
+
+  it("changes a figure without touching the rest of the entry", async () => {
+    const store = await freshStore();
+    store
+      .getState()
+      .add("fit-1", { t: 1800, kind: "lactate", value: 3.8, note: "end of step 3" });
+    const { id } = store.getState().byRun["fit-1"][0];
+
+    store.getState().update("fit-1", id, { value: 5.2 });
+    const entry = store.getState().byRun["fit-1"][0];
+    expect(entry.value).toBe(5.2);
+    expect(entry.note).toBe("end of step 3");
+  });
+
+  it("leaves the figure behind when the entry stops being a reading", async () => {
+    const store = await freshStore();
+    store.getState().add("fit-1", { t: 1800, kind: "lactate", value: 3.8 });
+    const { id } = store.getState().byRun["fit-1"][0];
+
+    store.getState().update("fit-1", id, { kind: "gel" });
+    const entry = store.getState().byRun["fit-1"][0];
+    expect(entry.kind).toBe("gel");
+    expect(entry).not.toHaveProperty("value");
+  });
+
+  it("refuses to turn an event into a reading without one", async () => {
+    const store = await freshStore();
+    store.getState().add("fit-1", { t: 1800, kind: "gel" });
+    const { id } = store.getState().byRun["fit-1"][0];
+
+    store.getState().update("fit-1", id, { kind: "lactate" });
+    expect(store.getState().byRun["fit-1"][0].kind).toBe("gel");
+  });
+});
+
 describe("putting them back on the run being read", () => {
   it("attaches to the matching run and leaves any other alone", async () => {
     const { useAnnotationStore, useActivityStore } = await freshStores();

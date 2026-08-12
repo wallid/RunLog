@@ -1,0 +1,85 @@
+/* One row per reading: the figure and what it means, then the running behind
+   it. The figure leads because it is the thing the runner typed in and the
+   thing they came back to look at. */
+
+.table {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.head {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.headRight {
+  composes: head;
+  text-align: end;
+}
+
+.reading {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+  color: var(--accent-ink);
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.band {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 400;
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  text-align: end;
+}
+
+.at {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.curve {
+  margin-top: var(--space-4);
+}
+
+/* The two conclusions, set apart from the table because they are statements
+   about the whole set of readings rather than about any one of them. */
+.estimate {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-4);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.steady {
+  composes: estimate;
+  margin-top: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .table {
+    gap: var(--space-1) var(--space-2);
+  }
+
+  .reading,
+  .value {
+    font-size: 0.82rem;
+  }
+}

@@ -1,7 +1,11 @@
 import type { Confidence, DerivedActivity, Sample } from "@/model/activity";
 import { kindSpec, type RunAnnotation } from "@/model/annotations";
-import { collect, mean } from "@/lib/stats";
-import { NOISE_FLOOR } from "../helpers";
+import {
+  averageBetween,
+  movingSecondsBetween,
+  NOISE_FLOOR,
+  samplesBetween,
+} from "../helpers";
 
 /**
  * What the running either side of a reader's event looked like.
@@ -180,8 +184,7 @@ function windowOf(activity: DerivedActivity, from: number, to: number): ImpactWi
   const window: ImpactWindow = { startT, endT, movingS: 0 };
   if (endT <= startT) return window;
 
-  const samples = samplesIn(activity, window);
-  window.movingS = samples.filter((sample) => sample.moving).length;
+  window.movingS = movingSecondsBetween(activity, startT, endT);
   window.hrBpm = averageOver(activity, window, (sample) => sample.hrBpm);
   window.gradientPct = averageOver(activity, window, (sample) =>
     sample.moving ? sample.gradientPct : undefined,
@@ -189,24 +192,19 @@ function windowOf(activity: DerivedActivity, from: number, to: number): ImpactWi
   return window;
 }
 
-function samplesIn(activity: DerivedActivity, window: ImpactWindow): Sample[] {
-  return activity.samples.filter(
-    (sample) => sample.t >= window.startT && sample.t <= window.endT,
-  );
-}
-
 function averageOver(
   activity: DerivedActivity,
   window: ImpactWindow,
   pick: (sample: Sample) => number | undefined,
 ): number | undefined {
-  const values = collect(samplesIn(activity, window), pick);
-  return values.length > 0 ? mean(values) : undefined;
+  return averageBetween(activity, window.startT, window.endT, pick);
 }
 
 /** The share of a window's moving seconds that carry a grade-adjusted pace. */
 function gapCoverage(activity: DerivedActivity, window: ImpactWindow): number {
-  const moving = samplesIn(activity, window).filter((sample) => sample.moving);
+  const moving = samplesBetween(activity, window.startT, window.endT).filter(
+    (sample) => sample.moving,
+  );
   if (moving.length === 0) return 0;
   const adjusted = moving.filter(
     (sample) => sample.gradeAdjustedPaceSecPerKm !== undefined,

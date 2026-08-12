@@ -24,6 +24,40 @@ repaired guess would sit on the page claiming the runner said it.
 The catalogue is one list in `src/model/annotations.ts`, and what makes a kind
 analysable is a window on its own entry rather than a branch in the code.
 
+**Readings, not just marks.** A kind can now ask for a number as well as a
+place, and the first one that does is *Blood lactate* under a new *Tests*
+heading in the editor: pick it, and the form asks for the millimoles per litre
+off the meter. The figure is part of the entry rather than a note about it, so
+it shows on the chips, in the marker labels on every chart and in the readout
+under the cursor. Storage is checked the same way everything else is — a reading
+outside what a handheld meter can produce is refused rather than clamped,
+because a mistyped 3.8 pinned to the top of the range would put a maximal
+reading on the page that nobody ever took, and a reading that lost its figure is
+dropped rather than kept as an empty marker. Adding a second kind of measurement
+later is one entry in the same catalogue.
+
+**Lactate profile, a new card in *Synthesis*.** A blood lactate value is not an
+event with a before and an after — it is a measurement of the minutes that led
+up to the prick — so this card pairs every reading with the running behind it
+rather than the running after it: the five minutes before the sample, counting
+moving seconds, with the gradient taken out where the run allows it. It reports
+each reading with the pace and heart rate it came off, and picks out a stretch
+held at one pace with lactate flat across it, which is the useful half of
+testing on an ordinary run. The curve is drawn only where there is one: three
+readings or more, each taken faster than the last. Readings whose pace wandered
+get the table and no chart, because joining them in pace order would draw a
+shape out of an order the running never went in.
+
+The estimate it can give — the pace at four millimoles per litre — is refused far
+more often than it is granted. It needs the readings to cross that concentration
+exactly once, on rising pace, with enough running behind both sides to have a
+pace at all; anything else gets a sentence saying which of those failed instead
+of a figure. And where the figure is given, the card says in as many words that
+four millimoles is a convention that fits the average of a group and not this
+runner: measured properly the concentration a runner holds steady ranges from
+about two to seven, so the interpolated pace is only as close to a threshold as
+the reader happens to be to average.
+
 **Fuelling pattern, a new card in *Synthesis*.** Where the *Event impact* card
 below it asks whether a particular gel did anything — the hard question, and the
 one a single run answers worst — this one asks the easy and more useful one: was

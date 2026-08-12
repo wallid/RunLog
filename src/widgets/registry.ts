@@ -37,6 +37,7 @@ import bestSections from "./bestSections";
 import metricRelationships from "./metricRelationships";
 import fuellingPattern from "./fuellingPattern";
 import eventImpact from "./eventImpact";
+import lactateProfile from "./lactateProfile";
 import learningSummary from "./learningSummary";
 import durability from "./durability";
 import powerEfficiency from "./powerEfficiency";
@@ -128,6 +129,11 @@ export const WIDGETS: ErasedWidget[] = [
   // claim first.
   erase(fuellingPattern),
   erase(eventImpact),
+  // Third of the reader-added cards, and the only one built on a measurement
+  // rather than a mark. It comes last of the three because it is the one that
+  // needs equipment: most runs will never carry a reading, and the card simply
+  // is not there when they do not.
+  erase(lactateProfile),
   erase(learningSummary),
 
   // Experimental lab. Last on purpose: these apply methods from recent running

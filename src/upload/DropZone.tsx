@@ -9,6 +9,8 @@ import { Benefits } from "./Benefits";
 import { SocialProof } from "./SocialProof";
 import { useWindowDrop } from "./useWindowDrop";
 import { DISCLAIMER } from "@/disclaimer";
+import { SUPPORT_URL } from "@/support";
+import { REPO_URL, STARS, formatStars, starsWorthShowing } from "@/repo";
 import styles from "./DropZone.module.css";
 
 /**
@@ -79,8 +81,11 @@ export function DropZone() {
   return (
     <div className={styles.screen} data-dragging={dragging}>
       {/* A rule of a header: the mark, two places to go, and what this is.
-          Nothing here is the way in — that is the hero's job, and putting a
-          second call to action up here would only compete with it. */}
+          Nothing on the left is the way in — that is the hero's job, and a
+          second call to action there would only compete with it. The coffee
+          link is on the trailing edge for the same reason: it is the one thing
+          up here that leaves the page, so it sits as far from the drop box as
+          the bar allows, next to the line it qualifies. */}
       <header className={styles.bar}>
         <nav className={styles.nav}>
           <span className={styles.wordmark}>
@@ -95,7 +100,42 @@ export function DropZone() {
             Your watch
           </a>
         </nav>
-        <span className={styles.barNote}>Open source · runs in your browser</span>
+        <div className={styles.barEnd}>
+          <span className={styles.barNote}>Open source · runs in your browser</span>
+
+          {/* The line to the left claims this is open source; this is the
+              claim's receipt, so it sits next to it. The count rides along only
+              once there is enough of it to be worth reading — see repo.ts. */}
+          <a
+            className={styles.repoLink}
+            href={REPO_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <span className={styles.repoLabel}>GitHub</span>
+            {starsWorthShowing(STARS) && (
+              <span className={styles.stars}>
+                <StarIcon />
+                {formatStars(STARS)}
+              </span>
+            )}
+          </a>
+
+          {/* The words go on a narrow screen and the cup stays, because the
+              two in-page links beside it have nowhere else to be. The label is
+              on the anchor rather than in the text, so what is announced does
+              not change with the viewport. */}
+          <a
+            className={styles.barSupport}
+            href={SUPPORT_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="Buy me a coffee"
+          >
+            <span className={styles.barSupportText}>Buy me a coffee</span>
+            <span aria-hidden="true">☕</span>
+          </a>
+        </div>
       </header>
 
       <main className={styles.page}>
@@ -269,6 +309,15 @@ export function DropZone() {
             is not. */}
         <footer className={styles.landingFooter}>
           <p>{DISCLAIMER}</p>
+          {/* The page above promises no account, no upload and no limits, and
+              means it. This is the only place it asks for anything, and it
+              asks after the promise rather than beside it. */}
+          <p className={styles.landingSupport}>
+            Free, and no plans to be anything else.{" "}
+            <a href={SUPPORT_URL} target="_blank" rel="noreferrer noopener">
+              Buy me a coffee ☕
+            </a>
+          </p>
         </footer>
       </main>
 
@@ -278,6 +327,23 @@ export function DropZone() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The star a GitHub badge counts, drawn rather than typed.
+ *
+ * The glyph ★ lands at a different weight and baseline in every font this page
+ * might fall back to, and this one has to sit level with a number beside it.
+ */
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className={styles.starIcon} aria-hidden="true">
+      <path
+        d="M8 1.7l1.9 4 4.4.6-3.2 3.1.8 4.4L8 11.7l-3.9 2.1.8-4.4L1.7 6.3l4.4-.6z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 

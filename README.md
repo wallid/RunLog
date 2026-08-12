@@ -99,6 +99,17 @@ A local build sends nothing anywhere.
 | FIT | ✅ | ✅ | ✅ | ✅ when recorded | ✅ |
 | GPX | ✅ | ✅ | ✅ Garmin extension | ✅ when recorded | ✅ Strava extension |
 
+## Support
+
+Run Log is free, has no account, and no plans to be anything else. If it showed
+you something about your running, you can
+[buy me a coffee](https://buymeacoffee.com/wallid) ☕ — it goes on the domain
+and the hosting.
+
+The site links to that page and nothing more: no embedded button, no widget
+script, nothing third-party that runs before you decide to click. That is the
+same rule as the rest of the page.
+
 ## Disclaimer
 
 Run Log describes recorded data; it is not medical, coaching or training

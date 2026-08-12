@@ -116,3 +116,15 @@
   padding: var(--space-2) var(--space-1);
   text-underline-offset: 3px;
 }
+
+/* Tighter to the contact line than the contact line is to the disclaimer:
+   the two are a pair — one way to complain, one way to say thanks. */
+.support {
+  margin-top: var(--space-1);
+}
+
+.support a {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+  text-underline-offset: 3px;
+}

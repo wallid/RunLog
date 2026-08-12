@@ -10,6 +10,7 @@ import { RunHeader } from "./shell/RunHeader";
 import { TableOfContents } from "./shell/TableOfContents";
 import { Tour } from "./tour/Tour";
 import { CONTACT_EMAIL, contactHref } from "./contact";
+import { SUPPORT_URL } from "./support";
 import { DISCLAIMER } from "./disclaimer";
 import styles from "./App.module.css";
 
@@ -132,6 +133,15 @@ function Footer() {
         <p className={styles.contact}>
           Something wrong or confusing?{" "}
           <a href={contactHref()}>{CONTACT_EMAIL}</a>
+        </p>
+        {/* Asked once, at the bottom, after the run has been read — the page
+            is free and stays free either way, and a reader who has scrolled
+            this far has already had the thing they came for. */}
+        <p className={styles.support}>
+          <a href={SUPPORT_URL} target="_blank" rel="noreferrer noopener">
+            Buy me a coffee ☕
+          </a>{" "}
+          if this was useful.
         </p>
       </div>
     </footer>

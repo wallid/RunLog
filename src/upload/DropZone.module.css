@@ -82,9 +82,97 @@
   color: var(--text-primary);
 }
 
+/* The trailing end of the bar: what this is, and the one link that leaves. */
+.barEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .barNote {
   color: var(--text-muted);
   font-size: 0.78rem;
+}
+
+/*
+ * The link to the source, and the count beside it.
+ *
+ * Underlined text rather than a chip, so it sits below the coffee button in
+ * the header's order of loudness — that one is an ask and this is a fact. The
+ * count is the chip: a tinted pill against the page, which is what lets a
+ * number be spotted in a header without being read.
+ */
+.repoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-quick) var(--ease-out);
+}
+
+.repoLabel {
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--duration-quick) var(--ease-out);
+}
+
+.repoLink:hover {
+  color: var(--text-primary);
+}
+
+.repoLink:hover .repoLabel {
+  text-decoration-color: currentColor;
+}
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 640;
+  font-variant-numeric: tabular-nums;
+}
+
+.starIcon {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  color: var(--zone-1);
+}
+
+/*
+ * Deliberately quieter than the drop box and louder than the nav links: an
+ * outline rather than a fill, so it reads as available rather than as the
+ * thing to do next. Filling it would make two buttons compete on the first
+ * screen, and the one that matters is the one that opens a run.
+ */
+.barSupport {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-quick) var(--ease-out),
+    border-color var(--duration-quick) var(--ease-out);
+}
+
+.barSupport:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 .page {
@@ -816,6 +904,26 @@
   .altRule {
     display: none;
   }
+
+  /* The bar does not wrap, and at this width there is room for the mark and
+     two of the three things on the other end. The cup keeps its place; the
+     anchor's `aria-label` means nothing is lost to a reader who cannot see
+     it. */
+  .barSupportText {
+    display: none;
+  }
+
+  .barSupport {
+    padding: 6px 10px;
+  }
+
+  /* The two in-page links go rather than the link to the source. They only
+     jump to sections a phone reader scrolls through anyway, whereas leaving
+     for GitHub cannot be done any other way from this screen. */
+  .navRule,
+  .navLink {
+    display: none;
+  }
 }
 
 /*
@@ -856,4 +964,16 @@
 .landingFooter p {
   max-width: 60ch;
   margin: 0 auto;
+}
+
+/* Set off from the disclaimer above it, and given a target big enough to hit
+   with a thumb — it is the one link in this footer. */
+.landingSupport {
+  margin-top: var(--space-3);
+}
+
+.landingSupport a {
+  display: inline-block;
+  padding: var(--space-2) var(--space-1);
+  text-underline-offset: 3px;
 }

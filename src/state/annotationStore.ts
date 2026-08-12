@@ -3,6 +3,7 @@ import {
   MAX_NOTE_LENGTH,
   kindSpec,
   sanitizeAnnotations,
+  sanitizeMeasurement,
   type RunAnnotation,
 } from "@/model/annotations";
 import { useActivityStore } from "./activityStore";
@@ -34,11 +35,14 @@ const MAX_RUNS = 200;
 
 interface AnnotationState {
   byRun: Record<string, RunAnnotation[]>;
-  add: (runId: string, input: { t: number; kind: string; note?: string }) => void;
+  add: (
+    runId: string,
+    input: { t: number; kind: string; note?: string; value?: number },
+  ) => void;
   update: (
     runId: string,
     id: string,
-    patch: Partial<Pick<RunAnnotation, "t" | "kind" | "note">>,
+    patch: Partial<Pick<RunAnnotation, "t" | "kind" | "note" | "value">>,
   ) => void;
   remove: (runId: string, id: string) => void;
   /**
@@ -122,6 +126,10 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => {
       if (existing.length >= MAX_PER_RUN) return;
       if (kindSpec(input.kind) === undefined) return;
       if (!Number.isFinite(input.t) || input.t < 0) return;
+      const value = sanitizeMeasurement(input.kind, input.value);
+      // The same rule the storage reader applies: a kind that asks for a figure
+      // is not added without one.
+      if (value === undefined && kindSpec(input.kind)?.measure) return;
       const entry: RunAnnotation = {
         id: crypto.randomUUID(),
         t: Math.round(input.t),
@@ -130,6 +138,7 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => {
       };
       const note = cleanNote(input.note);
       if (note) entry.note = note;
+      if (value !== undefined) entry.value = value;
       commit(runId, [...existing, entry]);
     },
 
@@ -144,6 +153,17 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => {
         if (patch.kind !== undefined && kindSpec(patch.kind) !== undefined) {
           next.kind = patch.kind;
         }
+        // The figure is settled against the kind the entry is ending up as, so
+        // a gel changed into a lactate reading has to bring its number with it,
+        // and a lactate reading changed into a gel leaves its mmol/L behind
+        // rather than carrying it into a field that means nothing there.
+        const value = sanitizeMeasurement(
+          next.kind,
+          "value" in patch ? patch.value : entry.value,
+        );
+        if (value === undefined && kindSpec(next.kind)?.measure) return entry;
+        if (value !== undefined) next.value = value;
+        else delete next.value;
         if ("note" in patch) {
           const note = cleanNote(patch.note);
           if (note) next.note = note;

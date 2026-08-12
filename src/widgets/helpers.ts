@@ -259,14 +259,59 @@ export function annotationMarkers(
   activity: DerivedActivity,
   annotations: readonly RunAnnotation[] | undefined = activity.annotations,
 ): TrackMarker[] {
-  return (annotations ?? []).map((annotation) => ({
-    t: annotation.t,
-    label: `${kindSpec(annotation.kind)?.label ?? "Event"} at ${formatDistanceShort(
-      distanceAtTime(activity, annotation.t),
-    )}`,
-    detail: annotation.note,
-    color: ANNOTATION_COLOR,
-  }));
+  return (annotations ?? []).map((annotation) => {
+    const spec = kindSpec(annotation.kind);
+    // A reading's figure belongs in the label rather than the detail line: it
+    // is what the marker is, not a note about it.
+    const what =
+      annotation.value !== undefined && spec?.measure
+        ? `${spec.label} ${annotation.value} ${spec.measure.unit}`
+        : (spec?.label ?? "Event");
+    return {
+      t: annotation.t,
+      label: `${what} at ${formatDistanceShort(distanceAtTime(activity, annotation.t))}`,
+      detail: annotation.note,
+      color: ANNOTATION_COLOR,
+    };
+  });
+}
+
+/**
+ * The samples of one stretch of the clock, inclusive at both ends.
+ *
+ * Every card that reads "the running around this moment" — the fuelling
+ * comparison, the lactate readings — starts here, so that they all agree on
+ * what a window is and none of them drifts to a half-open interval.
+ */
+export function samplesBetween(
+  activity: DerivedActivity,
+  startT: number,
+  endT: number,
+): Sample[] {
+  return activity.samples.filter(
+    (sample) => sample.t >= startT && sample.t <= endT,
+  );
+}
+
+/** Seconds of actual running in a stretch; standing still is not running. */
+export function movingSecondsBetween(
+  activity: DerivedActivity,
+  startT: number,
+  endT: number,
+): number {
+  return samplesBetween(activity, startT, endT).filter((sample) => sample.moving)
+    .length;
+}
+
+/** The mean of whatever a stretch's samples offer, or undefined if none do. */
+export function averageBetween(
+  activity: DerivedActivity,
+  startT: number,
+  endT: number,
+  pick: (sample: Sample) => number | undefined,
+): number | undefined {
+  const values = collect(samplesBetween(activity, startT, endT), pick);
+  return values.length > 0 ? mean(values) : undefined;
 }
 
 /**

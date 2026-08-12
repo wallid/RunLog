@@ -84,6 +84,9 @@ export function CursorReadout({
       {marked && (
         <p className={styles.readoutContext}>
           You marked here: <strong>{kindSpec(marked.kind)?.label ?? "Event"}</strong>
+          {marked.value !== undefined && kindSpec(marked.kind)?.measure
+            ? ` — ${marked.value} ${kindSpec(marked.kind)?.measure?.unit}`
+            : ""}
           {marked.note ? ` — ${marked.note}` : ""}
         </p>
       )}

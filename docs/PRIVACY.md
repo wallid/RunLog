@@ -110,6 +110,23 @@ the reason the crash-report scrubber cuts tile URLs back to their origin. It
 is not opt-in: a run that carries a position renders its map, and the tiles
 load with it.
 
+The landing page shows one of these maps too — the flythrough, drawn from the
+bundled demo run — so it is worth being exact about what that does and does
+not disclose. The coordinates in those tile requests are the demo run's, not
+yours, and the demo's own coordinates are re-projected to Richmond Park rather
+than the place it was run, which `fixtures/README.md` explains. What reaches
+OpenStreetMap is your IP address and the fact that someone looked at a fixed
+park in London. Nothing about you or your files is in it.
+
+**This does mean the front page contacts a third party.** The card is mounted
+when it scrolls into view rather than with the page, but at the present layout
+it is about 710 px down and therefore already in view on load — measured at
+390×844, 1440×900 and 1920×1080, all of which fetch tiles immediately. The
+gate is worth keeping because it holds if the section ever moves further down,
+but it should not be read as a promise that a visit fetches nothing: today it
+does. A visit that fetches no tiles at all would need the map held behind a
+press, which is a trade against showing the thing the card exists to show.
+
 ## Everything else
 
 A local build sends nothing anywhere. Crash reporting only exists in a build

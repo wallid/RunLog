@@ -5,6 +5,7 @@ import {
   EVENT_KINDS,
   MAX_NOTE_LENGTH,
   kindSpec,
+  sanitizeMeasurement,
   type EventCategory,
 } from "@/model/annotations";
 import { useAnnotationStore } from "@/state/annotationStore";
@@ -35,6 +36,8 @@ export interface EventDraft {
    * back from the time would rewrite "1" as "1.00" under the reader's cursor.
    */
   distanceText: string;
+  /** The measurement as typed, for the kinds that ask for one. */
+  valueText: string;
 }
 
 /** Opens, moves and closes the draft; owned by the timeline so the track can move it. */
@@ -55,11 +58,15 @@ export function useEventEditor(activity: DerivedActivity) {
   return {
     draft,
     /** Starts a new event, or reopens one already saved. */
-    open: (t: number, existing?: { id: string; kind: string; note?: string }) =>
+    open: (
+      t: number,
+      existing?: { id: string; kind: string; note?: string; value?: number },
+    ) =>
       setDraft({
         ...atTime(t),
         kind: existing?.kind ?? "gel",
         note: existing?.note ?? "",
+        valueText: existing?.value !== undefined ? String(existing.value) : "",
         editing: existing?.id,
       }),
     close: () => setDraft(null),
@@ -96,16 +103,30 @@ export function EventEditor({
   const remove = useAnnotationStore((state) => state.remove);
   const { draft, open, close, change, typeDistance } = controller;
 
+  const measure = draft ? kindSpec(draft.kind)?.measure : undefined;
+  const value = draft
+    ? sanitizeMeasurement(draft.kind, Number.parseFloat(draft.valueText))
+    : undefined;
+  // A reading is its number, so a measured kind with nothing readable typed is
+  // not saveable. Everything else saves as it always did.
+  const saveable = measure === undefined || value !== undefined;
+
   const save = () => {
-    if (!draft) return;
+    if (!draft || !saveable) return;
     if (draft.editing) {
       update(activity.id, draft.editing, {
         t: draft.t,
         kind: draft.kind,
         note: draft.note,
+        value,
       });
     } else {
-      add(activity.id, { t: draft.t, kind: draft.kind, note: draft.note });
+      add(activity.id, {
+        t: draft.t,
+        kind: draft.kind,
+        note: draft.note,
+        value,
+      });
     }
     close();
   };
@@ -127,9 +148,11 @@ export function EventEditor({
 
       {annotations.length === 0 && draft === null && (
         <p className={styles.empty}>
-          A gel, a drink, a cramp, a stop to fix a shoe — anything the watch did
-          not record. Added events are marked on the charts, and the fuelling
-          ones are compared against the running either side of them.
+          A gel, a drink, a cramp, a stop to fix a shoe, a lactate reading off a
+          meter — anything the watch did not record. Added events are marked on
+          the charts, the fuelling ones are compared against the running either
+          side of them, and the readings are read against the running that led
+          up to them.
         </p>
       )}
 
@@ -145,6 +168,11 @@ export function EventEditor({
                 <span className={styles.chipKind}>
                   {kindSpec(annotation.kind)?.label ?? "Event"}
                 </span>
+                {annotation.value !== undefined && (
+                  <span className={`${styles.chipValue} numeric`}>
+                    {annotation.value} {kindSpec(annotation.kind)?.measure?.unit}
+                  </span>
+                )}
                 <span className={`${styles.chipWhere} numeric`}>
                   {formatDistanceShort(distanceAtTime(activity, annotation.t))}
                 </span>
@@ -198,6 +226,26 @@ export function EventEditor({
           </fieldset>
 
           <div className={styles.fields}>
+            {measure !== undefined && (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>
+                  {measure.label} ({measure.unit})
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={measure.min}
+                  max={measure.max}
+                  step={measure.step}
+                  required
+                  className={`${styles.input} numeric`}
+                  placeholder={measure.placeholder}
+                  value={draft.valueText}
+                  onChange={(event) => change({ valueText: event.target.value })}
+                />
+              </label>
+            )}
+
             <label className={styles.field}>
               <span className={styles.fieldLabel}>Distance (km)</span>
               <input
@@ -229,8 +277,20 @@ export function EventEditor({
             {formatDistanceShort(distanceAtTime(activity, draft.t))} in
           </p>
 
+          {measure !== undefined && !saveable && (
+            <p className={styles.needsValue}>
+              A {measure.label.toLowerCase()} reading needs its figure —
+              between {measure.min} and {measure.max} {measure.unit}.
+            </p>
+          )}
+
           <div className={styles.actions}>
-            <button type="button" className={styles.save} onClick={save}>
+            <button
+              type="button"
+              className={styles.save}
+              onClick={save}
+              disabled={!saveable}
+            >
               {draft.editing ? "Save changes" : "Add event"}
             </button>
             <button type="button" className={styles.cancel} onClick={close}>

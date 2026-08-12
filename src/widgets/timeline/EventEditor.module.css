@@ -87,6 +87,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* The figure is the point of a reading, so it sits next to the kind and in the
+   ink colour rather than being dropped in with the note. */
+.chipValue {
+  color: var(--accent-ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+
 .chipNote {
   max-width: 14rem;
   overflow: hidden;
@@ -220,6 +228,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Why the save button is refusing, said next to it rather than in a validation
+   bubble the browser places wherever it likes. */
+.needsValue {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -239,6 +255,16 @@
 
 .save:hover {
   background: var(--accent-strong-hover);
+}
+
+.save:disabled {
+  background: var(--surface-inset);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.save:disabled:hover {
+  background: var(--surface-inset);
 }
 
 .cancel {

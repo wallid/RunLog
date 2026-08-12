@@ -94,4 +94,22 @@
   .feature {
     grid-template-columns: 1fr 1fr;
   }
+
+  /* The one card that keeps stacking at every width. A map with three metric
+     lines under it is an instrument the reader is meant to work, and half a
+     column turns the thing they work into a thumbnail. Its copy sits above it
+     instead of beside it, which is also the right order for a section that
+     asks to be played rather than read. */
+  .featureWide {
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  /* Centred over the full measure, because a left-aligned paragraph above a
+     full-width panel reads as a caption that lost its picture. */
+  .featureWide .featureText {
+    max-width: 42rem;
+    margin-inline: auto;
+    text-align: center;
+  }
 }

@@ -10,15 +10,19 @@ import styles from "./Benefits.module.css";
 /**
  * What a run looks like once it is read, shown rather than claimed.
  *
- * The hero above makes three promises; this section is where two of them are
- * kept in front of the reader before they have handed over a file of their
- * own. Each card mounts the actual widget it names — the same compute
- * function, the same chart component, the same interaction — against the
- * bundled demo run, so this is a screenshot of the product rather than an
- * illustration of it. That is also why the set is short: only widgets that
- * fire on the demo file (no cadence, no meaningful terrain — see the source
- * guide) and that stand on their own without the rest of the page's
- * selection wiring belong here.
+ * The hero above makes one promise; these sections are where it is kept in
+ * front of the reader before they have handed over a file of their own. Each
+ * one mounts the actual widget it names — the same compute function, the same
+ * chart component, the same interaction — against the bundled demo run, so
+ * this is a screenshot of the product rather than an illustration of it. That
+ * is also why the set is short: only widgets that fire on the demo file (no
+ * cadence, no meaningful terrain — see the source guide) and that stand on
+ * their own without the rest of the page's selection wiring belong here.
+ *
+ * Three sections rather than three cards in a row. Side by side each chart got
+ * a third of the column and had to be read at a glance to be read at all; down
+ * the page each gets half the measure with its claim beside it, which is what
+ * the surrounding layout does with every other point it makes.
  */
 
 interface Benefit {
@@ -57,27 +61,20 @@ export function Benefits() {
   const activity = useDemoActivity();
 
   return (
-    <section className={styles.section} aria-labelledby="benefits-heading">
-      <div className={styles.intro}>
-        <h2 id="benefits-heading" className={styles.heading}>
-          See it before you upload anything
-        </h2>
-        <p className={styles.subhead}>
-          Every card below is live, drawn from a real run — the same one the demo
-          button opens.
-        </p>
-      </div>
+    <div id="what-you-get" className={styles.group}>
+      <p className={styles.note}>
+        Every chart below is live, drawn from a real run — the same one the demo
+        link opens.
+      </p>
 
-      <div className={styles.grid}>
-        {BENEFITS.map((benefit) => (
-          <BenefitCard key={benefit.id} benefit={benefit} activity={activity} />
-        ))}
-      </div>
-    </section>
+      {BENEFITS.map((benefit) => (
+        <BenefitSection key={benefit.id} benefit={benefit} activity={activity} />
+      ))}
+    </div>
   );
 }
 
-function BenefitCard({
+function BenefitSection({
   benefit,
   activity,
 }: {
@@ -90,11 +87,17 @@ function BenefitCard({
   );
 
   return (
-    <article className={styles.card}>
-      <p className={styles.eyebrow}>{benefit.eyebrow}</p>
-      <h3 className={styles.cardHeadline}>{benefit.headline}</h3>
-      <p className={styles.cardBody}>{benefit.body}</p>
+    <section className={styles.feature}>
+      <div className={styles.featureText}>
+        <p className={styles.eyebrow}>{benefit.eyebrow}</p>
+        <h2 className={styles.headline}>{benefit.headline}</h2>
+        <p className={styles.body}>{benefit.body}</p>
+      </div>
 
+      {/* The chart is real product output, so it gets the widget's own styles
+          rather than a frame this page invents for it — the panel around it is
+          the same one every other section on this page puts its evidence in,
+          and nothing inside it is ours. */}
       <div className={styles.chart} aria-hidden={result === null}>
         {result !== null && result !== undefined && activity ? (
           <benefit.widget.View result={result as never} activity={activity} />
@@ -102,6 +105,6 @@ function BenefitCard({
           <div className={styles.chartPlaceholder} />
         )}
       </div>
-    </article>
+    </section>
   );
 }

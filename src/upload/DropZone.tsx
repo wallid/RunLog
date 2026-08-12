@@ -14,52 +14,29 @@ import styles from "./DropZone.module.css";
 /**
  * The way in.
  *
- * One screen, no scroll, for the part that matters before anything is on
- * screen: what the page is for on the left, the two ways to start in the
- * middle, and where to find a file on the right. The three points are the
- * reasons to hand over a file at all, so they are claims about what the reader
- * gets rather than a description of the software. Below that fold the page
- * makes good on two of those claims with real charts (`Benefits`, drawn from
- * the same demo run the button opens), then closes with the proof strip — the
- * visit count and the testimonials. Both are allowed to exist below the fold
- * because they lengthen nothing above it and are needed by nobody who already
- * has a file in hand.
+ * A centred column that scrolls, in the shape llama.app uses: a thin rule of a
+ * header, then a hero that is nothing but the claim and the one thing to do
+ * about it, then alternating sections that each make one point and show it.
  *
- * Three columns because a reader arrives holding one of three things —
- * interest, a file, or a file they cannot lay hands on — and none of those is a
- * follow-on from another. The guide was under the drop card and made the column
- * long enough to push the screen past the fold, which is the one thing this
- * layout exists to avoid.
+ * The hero holds a single action. Everything that used to stand beside it —
+ * the three value claims, the export guide — now sits below as its own
+ * section, because the layout this follows spends its top screen on one
+ * sentence and one control rather than on three columns of peers. The claims
+ * lost nothing in the move: each is now a section wide enough to show the
+ * thing it claims, which the old bulleted list could only assert.
  *
  * Handing the file over is deliberately hard to get wrong — a drop anywhere on
- * the window counts, so does a paste, so does clicking the card — because the
- * step before it is already the awkward one, and the guide underneath is there
- * for exactly that reason. Anyone with no file at all is not stuck either: the
- * demo is its own card beside the drop target rather than a line of small
- * print under it, since on a first visit it is often the more useful of the
- * two.
+ * the window counts, so does a paste, so does clicking the box — because the
+ * step before it is already the awkward one, and the source guide below is
+ * there for exactly that reason. Anyone with no file at all takes the demo
+ * link under the box, which is where this layout puts a second route.
  *
  * The file is read locally and never uploaded anywhere, which is worth saying
- * plainly on the screen where a runner hands over their data — it is the third
- * point for that reason. The only thing that ever leaves is a crash report,
+ * plainly on the screen where a runner hands over their data — it is the last
+ * section for that reason. The only thing that ever leaves is a crash report,
  * which carries none of it: see observability/scrub for what is stripped, and
  * Settings for the switch.
  */
-
-const VALUE_POINTS = [
-  {
-    title: "Moments, not averages",
-    body: "The surges, the fade, the hill that cost you — found in the data and placed on the route.",
-  },
-  {
-    title: "Every claim shows its work",
-    body: "Each card separates what your watch measured from what was inferred, and says how confident it is.",
-  },
-  {
-    title: "Nothing is uploaded",
-    body: "No account, no server. Your files are read in this browser, kept in this browser, and never leave this machine — remove them whenever you like.",
-  },
-];
 
 export function DropZone() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,128 +78,199 @@ export function DropZone() {
 
   return (
     <div className={styles.screen} data-dragging={dragging}>
+      {/* A rule of a header: the mark, two places to go, and what this is.
+          Nothing here is the way in — that is the hero's job, and putting a
+          second call to action up here would only compete with it. */}
       <header className={styles.bar}>
-        <span className={styles.wordmark}>
-          <span className={styles.mark} aria-hidden="true" />
-          Run Log
-        </span>
+        <nav className={styles.nav}>
+          <span className={styles.wordmark}>
+            <span className={styles.mark} aria-hidden="true" />
+            Run Log
+          </span>
+          <span className={styles.navRule} aria-hidden="true" />
+          <a className={styles.navLink} href="#what-you-get">
+            What you get
+          </a>
+          <a className={styles.navLink} href="#sources">
+            Your watch
+          </a>
+        </nav>
         <span className={styles.barNote}>Open source · runs in your browser</span>
       </header>
 
-      <main className={styles.hero}>
-        <div className={styles.pitch}>
-          <h1 className={styles.title}>Your run, explained.</h1>
-          <p className={styles.lede}>
-            Drop in a file from your watch and read what actually happened — what
-            changed, where, and what might account for it.
-          </p>
+      <main className={styles.page}>
+        {/*
+          One claim, one sentence under it, one control. The old hero put three
+          columns on this screen and sized itself never to scroll; this one is
+          the top of a page that is meant to be read downwards, so it is allowed
+          to breathe and the rest is allowed to hang below it.
+        */}
+        <section className={styles.hero}>
+          <div className={styles.heroText}>
+            <h1 className={styles.title}>
+              Your run, explained. Free, private &amp; entirely in your browser.
+            </h1>
+            <p className={styles.lede}>
+              Drop in a file from your watch and read what actually happened —
+              what changed, where, and what might account for it. No account, no
+              upload, no limits.
+            </p>
+          </div>
 
-          <ul className={styles.points}>
-            {VALUE_POINTS.map((point) => (
-              <li key={point.title} className={styles.point}>
-                <h2 className={styles.pointTitle}>{point.title}</h2>
-                <p className={styles.pointBody}>{point.body}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className={styles.start}>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".fit,.gpx,.gz,.zip,application/gpx+xml,application/zip"
+              className={styles.input}
+              multiple
+              onChange={(event) => handleFiles(event.target.files)}
+              disabled={busy}
+            />
 
-        <div className={styles.start}>
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".fit,.gpx,.gz,.zip,application/gpx+xml,application/zip"
-            className={styles.input}
-            multiple
-            onChange={(event) => handleFiles(event.target.files)}
-            disabled={busy}
-          />
-
-          {choosing ? (
-            <ArchivePicker onPickAnother={() => inputRef.current?.click()} />
-          ) : (
-            <>
-              {/* The card is the target as well as the label for it, so a click
-                  anywhere on it opens the picker. */}
-              <button
-                type="button"
-                className={styles.dropzone}
-                onClick={() => inputRef.current?.click()}
-                disabled={busy}
-              >
-                <span className={styles.dropTitle}>
-                  {busy ? "Reading your run…" : "Drop your file anywhere"}
-                </span>
-                <span className={styles.primary}>Choose a file</span>
-                <span className={styles.dropHint}>
-                  FIT or GPX — one, several at once, or the whole export zip from
-                  Apple Health or Strava. You can paste one too.
-                </span>
-              </button>
-
-              {/* Progress for a drop of several files, which has no picker to
-                  report into. */}
-              {importing && (
-                <p className={styles.error} role="status">
-                  Reading run {importing.done} of {importing.total}…
-                </p>
-              )}
-
-              {/* A reader with runs already kept here is not on a first visit,
-                  so the list takes the place the demo held: it is the thing
-                  they came back for. */}
-              {hasLibrary ? (
-                <RunList variant="landing" onOpen={(id) => void openFromLibrary(id)} />
-              ) : (
-                /* The other way in, given the same weight as the card above it
-                   because for most first visits it is the one that applies. */
+            {choosing ? (
+              <ArchivePicker onPickAnother={() => inputRef.current?.click()} />
+            ) : (
+              <>
+                {/* The box is the target as well as the label for it, so a
+                    click anywhere on it opens the picker — which is why the
+                    action on the right is a span rather than a second button
+                    nested inside this one. */}
                 <button
                   type="button"
-                  className={styles.demoCard}
-                  onClick={() => void loadDemo()}
+                  className={styles.dropBox}
+                  onClick={() => inputRef.current?.click()}
                   disabled={busy}
                 >
-                  <span className={styles.demoGlyph} aria-hidden="true">
-                    <PlayIcon />
+                  <span className={styles.dropText}>
+                    {busy
+                      ? "Reading your run…"
+                      : "Drop your .fit or .gpx file here"}
                   </span>
-                  <span className={styles.demoText}>
-                    <span className={styles.demoTitle}>See a demo run</span>
-                    <span className={styles.demoHint}>No file needed</span>
-                  </span>
-                  <span className={styles.demoArrow} aria-hidden="true">
-                    →
-                  </span>
+                  <span className={styles.dropAction}>Choose a file</span>
                 </button>
-              )}
-            </>
-          )}
 
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
+                {/* The second and third routes in, at the weight this layout
+                    gives an alternative: a line of small print with the verb
+                    underlined. */}
+                <p className={styles.alternatives}>
+                  <span>
+                    No file to hand?{" "}
+                    <button
+                      type="button"
+                      className={styles.textLink}
+                      onClick={() => void loadDemo()}
+                      disabled={busy}
+                    >
+                      See a demo run
+                    </button>
+                  </span>
+                  <span className={styles.altRule} aria-hidden="true" />
+                  <span>
+                    Cannot find your export?{" "}
+                    <a className={styles.textLink} href="#sources">
+                      Where to look
+                    </a>
+                  </span>
+                </p>
+
+                {/* Progress for a drop of several files, which has no picker to
+                    report into. */}
+                {importing && (
+                  <p className={styles.error} role="status">
+                    Reading run {importing.done} of {importing.total}…
+                  </p>
+                )}
+
+                {/* A reader with runs already kept here is not on a first
+                    visit. The list is the thing they came back for, so it sits
+                    directly under the box rather than waiting below the fold. */}
+                {hasLibrary && (
+                  <div className={styles.library}>
+                    <RunList
+                      variant="landing"
+                      onOpen={(id) => void openFromLibrary(id)}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {error && (
+              <p className={styles.error} role="alert">
+                {error}
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* Each claim the hero could have bulleted, given a section wide enough
+            to show the thing it claims instead. */}
+        <div className={styles.sections}>
+          <Benefits />
+
+          <section className={styles.feature} id="sources">
+            <div className={styles.featureText}>
+              <h2 className={styles.featureHeading}>
+                Whatever you already run with.
+              </h2>
+              <p className={styles.featureBody}>
+                Apple, Strava, Garmin, Coros — a FIT or GPX file from any of
+                them, one at a time, several at once, or the whole export zip
+                without unzipping it first. Getting the file out is the step
+                that actually stops people, so the route for each is here rather
+                than in a README.
+              </p>
+            </div>
+
+            {/* The chips are this section's picture as well as its control —
+                five marks that can be told apart at a glance, which is what the
+                grid of logos would have been, except that pressing one answers
+                the question instead of only illustrating it. */}
+            <div className={styles.featureVisual}>
+              <SourceGuide />
+            </div>
+          </section>
+
+          <section className={styles.feature}>
+            <div className={styles.featureText}>
+              <h2 className={styles.featureHeading}>Nothing is uploaded.</h2>
+              <p className={styles.featureBody}>
+                No account, no server, no telemetry. Your files are read in this
+                browser, kept in this browser, and never leave this machine —
+                remove them whenever you like. The page works with the network
+                off, and that is the honest test of the claim.
+              </p>
+            </div>
+
+            {/* The panel this layout would fill with a code block, filled
+                instead with the one list that matters here — and it is empty on
+                purpose. */}
+            <div className={styles.featureVisual}>
+              <div className={styles.factPanel}>
+                <p className={styles.factLabel}>Leaves this machine</p>
+                <ul className={styles.factList}>
+                  <li className={styles.factNone}>Nothing.</li>
+                </ul>
+                <p className={styles.factNote}>
+                  Optional, and off unless you turn it on: a weather lookup for
+                  the run (rounded coordinates only) and a crash report with
+                  your data stripped out.
+                </p>
+              </div>
+            </div>
+          </section>
         </div>
 
-        {/* Beside the upload rather than under it: the two are answers to
-            different questions, and stacking them made a screen that is meant
-            to fit into one that scrolls. Someone already looking at a list of
-            their own runs has solved the problem the guide exists for, so it
-            stands down while the picker is up — the column stays, because
-            collapsing it would move the other two. */}
-        <div className={styles.guideColumn}>{!choosing && <SourceGuide />}</div>
+        <SocialProof />
+
+        {/* Below the proof strip, where the small print belongs: the page above
+            makes claims about what a reader gets, so it ends by saying what it
+            is not. */}
+        <footer className={styles.landingFooter}>
+          <p>{DISCLAIMER}</p>
+        </footer>
       </main>
-
-      <Benefits />
-
-      <SocialProof />
-
-      {/* Below the proof strip, where the small print belongs: the screen
-          above makes claims about what a reader gets, so the page ends by
-          saying what it is not. */}
-      <footer className={styles.landingFooter}>
-        <p>{DISCLAIMER}</p>
-      </footer>
 
       {dragging && (
         <div className={styles.overlay} aria-hidden="true">
@@ -230,14 +278,6 @@ export function DropZone() {
         </div>
       )}
     </div>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
-      <path d="M7.5 5.2 15 10l-7.5 4.8Z" fill="currentColor" />
-    </svg>
   );
 }
 

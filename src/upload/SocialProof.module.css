@@ -1,10 +1,10 @@
 /*
  * The proof strip.
  *
- * It lives under the fold of a screen that is otherwise sized to fit exactly,
- * so it is quiet by construction: a hairline to say the hero has ended, muted
- * ink, and no card chrome — the two white cards above are the things to press,
- * and nothing down here is.
+ * It closes the page, after every section that had something to show, so it is
+ * quiet by construction: a hairline to say the argument has ended, muted ink,
+ * and no card chrome — the box up in the hero is the thing to press, and
+ * nothing down here is.
  */
 .proof {
   display: grid;

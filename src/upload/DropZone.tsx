@@ -30,8 +30,14 @@ import styles from "./DropZone.module.css";
  * Handing the file over is deliberately hard to get wrong — a drop anywhere on
  * the window counts, so does a paste, so does clicking the box — because the
  * step before it is already the awkward one, and the source guide below is
- * there for exactly that reason. Anyone with no file at all takes the demo
- * link under the box, which is where this layout puts a second route.
+ * there for exactly that reason.
+ *
+ * Anyone with no file at all takes the demo button under the box. Most first
+ * visits are exactly that: someone who has heard what this does and has not
+ * gone to fetch an export to find out whether it is true. So the demo is a
+ * control rather than the line of small print it used to be, and it says what
+ * the run is — a real 3 km with heart rate, cadence and power — because "a
+ * demo" promises nothing a reader would cross a room for.
  *
  * The file is read locally and never uploaded anywhere, which is worth saying
  * plainly on the screen where a runner hands over their data — it is the last
@@ -190,22 +196,38 @@ export function DropZone() {
                   <span className={styles.dropAction}>Choose a file</span>
                 </button>
 
-                {/* The second and third routes in, at the weight this layout
-                    gives an alternative: a line of small print with the verb
-                    underlined. */}
+                {/* The second route in, and for a first visit usually the
+                    better one: most people arrive without a file to hand and
+                    will not go and fetch one to find out whether this is worth
+                    it. It was a line of small print, which asked them to
+                    notice it; it is a control now, which asks them to press
+                    it. Still quieter than the box — outlined against the box's
+                    fill — because the reader who did bring a file should not
+                    have to choose between two things that look equally like
+                    the way in. */}
+                <div className={styles.demo}>
+                  <button
+                    type="button"
+                    className={styles.demoButton}
+                    onClick={() => void loadDemo()}
+                    disabled={busy}
+                  >
+                    <span className={styles.demoIcon} aria-hidden="true" />
+                    See a demo run
+                  </button>
+                  {/* What the demo actually is, in figures rather than
+                      adjectives. "A demo" could be three invented data points;
+                      3 km with a heart rate is a run, and saying which one it
+                      is answers the question the button raises. */}
+                  <p className={styles.demoNote}>
+                    No file to hand? Open a real 3 km run — heart rate, cadence
+                    and power, read exactly the way yours would be.
+                  </p>
+                </div>
+
+                {/* The third route, still at the weight this layout gives an
+                    alternative: small print with the verb underlined. */}
                 <p className={styles.alternatives}>
-                  <span>
-                    No file to hand?{" "}
-                    <button
-                      type="button"
-                      className={styles.textLink}
-                      onClick={() => void loadDemo()}
-                      disabled={busy}
-                    >
-                      See a demo run
-                    </button>
-                  </span>
-                  <span className={styles.altRule} aria-hidden="true" />
                   <span>
                     Cannot find your export?{" "}
                     <a className={styles.textLink} href="#sources">

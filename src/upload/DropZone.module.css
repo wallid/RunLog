@@ -322,13 +322,75 @@
 }
 
 /*
- * The other two routes in, at the weight this layout gives an alternative: one
- * line of small print with the verb underlined.
+ * The demo, directly under the box.
  *
- * The demo used to be a card of its own, level with the box — on a first visit
- * it is often the more useful of the two. It is a link here because a hero with
- * two equal controls is not the shape being followed, so it is set in the
- * strongest thing small print has instead.
+ * It has been a card level with the box, then a line of small print, and both
+ * were wrong in the same direction: the first made the hero ask a question
+ * instead of giving one instruction, the second hid the route that most first
+ * visits actually need. This is the middle — unmistakably a control, and
+ * unmistakably the second one. The box is filled and casts a shadow; this is
+ * an outline on the page's own background, which is the difference between
+ * "do this" and "or try this".
+ */
+.demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.demoButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 11px 20px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  font-weight: 640;
+  letter-spacing: var(--tracking-heading);
+  transition:
+    border-color var(--duration-quick) var(--ease-out),
+    background var(--duration-quick) var(--ease-out);
+}
+
+.demoButton:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.demoButton:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* A play triangle, drawn rather than typed: the ▶ character renders at a
+   different weight and baseline in every font a browser might fall back to,
+   and this one has to sit level with the words beside it. */
+.demoIcon {
+  width: 9px;
+  height: 11px;
+  flex: none;
+  background: var(--accent);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/* Kept to a readable measure and set below the button rather than beside it —
+   the button is the thing to press, and a sentence next to it would be read
+   first and pressed second. */
+.demoNote {
+  max-width: 46ch;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/*
+ * The last route in, at the weight this layout gives an alternative: one line
+ * of small print with the verb underlined.
  */
 .alternatives {
   display: flex;
@@ -338,12 +400,6 @@
   gap: var(--space-2) var(--space-3);
   color: var(--text-muted);
   font-size: 0.78rem;
-}
-
-.altRule {
-  width: 1px;
-  height: 0.85rem;
-  background: var(--border-strong);
 }
 
 .textLink {
@@ -874,9 +930,7 @@
  *
  * Side by side, the label is squeezed until it is cut off mid-word by the
  * button beside it — and the label is the instruction. Stacked, both get the
- * full width and the split rule turns from a wall into a floor. The two
- * alternatives underneath separate the same way, which is why the rule between
- * them goes: a divider that has wrapped onto the end of a line is only debris.
+ * full width and the split rule turns from a wall into a floor.
  */
 @media (max-width: 559px) {
   .dropBox {
@@ -899,10 +953,6 @@
   .alternatives {
     flex-direction: column;
     gap: var(--space-2);
-  }
-
-  .altRule {
-    display: none;
   }
 
   /* The bar does not wrap, and at this width there is room for the mark and

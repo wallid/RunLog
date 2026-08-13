@@ -25,6 +25,27 @@ footer.
 
 ### Added
 
+**The visit count is on the first screen, and the testimonials section asks.**
+The number of browsers that have opened Run Log now rides in the landing
+header as a small chip beside the link to the source — the figure a first
+visit came to find out, where it can be seen without scrolling. It links down
+to the strip at the foot, which is the condition for showing it at all: the
+sentence saying that this counts browsers and not runs is one click away, and
+the chip stays off entirely until the count is worth reading (25, the same
+argument the star count makes at 10) or where the count cannot be fetched.
+Both places share one report per page load, so a badge and a strip on the same
+screen do not count the visitor twice.
+
+Under the testimonials, which still ship empty, there is now a **Send yours**
+control rather than an address in a sentence. It opens a draft that asks for
+the three things `src/testimonials.ts` will not publish a quote without — the
+runner's own words, permission to quote them, and the credit they chose —
+because a quote that arrives complete can go on the page, and one that arrives
+without permission cannot go anywhere. The address behind it,
+`feedback@runlogapp.com`, is the one the page already published — it still
+needs Email Routing switched on for the zone before anything sent to it
+arrives, which is a dashboard setting and not a code change.
+
 **Events the runner adds themselves.** A watch records what happened; only the
 runner knows why. Under the interactive timeline there is now a short editor for
 marking what the file could not: a gel, a drink, food, a salt tab, a cramp, a

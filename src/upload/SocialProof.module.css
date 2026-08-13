@@ -67,23 +67,63 @@
   line-height: 1.6;
 }
 
-.mail {
-  color: var(--text-primary);
-  text-decoration: underline;
-  text-decoration-color: var(--border-strong);
-  text-underline-offset: 3px;
-}
-
-.mail:hover {
-  text-decoration-color: currentColor;
-}
-
 .quotes {
   display: grid;
   gap: var(--space-4);
   margin: var(--space-3) 0 0;
   padding: 0;
   list-style: none;
+}
+
+/*
+ * The ask.
+ *
+ * The one control in a strip that is otherwise all statement, so it is drawn
+ * the way the demo button is drawn upstairs — outlined, not filled. Filling it
+ * would put a second thing to press on the page, and the thing to press is the
+ * box at the top; this one is for the reader who has already been.
+ */
+.ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 34rem;
+  margin-top: var(--space-4);
+}
+
+.askButton {
+  flex: none;
+  padding: 7px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 620;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color var(--duration-quick) var(--ease-out),
+    background var(--duration-quick) var(--ease-out);
+}
+
+.askButton:hover {
+  border-color: var(--text-primary);
+  background: var(--surface-inset);
+}
+
+/* What pressing it does and what it will not do, at the size of a caption —
+   a reader deciding whether to write in wants both before they press. */
+.askNote {
+  flex: 1 1 16rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.askMail {
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* The same hairline the value points hang off, so a runner's words and the

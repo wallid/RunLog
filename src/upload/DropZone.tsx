@@ -8,6 +8,7 @@ import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
 import { Benefits } from "./Benefits";
 import { SocialProof } from "./SocialProof";
+import { useVisitCount } from "./useVisitCount";
 import { useWindowDrop } from "./useWindowDrop";
 import { DISCLAIMER } from "@/disclaimer";
 import { SUPPORT_URL } from "@/support";
@@ -108,6 +109,17 @@ export function DropZone() {
         </nav>
         <div className={styles.barEnd}>
           <span className={styles.barNote}>Open source · runs in your browser</span>
+
+          {/* How many browsers have opened this, where someone who has just
+              arrived can see it — a badge shaped like the star count beside
+              it, because both are the same kind of thing: a number that says
+              other people came first. It is a link down to the proof strip on
+              purpose. The figure alone claims more than it can support, and
+              the sentence that says what it is and is not lives at the foot of
+              the page; putting the number up here is only fair if that
+              sentence is one click away. Absent, not zero, until it arrives —
+              see stats.ts. */}
+          <VisitBadge />
 
           {/* The line to the left claims this is open source; this is the
               claim's receipt, so it sits next to it. The count rides along only
@@ -366,6 +378,76 @@ export function DropZone() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The visit count in the header, or nothing at all.
+ *
+ * Nothing is the state to get right: before the count arrives, where the
+ * function serving it is unreachable, and on a first-ever visit reading one,
+ * the badge is simply absent rather than showing a spinner, a zero or a dash.
+ * A header that reserves space for a number it might not have would make the
+ * bar jump on every load, and a "1" is not proof of anything.
+ *
+ * The label spells out what the number is — browsers that opened the page, not
+ * runs read — because that distinction is the whole honesty of the figure and
+ * a badge has no room to print it. Screen readers get the sentence; everyone
+ * else gets it on the way to the strip this links to.
+ */
+function VisitBadge() {
+  const visits = useVisitCount();
+  if (visits === null || visits < VISITS_SHOWN_FROM) return null;
+
+  const count = visits.toLocaleString();
+  return (
+    <a
+      className={styles.visits}
+      href="#proof"
+      aria-label={`${count} browsers have opened Run Log — read what that counts`}
+    >
+      <WindowIcon />
+      <span className={styles.visitCount}>{count}</span>
+    </a>
+  );
+}
+
+/**
+ * Below this the badge stays off, for the same reason the star count does: a
+ * number offered as evidence that other people found this useful says the
+ * opposite at four. The strip at the foot still prints whatever the figure is,
+ * qualified — it is the glanceable version that has to earn its place.
+ */
+const VISITS_SHOWN_FROM = 25;
+
+/**
+ * A browser window, for a number that counts browsers.
+ *
+ * An eye would read as views and a person as people, and it is neither: the
+ * server sees one browser that kept its localStorage, which is why the window
+ * is the honest glyph. Drawn at the weight of the star beside it so the two
+ * badges read as a pair.
+ */
+function WindowIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className={styles.visitIcon} aria-hidden="true">
+      <rect
+        x="1.8"
+        y="3.2"
+        width="12.4"
+        height="9.6"
+        rx="1.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M1.8 6.4h12.4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

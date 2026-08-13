@@ -149,6 +149,48 @@
 }
 
 /*
+ * The visit badge.
+ *
+ * The same chip as the star count — a tinted pill with a mark and a figure —
+ * because they are the same claim in two currencies and reading them as a pair
+ * costs less than reading two designs. No underline and no label: it is a
+ * number, not a sentence, and what it counts is spelled out where it links to.
+ */
+.visits {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 640;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--duration-quick) var(--ease-out);
+}
+
+.visits:hover {
+  color: var(--text-primary);
+}
+
+.visitCount {
+  font-variant-numeric: tabular-nums;
+}
+
+.visitIcon {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  color: var(--text-muted);
+}
+
+.visits:hover .visitIcon {
+  color: currentColor;
+}
+
+/*
  * Deliberately quieter than the drop box and louder than the nav links: an
  * outline rather than a fill, so it reads as available rather than as the
  * thing to do next. Filling it would make two buttons compete on the first
@@ -1079,6 +1121,14 @@
      for GitHub cannot be done any other way from this screen. */
   .navRule,
   .navLink {
+    display: none;
+  }
+
+  /* Two number chips is one too many for a phone bar. The star count goes and
+     the visit count stays: the link to the source keeps its label either way,
+     and of the two figures the one about this page being used is the one a
+     first visit came to find out. */
+  .stars {
     display: none;
   }
 }

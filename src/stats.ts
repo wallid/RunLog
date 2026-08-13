@@ -53,11 +53,28 @@ async function readCount(response: Response): Promise<number | null> {
 }
 
 /**
+ * The one report this page makes, shared by everything that shows the figure.
+ *
+ * Two places print the count now — the badge in the header and the strip at
+ * the foot — and a first visit that asked twice would race its own localStorage
+ * flag and count itself twice. So the call is made once per page load and both
+ * readers await the same promise. It is never cleared: a second answer would
+ * differ from the first only by other people's visits, and a number that ticks
+ * while you read the page it is on looks like a thing being faked.
+ */
+let reported: Promise<number | null> | null = null;
+
+/**
  * Counts this browser in if it has not been counted, and returns the total.
  * Null means the number is unknowable right now, and the caller should show
  * nothing rather than something.
  */
-export async function countVisit(): Promise<number | null> {
+export function countVisit(): Promise<number | null> {
+  reported ??= report();
+  return reported;
+}
+
+async function report(): Promise<number | null> {
   try {
     if (alreadyCounted()) {
       return await readCount(await fetch(ENDPOINT));

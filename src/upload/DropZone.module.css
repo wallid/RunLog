@@ -340,6 +340,20 @@
   padding-top: var(--space-2);
 }
 
+/*
+ * The button and the note pointing at it.
+ *
+ * The note is taken out of flow rather than sat beside the button, because the
+ * whole hero is centred on the drop box above and a margin note that shifted
+ * the button left of centre to make room for itself would be paying for the
+ * hint with the layout.
+ */
+.demoRow {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+}
+
 .demoButton {
   display: inline-flex;
   align-items: center;
@@ -376,6 +390,99 @@
   flex: none;
   background: var(--accent);
   clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+/*
+ * The margin note: an arrow and a few words, in the accent, at a slight angle.
+ *
+ * It exists because the hard step on this page is not pressing a button, it is
+ * having a file at all — and a reader who has none needs telling that the
+ * second control is a whole run rather than a screenshot tour. Everything about
+ * it is meant to read as added afterwards: the accent colour it shares with
+ * nothing else here, the tilt, and the drawn line.
+ *
+ * Absolute, and anchored to the button's right edge so it never moves the
+ * button. `white-space: nowrap` because a margin note that wraps is a
+ * paragraph.
+ */
+.nudge {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + var(--space-3));
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--accent);
+  transform: translateY(-58%);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  /* Last of the hero's four entrances, and well after the box it points at:
+     the arrow arriving before the button would be pointing at nothing. */
+  animation: enter 0.5s var(--ease-out) 0.9s backwards;
+}
+
+/* The path is drawn curving right-to-left into its head, which is already the
+   direction this needs: the button is on the note's left. */
+.nudgeArrow {
+  width: 52px;
+  height: 32px;
+  flex: none;
+}
+
+.nudgeText {
+  transform: rotate(-3deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .nudgeArrow path {
+    /* Longer than either path, so both are fully hidden at the start; the
+       exact length does not matter as long as it exceeds them. */
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: draw 0.55s var(--ease-out) 1.1s forwards;
+  }
+
+  .nudgeArrow path:last-child {
+    /* The head is drawn after the shaft reaches it, not alongside. */
+    animation-delay: 1.55s;
+    animation-duration: 0.25s;
+  }
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/*
+ * Below this there is no margin to put a margin note in: the hero column is
+ * narrower than the button plus the note, and left where it was the note would
+ * hang off the side and give the whole page a horizontal scrollbar. So it drops
+ * underneath and the arrow turns to point back up at the button — the same
+ * note, reading bottom-to-top instead of right-to-left.
+ */
+@media (max-width: 719px) {
+  .demoRow {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .nudge {
+    position: static;
+    transform: none;
+  }
+
+  /* The drawn head points north-west; turned 55° clockwise it points north and
+     a little east, which is where the button now is — above, and slightly to
+     the right of an arrow that sits left of its own label. */
+  .nudgeArrow {
+    width: 34px;
+    height: 22px;
+    transform: rotate(55deg);
+  }
 }
 
 /* Kept to a readable measure and set below the button rather than beside it —

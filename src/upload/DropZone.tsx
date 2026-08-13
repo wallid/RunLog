@@ -206,22 +206,39 @@ export function DropZone() {
                     have to choose between two things that look equally like
                     the way in. */}
                 <div className={styles.demo}>
-                  <button
-                    type="button"
-                    className={styles.demoButton}
-                    onClick={() => void loadDemo()}
-                    disabled={busy}
-                  >
-                    <span className={styles.demoIcon} aria-hidden="true" />
-                    See a demo run
-                  </button>
+                  <div className={styles.demoRow}>
+                    <button
+                      type="button"
+                      className={styles.demoButton}
+                      onClick={() => void loadDemo()}
+                      disabled={busy}
+                    >
+                      <span className={styles.demoIcon} aria-hidden="true" />
+                      See a demo run
+                    </button>
+
+                    {/* The nudge.
+                        Hidden from assistive technology on purpose. It says
+                        nothing the button does not already say — "click here"
+                        is meaningless read aloud, and a screen reader has
+                        already been told this is a button — so it is decoration
+                        in the strict sense: it points, and pointing is a thing
+                        only sighted readers can use. */}
+                    <span className={styles.nudge} aria-hidden="true">
+                      <Squiggle className={styles.nudgeArrow} />
+                      <span className={styles.nudgeText}>
+                        Click here to try a run
+                      </span>
+                    </span>
+                  </div>
+
                   {/* What the demo actually is, in figures rather than
                       adjectives. "A demo" could be three invented data points;
                       3 km with a heart rate is a run, and saying which one it
                       is answers the question the button raises. */}
                   <p className={styles.demoNote}>
-                    No file to hand? Open a real 3 km run — heart rate, cadence
-                    and power, read exactly the way yours would be.
+                    It is a real 3 km run — heart rate, cadence and power, read
+                    exactly the way yours would be.
                   </p>
                 </div>
 
@@ -390,6 +407,50 @@ function usePastedFile(onFiles: (files: FileList | null | undefined) => void) {
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
   }, []);
+}
+
+/**
+ * The hand-drawn arrow beside the demo button.
+ *
+ * Drawn rather than set in a font: the page ships one typeface, and a marker
+ * scrawl is the one thing Inter cannot do. The curve is deliberately not a
+ * perfect arc and the two barbs are not the same length — a mechanically
+ * exact arrow reads as another piece of interface, which is precisely what a
+ * margin note must not look like. It points at the button, and everything
+ * about it should say that a person added it afterwards.
+ *
+ * It draws itself on arrival rather than appearing complete: the stroke is
+ * dashed to its own length and the offset animated to zero, which is the
+ * cheapest honest way to make a line look written. Under `prefers-reduced-
+ * motion` it is simply there, already drawn.
+ */
+function Squiggle({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 76 46"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {/* The shaft: a slack curve that sags in the middle and lifts into the
+          head, the way a line drawn in one stroke does. */}
+      <path
+        d="M72 34C50 41 21 37 7 22"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+      {/* The head, as two separate strokes at an uneven spread — 25° one side
+          of the shaft's own direction and a shade wider the other. */}
+      <path
+        d="M7 22 L11 34 M7 22 L18 26"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
 /** Kept for the tests and callers that render the screen directly. */

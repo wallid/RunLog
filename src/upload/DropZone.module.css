@@ -57,12 +57,12 @@
   letter-spacing: var(--tracking-heading);
 }
 
-/* The one piece of colour above the fold. */
+/* The one piece of colour above the fold. Sized against the wordmark rather
+   than in pixels, so the mark and the name stay locked up at any type scale. */
 .mark {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
+  width: 1.35em;
+  height: 1.35em;
+  flex: none;
 }
 
 .navRule {

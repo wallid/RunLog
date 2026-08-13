@@ -3,6 +3,7 @@ import { useActivityStore } from "@/state/activityStore";
 import { useLibraryStore } from "@/state/libraryStore";
 import { itemForFile } from "@/library/import";
 import { RunList } from "@/library/RunList";
+import { BrandMark } from "@/shell/BrandMark";
 import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
 import { Benefits } from "./Benefits";
@@ -95,7 +96,7 @@ export function DropZone() {
       <header className={styles.bar}>
         <nav className={styles.nav}>
           <span className={styles.wordmark}>
-            <span className={styles.mark} aria-hidden="true" />
+            <BrandMark className={styles.mark} />
             Run Log
           </span>
           <span className={styles.navRule} aria-hidden="true" />

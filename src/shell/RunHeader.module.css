@@ -72,11 +72,13 @@
   color: var(--text-primary);
 }
 
+/* Sized in pixels rather than ems: this row's type is 0.82rem, and 1.35em of
+   that is eleven pixels, at which the treads close up. The mark has a floor
+   the old dot did not. */
 .homeMark {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
+  width: 18px;
+  height: 18px;
+  flex: none;
 }
 
 .identity {

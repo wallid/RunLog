@@ -6,6 +6,7 @@ import { useLibraryStore } from "@/state/libraryStore";
 import { RunList } from "@/library/RunList";
 import { sendsCrashReports, useSettingsStore } from "@/state/settingsStore";
 import { CRASH_REPORTING_AVAILABLE } from "@/observability/sentry";
+import { BrandMark } from "./BrandMark";
 import { TableOfContents } from "./TableOfContents";
 import { useScrollProgress } from "./useScrollProgress";
 import { useHeaderHeight } from "./useHeaderHeight";
@@ -71,7 +72,7 @@ export function RunHeader({
           onClick={reset}
           aria-label="Run Log — back to the home page"
         >
-          <span className={styles.homeMark} aria-hidden="true" />
+          <BrandMark className={styles.homeMark} />
           <span className={styles.homeText}>Run Log</span>
         </button>
 

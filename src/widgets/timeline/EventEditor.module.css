@@ -181,9 +181,9 @@
 /* The chosen kind is the solid pill, the same way the axis toggle above it
    says which axis is showing. */
 .kindActive {
-  border-color: var(--text-primary);
-  background: var(--text-primary);
-  color: #fff;
+  border-color: var(--surface-inverse);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
 }
 
 .fields {
@@ -248,7 +248,7 @@
   border: none;
   border-radius: var(--radius-pill);
   background: var(--accent-strong);
-  color: #fff;
+  color: var(--accent-on-strong);
   font-size: 0.82rem;
   font-weight: 650;
 }

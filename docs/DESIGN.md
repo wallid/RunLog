@@ -6,15 +6,34 @@ more than the rule, so it is written down rather than assumed.
 **The page is an article, not a dashboard.** A warm off-white ground carries
 white cards with generous corners and shadows soft enough to read as lift
 rather than as a border. One accent colour does all the emphasis; everything
-else is ink on paper. There is no dark mode — the design commits to a single,
-open, daylight look.
+else is ink on paper.
+
+**Dark mode is a second palette, not the first one inverted.** The page follows
+the operating system until a reader says otherwise, and the choice — light,
+dark, or match my system — sits both in the landing header and in Settings.
+Every colour is a token, so the theme is one attribute on the root element and
+nothing below it knows a theme exists; the exception is the map, whose tiles
+belong to OpenStreetMap and are put through a filter because there is only one
+set of them.
+
+What the dark set could not do is reuse the light ramp. #6e1210 is the deep red
+that reads as *hardest* against a white card and it sits at 1.4:1 against a dark
+one, which is not a colour a reader can see. So the effort ramp is rebuilt from
+its floor upward, and it costs something worth stating: with every zone made to
+clear 3:1 against the card and 1.4:1 against its neighbours, the ramp spans
+4.4:1 end to end rather than the light theme's 6.6, and Zone 1 becomes a pale
+sand. The effort washes flip direction for the same reason — harder is more
+light on a dark page, as it was more ink on a light one.
 
 **Heart-rate zones use a single-hue ramp, not a rainbow.** Zones are an
 *ordered* sequence, so the order is carried by lightness rather than by hue. A
 reader sees intensity rise without learning a legend, and the scale stays
 readable for colourblind users. The orange ramp, the metric-identity slots and
 the terrain poles were each checked with a colour-vision and contrast validator
-against the card surface, not chosen by eye.
+against the card surface, not chosen by eye. `src/styles/palette.test.ts` holds
+both themes to those numbers on every run, each against its own surfaces, and
+records the two places the light palette falls short rather than quietly
+lowering the bar to fit them.
 
 **The tour teaches the page, not the product.** On a first visit a short
 walkthrough dims the page and lights up the contents rail, a section header,

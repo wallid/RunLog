@@ -22,7 +22,7 @@
 
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#fc5200" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -82,6 +82,41 @@
         },
         "license": "https://opensource.org/licenses/MIT"
       }
+    </script>
+    <!--
+      The theme, decided before anything is drawn.
+
+      This is the one piece of application logic in the page rather than in the
+      bundle, and it is here for the single reason that anything worth doing
+      later would be too late: the module that owns the theme runs after the
+      first paint, so a reader who has chosen dark would get a white flash on
+      every visit. Reading the stored choice — or, absent one, the system's —
+      and stamping the attribute costs a fraction of a millisecond and removes
+      the flash entirely.
+
+      It duplicates `styles/theme.ts` and the settings store's key on purpose,
+      and is deliberately cruder than either: it only has to be right about the
+      two strings, and `main.tsx` applies the properly parsed answer immediately
+      afterwards. If it throws, nothing happens and the page is light.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem("runlog.settings") || "{}");
+          var theme = stored.theme;
+          if (theme !== "light" && theme !== "dark") {
+            theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          document.documentElement.dataset.theme = theme;
+          if (theme === "dark") {
+            document
+              .querySelector('meta[name="theme-color"]')
+              .setAttribute("content", "#131211");
+          }
+        } catch (e) {
+          /* A blocked storage or an unparseable value leaves the page light. */
+        }
+      })();
     </script>
   </head>
   <body>

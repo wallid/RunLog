@@ -34,8 +34,8 @@
 /* The selected option is a solid dark pill, which reads as chosen at a glance
    without needing a second colour. */
 .modeActive {
-  background: var(--text-primary);
-  color: #fff;
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
 }
 
 .clear {

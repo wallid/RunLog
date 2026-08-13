@@ -50,7 +50,7 @@
 
 .primary {
   background: var(--accent-strong);
-  color: #fff;
+  color: var(--accent-on-strong);
   box-shadow: 0 2px 8px rgba(252, 82, 0, 0.28);
 }
 

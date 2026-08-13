@@ -7,6 +7,7 @@ import { RunList } from "@/library/RunList";
 import { useSettingsStore } from "@/state/settingsStore";
 import { BrandMark } from "./BrandMark";
 import { TableOfContents } from "./TableOfContents";
+import { ThemeToggle } from "./ThemeToggle";
 import { useScrollProgress } from "./useScrollProgress";
 import { useHeaderHeight } from "./useHeaderHeight";
 import { useTourStore } from "@/state/tourStore";
@@ -145,6 +146,7 @@ export function RunHeader({
               {/* First in the panel on purpose: the reader who needs it is the
                   one least able to read their way down to it. */}
               <LanguageSetting />
+              <ThemeSetting />
               <MaxHeartRateSetting activity={activity} />
               <ExperimentalSetting count={experimentalCount} />
               <WeatherSetting activity={activity} />
@@ -281,6 +283,31 @@ function LanguageSetting() {
             : language === undefined
               ? "The page is in English and nothing has been sent anywhere. Choosing a language loads Google Translate, which reads the text on this page — the headings, the observations, the run's own name — in order to translate it. Your activity file is not part of that and is never uploaded."
               : "Translated by Google. The text of this page goes to Google to be translated; your activity file does not, and is still read only in this browser. Machine translation gets things wrong, so where a number and its wording disagree, trust the number."}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Which palette the page wears.
+ *
+ * Sits next to the language setting because it is the same kind of thing: not a
+ * number that changes what the run says, but a choice about how the page can be
+ * read at all. Both are near the top for the same reason.
+ */
+function ThemeSetting() {
+  return (
+    <div className={styles.settingsBlock}>
+      <span className={styles.settingsLabel}>Appearance</span>
+      <div className={styles.settingsRow}>
+        <ThemeToggle />
+      </div>
+      <p className={styles.settingsHelp}>
+        Dark is a second palette rather than the light one dimmed: the effort
+        colours are rebuilt from the other end, because the deep red that reads
+        as your hardest zone on a white page disappears on a black one. Matching
+        your system follows it as it changes, and is what happens until you pick
+        one of the other two.
       </p>
     </div>
   );

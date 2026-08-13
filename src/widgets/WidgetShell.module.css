@@ -239,12 +239,12 @@
 }
 
 .high {
-  background: #e6f4ea;
+  background: var(--tint-good);
   color: var(--confidence-high);
 }
 
 .medium {
-  background: #fdf3dd;
+  background: var(--tint-caution);
   color: var(--confidence-medium);
 }
 

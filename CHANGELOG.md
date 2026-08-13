@@ -25,6 +25,42 @@ footer.
 
 ### Added
 
+**There is a dark mode, and it is a second palette rather than the first one
+dimmed.** The page now follows whatever the machine is set to, and follows it as
+it changes — most laptops and phones turn dark in the evening, and now so does
+this. Overriding that is a three-way control, **Light · Match my system · Dark**,
+in the landing header and in Settings: the landing page carries it because a
+reader who finds the page uncomfortable to look at should not have to upload a
+file first. Only an explicit pick is written down; matching the system stores
+nothing and is what happens until you choose. The choice is applied before the
+first paint, so a returning reader on dark gets no white flash.
+
+Every colour on the page was already a token, so the theme is one attribute on
+the root element — but the values behind those tokens could not simply be
+inverted. `#6e1210` is the deep red that reads as *your hardest zone* against a
+white card, and it sits at 1.4:1 against a dark one, which is a zone nobody can
+see. So the effort ramp is rebuilt from its floor upward, and the cost is worth
+naming: holding every zone to 3:1 against the card and 1.4:1 against its
+neighbours leaves a ramp spanning 4.4:1 end to end where the light one spans
+6.6, and turns Zone 1 into a pale sand. The washes behind the charts flip
+direction for the same reason — harder effort is more light on a dark page, as
+it was more ink on a light one. The map is the one thing that could not be
+themed by changing a value: the tiles are OpenStreetMap's and there is only one
+set of them, so on a dark page they are put through a filter, which is a shade
+flatter than a purpose-built dark basemap would be.
+
+`src/styles/palette.test.ts` now runs every rule it had against both palettes,
+each against its own surfaces, and has grown the ones the dark set was built to
+satisfy. Two places where the light palette has always fallen short — its muted
+grey at 4.4:1 on the hover surface and 4.2:1 on the inset, and Zone 1's pale
+gold at 2.0:1 on a white card — are recorded there as known numbers rather than
+papered over by a lower bar.
+
+Nine colours that had been written into stylesheets by hand, mostly `#fff` on a
+filled button and the ink colour used as a background, became tokens on the way
+— the second kind was the interesting one, since a pill painted with the ink
+colour and labelled in white is white on white the moment the theme flips.
+
 **The visit count is on the first screen, and the testimonials section asks.**
 The number of browsers that have opened Run Log now rides in the landing
 header as a small chip beside the link to the source — the figure a first

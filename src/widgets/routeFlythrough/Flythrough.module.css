@@ -39,8 +39,8 @@
   padding: 7px 16px 7px 13px;
   border: none;
   border-radius: var(--radius-pill);
-  background: var(--text-primary);
-  color: #fff;
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
   font-size: 0.82rem;
   font-weight: 650;
 }

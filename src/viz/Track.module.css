@@ -94,8 +94,8 @@
   max-width: 15rem;
   padding: 4px 9px;
   border-radius: var(--radius-sm);
-  background: var(--text-primary);
-  color: #fff;
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
   font-size: 0.72rem;
   line-height: 1.35;
   pointer-events: none;

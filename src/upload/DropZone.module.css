@@ -596,8 +596,8 @@
 .error {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: #fdeceb;
-  color: #8f2020;
+  background: var(--tint-error);
+  color: var(--text-error);
   font-size: 0.85rem;
   line-height: 1.55;
 }
@@ -759,9 +759,9 @@
 }
 
 .sourceChip[aria-expanded="true"] {
-  border-color: var(--text-primary);
-  background: var(--text-primary);
-  color: #fff;
+  border-color: var(--surface-inverse);
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
 }
 
 /*
@@ -1059,7 +1059,7 @@
   z-index: 50;
   display: grid;
   place-items: center;
-  background: rgba(244, 243, 241, 0.82);
+  background: var(--surface-veil);
   backdrop-filter: blur(3px);
 }
 

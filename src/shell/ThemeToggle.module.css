@@ -1,0 +1,112 @@
+/*
+ * The three-way appearance control.
+ *
+ * A track holding three pills, one of which is lit. The lit one is the inset
+ * surface rather than the reversed-out ink used elsewhere for "chosen": this
+ * control sits in the masthead beside other quiet chrome, and a solid black
+ * pill there would be the loudest thing on a page whose whole subject is
+ * somewhere else.
+ */
+
+.group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+}
+
+.choice {
+  position: relative;
+  display: inline-flex;
+}
+
+/* The radio itself does the work and is never seen; the pill beside it is the
+   paint. It keeps its size and position so the focus ring lands in the right
+   place, which a `display: none` input would not. */
+.input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.face {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background var(--duration-quick) var(--ease-out),
+    color var(--duration-quick) var(--ease-out);
+}
+
+.input:hover + .face {
+  color: var(--text-primary);
+}
+
+.input:checked + .face {
+  background: var(--surface-inset);
+  color: var(--text-primary);
+}
+
+.input:focus-visible + .face {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+}
+
+.icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.label {
+  display: inline;
+}
+
+/* Read aloud, not drawn — the compact variant is icons only. */
+.hiddenLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.group[data-variant="compact"] .face {
+  padding: 5px;
+}
+
+.group[data-variant="compact"] .icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* The same floor `global.css` puts under every other control on a touch screen.
+   It applies to the pill rather than the input, because the pill is what the
+   input is stretched over. */
+@media (pointer: coarse) {
+  .face {
+    min-height: 44px;
+  }
+
+  .group[data-variant="compact"] .face {
+    padding: 5px 10px;
+  }
+}

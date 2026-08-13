@@ -11,6 +11,17 @@
  * Metric identities take fixed slots, and gradient is a polarity around flat,
  * so it takes two poles with a neutral middle. Every ramp below has been
  * checked for colour-vision separation and contrast against the card surface.
+ *
+ * There are two themes, and they are two full sets of these values rather than
+ * one set with a filter over it. A dark page is not a light page inverted: the
+ * zone ramp has to be rebuilt from the other end, because a deep red that reads
+ * as "hardest" on white disappears entirely on near-black. Every rule the light
+ * palette is held to in `palette.test.ts` is checked against the dark one too,
+ * against *its* own surfaces — which is the only reason to trust it.
+ *
+ * Nothing here reads the theme for itself. The dark set is applied by
+ * `[data-theme="dark"]` on the root element, which `styles/theme.ts` stamps
+ * there from the stored choice or, absent one, from the operating system.
  */
 
 :root {
@@ -22,6 +33,23 @@
   --surface-sunken: #f6f5f3;
   --surface-hover: #f1f0ed;
   --surface-inset: #ebe9e5;
+
+  /*
+   * The reversed-out surface, for the handful of controls that say "this one"
+   * by going solid — a chosen tab, a mode pill, the map tooltip.
+   *
+   * It is its own token rather than `--text-primary` used as a background,
+   * which is what it was. The two happen to be the same colour on a light page
+   * and are opposites of each other on a dark one, so a pill painted with the
+   * ink colour and labelled in white turns into white on white the moment the
+   * theme flips.
+   */
+  --surface-inverse: #17171a;
+  --text-on-inverse: #ffffff;
+
+  /* Behind a sticky masthead or a drop overlay: the page colour, but sheer, so
+     what it covers shows through the blur rather than being wiped out. */
+  --surface-veil: rgba(244, 243, 241, 0.82);
 
   /*
    * Ink.
@@ -61,6 +89,10 @@
   --accent-strong-hover: #b93b00;
   --accent-soft: #fff1e9;
   --accent-ink: #b03900;
+  /* What a label on `--accent-strong` is written in. White here, and near-black
+     on a dark page, where the button is the bright orange rather than the
+     banked-down one. */
+  --accent-on-strong: #ffffff;
 
   /*
    * Heart-rate zones: gold to deep red, in three families.
@@ -111,6 +143,11 @@
   --zone-band-steady: #fadfa8;
   --zone-band-hard: #f4bda4;
 
+  /* A number written inside a zone fill rather than beside it — the figure in a
+     zone bubble. Follows the ramp: white on the deep light-theme colours, ink
+     on the bright dark-theme ones. */
+  --zone-ink: #ffffff;
+
   /* Metric identities: fixed slots, assigned in order. */
   --metric-heart: #dd5208;
   --metric-pace: #2a78d6;
@@ -129,6 +166,13 @@
   --confidence-high: #157a3e;
   --confidence-medium: #8a6410;
   --confidence-low: #5c5c65;
+
+  /* The tints those confidence words are printed on, and the one an upload
+     error takes. Each is checked against the ink that goes on it. */
+  --tint-good: #e6f4ea;
+  --tint-caution: #fdf3dd;
+  --tint-error: #fdeceb;
+  --text-error: #8f2020;
 
   /* Layout */
   --column-width: 46rem;
@@ -156,6 +200,27 @@
   /* Barely-there lift. Two layers: a tight contact shadow and a wide soft one. */
   --shadow-card: 0 1px 2px rgba(23, 23, 26, 0.04), 0 6px 20px rgba(23, 23, 26, 0.05);
   --shadow-raised: 0 2px 4px rgba(23, 23, 26, 0.05), 0 12px 32px rgba(23, 23, 26, 0.08);
+  /* The same idea at control scale — a pill in the masthead, the thumb of a
+     switch. Named because a shadow is how a control separates from what is
+     behind it, and on a dark page a shadow does nothing at all: these get
+     replaced there by something that still reads as an edge. */
+  --shadow-control: 0 1px 2px rgba(23, 23, 26, 0.06);
+  --shadow-control-hover: 0 1px 2px rgba(23, 23, 26, 0.06), 0 4px 10px rgba(23, 23, 26, 0.08);
+  --shadow-thumb: 0 1px 2px rgba(23, 23, 26, 0.2);
+  /* The hairline that keeps a pale legend swatch findable on its surface. */
+  --swatch-hairline: rgba(23, 23, 26, 0.09);
+
+  /*
+   * What the map tiles are put through.
+   *
+   * OpenStreetMap's standard tiles are drawn for a white page, and there is
+   * only one of them — so on a dark page the choice is a second tile provider
+   * or this. Inverting and rotating the hue back keeps roads and labels legible
+   * and leaves greens green, at the cost of a map that is a shade flatter than
+   * a purpose-built dark basemap. It is applied to the tiles alone: the route,
+   * the markers and the attribution are ours and are already themed.
+   */
+  --map-tiles: none;
 
   /*
    * Motion. One vocabulary, so a bar growing, a card arriving and a chart
@@ -187,4 +252,133 @@
   --tracking-display: -0.035em;
   --tracking-heading: -0.022em;
   --tracking-label: 0.04em;
+}
+
+/*
+ * The dark set.
+ *
+ * Only what colour actually changes is repeated here. Spacing, shape, motion
+ * and type are the same design in both themes and are inherited from above —
+ * a token that appears twice is one that can drift, so none of them do.
+ *
+ * The page is a warm near-black rather than pure black, for the same reason the
+ * light page is off-white rather than white: a true black behind a bright card
+ * rings, and the halo that produces around text is the thing people mean when
+ * they say dark mode is hard to read.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces. The card is *lighter* than the page, so lift still reads as lift
+     when the shadow under it has nothing left to do. */
+  --surface-page: #131211;
+  --surface-card: #1b1a18;
+  --surface-sunken: #181716;
+  --surface-hover: #262421;
+  --surface-inset: #2c2a27;
+  --surface-inverse: #f0eeea;
+  --text-on-inverse: #17171a;
+  --surface-veil: rgba(19, 18, 17, 0.82);
+
+  /* Ink. Off-white rather than white, and the muted tone is checked against
+     `--surface-inset` as well as the card — the inset is the lightest thing on
+     a dark page, so it is the hardest background here, exactly as the card is
+     the hardest one in the light theme. */
+  --text-primary: #f0eeea;
+  --text-secondary: #bdb9b1;
+  --text-muted: #a3a099;
+
+  --border: #2e2b28;
+  --border-strong: #6a655d;
+  --gridline: #292624;
+
+  /*
+   * The accent does not change. The brand orange sits at 5.3:1 on the dark card
+   * — better than the 3.3:1 it manages on white — so the route line, the focus
+   * ring and the progress hairline are all the same colour they always were.
+   *
+   * What changes is the pair around it, and they swap directions. `--accent-ink`
+   * has to get *lighter* to be read as words here, and the filled button is now
+   * the full-strength orange with near-black on it, because white on orange is
+   * 3.3:1 in any theme and a button label has to clear 4.5:1.
+   */
+  --accent: #fc5200;
+  --accent-hover: #ff6a24;
+  --accent-strong: #fc5200;
+  --accent-strong-hover: #ff6a24;
+  --accent-soft: #33190c;
+  --accent-ink: #ff8a4d;
+  --accent-on-strong: #1a0a03;
+
+  /*
+   * Heart-rate zones, rebuilt rather than adjusted.
+   *
+   * The light ramp ends at #6e1210, which is 1.4:1 against this page — a zone a
+   * reader cannot see is not a zone. So the whole ramp is lifted until the
+   * hardest one clears 3:1 against the card, and the rest is set by the rules
+   * that survived from the light theme: still gold, orange, red in the three
+   * intensity families, still monotonic in lightness, still 1.4:1 between
+   * neighbours.
+   *
+   * The cost is the ends. Lifting the floor and keeping 1.4:1 across four steps
+   * leaves the ramp spanning 4.4:1 end to end rather than the light theme's 6.6,
+   * and pushes Zone 1 to a pale sand. That is the trade a dark surface imposes:
+   * the room above a visible floor is smaller than the room below white.
+   */
+  --zone-1: #fae3ad;
+  --zone-2: #e9bb5b;
+  --zone-3: #e2873c;
+  --zone-4: #d45c4e;
+  --zone-5: #b8403a;
+
+  /* The washes invert their direction: harder effort is more light on a dark
+     page, the same way it was more ink on a light one. What the rule preserves
+     is that effort moves steadily away from the surface it sits on. */
+  --zone-band-easy: #2b2518;
+  --zone-band-steady: #40301a;
+  --zone-band-hard: #5a3624;
+
+  /* The ramp is bright here, so a figure inside a zone fill is written in ink. */
+  --zone-ink: #17171a;
+
+  /* Metric identities keep their hues and their order; each is lifted until it
+     clears 3:1 on the card, since these are lines rather than words. */
+  --metric-heart: #ff7f4d;
+  --metric-pace: #5ea8f5;
+  --metric-elevation: #35c98d;
+  --metric-power: #a98bff;
+  --metric-cadence: #f172c4;
+
+  --terrain-uphill: #f0706e;
+  --terrain-flat: #6f6b64;
+  --terrain-downhill: #5ea8f5;
+
+  --confidence-high: #5cc281;
+  --confidence-medium: #dcae4b;
+  --confidence-low: #a3a099;
+
+  --tint-good: #16301f;
+  --tint-caution: #33280e;
+  --tint-error: #3a1a18;
+  --text-error: #ff9d94;
+
+  /*
+   * Shadows, doing what they can.
+   *
+   * A drop shadow works by darkening the surface behind it, and there is very
+   * little left to darken here — so these go heavier and are joined by a
+   * hairline ring, which is what actually draws the card's edge on a dark page.
+   * The swatch hairline flips outright: a pale ring, not a dark one.
+   */
+  --shadow-card: 0 0 0 1px rgba(240, 238, 234, 0.05), 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-raised:
+    0 0 0 1px rgba(240, 238, 234, 0.07), 0 4px 10px rgba(0, 0, 0, 0.55),
+    0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-control: 0 0 0 1px rgba(240, 238, 234, 0.07);
+  --shadow-control-hover:
+    0 0 0 1px rgba(240, 238, 234, 0.12), 0 4px 10px rgba(0, 0, 0, 0.5);
+  --shadow-thumb: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --swatch-hairline: rgba(240, 238, 234, 0.22);
+
+  --map-tiles: invert(1) hue-rotate(180deg) brightness(0.86) contrast(0.92) saturate(0.85);
 }

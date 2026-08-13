@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { readStored } from "./storage";
 import { findLanguage } from "@/i18n/languages";
+import { applyTheme, type ThemeChoice } from "@/styles/theme";
 
 /**
  * Runner-supplied context.
@@ -43,6 +44,12 @@ export interface Settings {
    * request header is not consent.
    */
   language?: string;
+  /**
+   * Which palette to wear. Undefined means "whatever this machine is set to",
+   * and is the default — a stored value here is a decision to stop following
+   * the system, so only an explicit pick is ever written down.
+   */
+  theme?: ThemeChoice;
 }
 
 interface SettingsState extends Settings {
@@ -50,6 +57,7 @@ interface SettingsState extends Settings {
   setShowExperimental: (show: boolean) => void;
   setWeatherLookup: (enabled: boolean) => void;
   setLanguage: (language: string | undefined) => void;
+  setTheme: (theme: ThemeChoice | undefined) => void;
 }
 
 function loadSettings(): Settings {
@@ -72,6 +80,11 @@ function loadSettings(): Settings {
     // would load the widget on every visit and translate into nothing.
     if (typeof parsed.language === "string" && findLanguage(parsed.language)) {
       settings.language = parsed.language;
+    }
+    // Anything other than one of the two palettes leaves it undecided, and
+    // undecided follows the system.
+    if (parsed.theme === "light" || parsed.theme === "dark") {
+      settings.theme = parsed.theme;
     }
     return settings;
   } catch {
@@ -97,7 +110,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
    * reaches storage is still only what was actually chosen.
    */
   const update = (change: Settings): Settings => {
-    const { maxHr, showExperimental, weatherLookup, language } = {
+    const { maxHr, showExperimental, weatherLookup, language, theme } = {
       ...get(),
       ...change,
     };
@@ -106,6 +119,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       showExperimental,
       weatherLookup,
       language,
+      theme,
     };
     persist(next);
     return next;
@@ -118,5 +132,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     setShowExperimental: (showExperimental) => set(() => update({ showExperimental })),
     setWeatherLookup: (weatherLookup) => set(() => update({ weatherLookup })),
     setLanguage: (language) => set(() => update({ language })),
+    // The page is repainted here rather than in the component, so every route
+    // to this setting — the masthead, the landing page, a future keyboard
+    // shortcut — lands the same way.
+    setTheme: (theme) =>
+      set(() => {
+        applyTheme(theme);
+        return update({ theme });
+      }),
   };
 });

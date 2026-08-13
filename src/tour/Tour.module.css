@@ -164,7 +164,7 @@
   border: none;
   border-radius: var(--radius-pill);
   background: var(--accent-strong);
-  color: #fff;
+  color: var(--accent-on-strong);
   font-size: 0.82rem;
   font-weight: 650;
   transition: background 0.14s ease;

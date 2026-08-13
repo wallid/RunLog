@@ -184,7 +184,7 @@ body {
 }
 
 .leaflet-control-attribution {
-  background: rgba(255, 255, 255, 0.86) !important;
+  background: var(--surface-veil) !important;
   color: var(--text-muted) !important;
   font-size: 10px !important;
 }
@@ -195,5 +195,14 @@ body {
 
 .leaflet-bar a {
   border-radius: var(--radius-sm) !important;
+  background: var(--surface-card) !important;
   color: var(--text-primary) !important;
+}
+
+/* The tiles are somebody else's image and the only thing on the page that
+   cannot be themed by changing a token, so on a dark page they are put through
+   a filter instead — see `--map-tiles`. The route, the markers and the controls
+   sit in their own panes and are left alone. */
+.leaflet-tile-pane {
+  filter: var(--map-tiles);
 }

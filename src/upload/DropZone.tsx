@@ -4,6 +4,7 @@ import { useLibraryStore } from "@/state/libraryStore";
 import { itemForFile } from "@/library/import";
 import { RunList } from "@/library/RunList";
 import { BrandMark } from "@/shell/BrandMark";
+import { ThemeToggle } from "@/shell/ThemeToggle";
 import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
 import { Benefits } from "./Benefits";
@@ -109,6 +110,12 @@ export function DropZone() {
         </nav>
         <div className={styles.barEnd}>
           <span className={styles.barNote}>Open source · runs in your browser</span>
+
+          {/* Light or dark, on the first screen rather than only inside a run's
+              settings — a reader who finds the page uncomfortable to look at
+              should not have to upload a file to fix that. Icons alone up here;
+              the same control carries its labels in the settings panel. */}
+          <ThemeToggle variant="compact" />
 
           {/* How many browsers have opened this, where someone who has just
               arrived can see it — a badge shaped like the star count beside

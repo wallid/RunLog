@@ -55,7 +55,7 @@ export function derive(
   const gradient = deriveGradient(elevation, distance);
   const moving = deriveMoving(smoothedSpeed, normalized);
 
-  const samples: Sample[] = new Array(length);
+  const samples = new Array<Sample>(length);
   for (let i = 0; i < length; i++) {
     const isMoving = moving[i];
     const speedHere = smoothedSpeed[i];
@@ -107,7 +107,7 @@ function deriveSpeed(normalized: NormalizedSeries): Series {
   const deviceCoverage = deviceSpeed.filter((v) => v !== undefined).length / length;
   if (deviceCoverage > 0.8) return deviceSpeed;
 
-  const out: Series = new Array(length).fill(undefined);
+  const out: Series = new Array<number | undefined>(length).fill(undefined);
   const half = 2;
   for (let i = 0; i < length; i++) {
     const lo = Math.max(0, i - half);
@@ -127,7 +127,7 @@ function deriveSpeed(normalized: NormalizedSeries): Series {
  */
 function deriveGradient(elevation: Series, distance: number[]): Series {
   const length = distance.length;
-  const out: Series = new Array(length).fill(undefined);
+  const out: Series = new Array<number | undefined>(length).fill(undefined);
 
   for (let i = 0; i < length; i++) {
     if (elevation[i] === undefined) continue;

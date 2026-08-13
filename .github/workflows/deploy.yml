@@ -32,9 +32,15 @@ jobs:
         env:
           VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
           VITE_SENTRY_RELEASE: ${{ github.sha }}
+      # `--branch` is not optional here. Left off, wrangler infers the branch
+      # from git, and a checkout in Actions is a detached HEAD — so the upload
+      # can be filed as a preview deployment while the job still reports
+      # success, leaving the site on the previous build with nothing red to
+      # show for it. Naming the production branch makes what runlogapp.com
+      # serves a fact about this file rather than about the checkout.
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: c99cdfaf910278bc8a4cdddac9fa559b
-          command: pages deploy dist
+          command: pages deploy dist --project-name=runlog --branch=main

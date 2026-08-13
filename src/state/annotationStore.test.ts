@@ -86,7 +86,10 @@ describe("adding, changing and removing", () => {
     expect(entry.t).toBe(600);
     expect(entry.note).toBe("caffeine");
 
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}") as Record<
+      string,
+      unknown[]
+    >;
     expect(stored["fit-1"]).toHaveLength(1);
   });
 

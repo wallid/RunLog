@@ -11,7 +11,7 @@ export type Series = (number | undefined)[];
 /** Centred rolling mean over a window of `windowSize` samples (rounded up to odd). */
 export function rollingMean(values: Series, windowSize: number): Series {
   const half = Math.max(0, Math.floor(windowSize / 2));
-  const out: Series = new Array(values.length);
+  const out: Series = new Array<number | undefined>(values.length);
   for (let i = 0; i < values.length; i++) {
     if (values[i] === undefined) {
       out[i] = undefined;
@@ -36,7 +36,7 @@ export function rollingMean(values: Series, windowSize: number): Series {
 /** Centred rolling median — removes single-sample spikes without shifting edges. */
 export function rollingMedian(values: Series, windowSize: number): Series {
   const half = Math.max(0, Math.floor(windowSize / 2));
-  const out: Series = new Array(values.length);
+  const out: Series = new Array<number | undefined>(values.length);
   const buffer: number[] = [];
   for (let i = 0; i < values.length; i++) {
     if (values[i] === undefined) {

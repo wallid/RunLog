@@ -41,14 +41,14 @@ export function normalize(raw: RawActivity): NormalizedSeries {
   const endMs = raw.samples[raw.samples.length - 1].time.getTime();
   const length = Math.max(1, Math.round((endMs - startMs) / 1000) + 1);
 
-  const lat: Series = new Array(length).fill(undefined);
-  const lon: Series = new Array(length).fill(undefined);
-  const elevation: Series = new Array(length).fill(undefined);
-  const deviceDistance: Series = new Array(length).fill(undefined);
-  const deviceSpeed: Series = new Array(length).fill(undefined);
-  const hr: Series = new Array(length).fill(undefined);
-  const cadence: Series = new Array(length).fill(undefined);
-  const power: Series = new Array(length).fill(undefined);
+  const lat: Series = new Array<number | undefined>(length).fill(undefined);
+  const lon: Series = new Array<number | undefined>(length).fill(undefined);
+  const elevation: Series = new Array<number | undefined>(length).fill(undefined);
+  const deviceDistance: Series = new Array<number | undefined>(length).fill(undefined);
+  const deviceSpeed: Series = new Array<number | undefined>(length).fill(undefined);
+  const hr: Series = new Array<number | undefined>(length).fill(undefined);
+  const cadence: Series = new Array<number | undefined>(length).fill(undefined);
+  const power: Series = new Array<number | undefined>(length).fill(undefined);
   const hasSample = new Array<boolean>(length).fill(false);
 
   for (const sample of raw.samples) {

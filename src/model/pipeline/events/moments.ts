@@ -20,7 +20,7 @@ const OVERLAP_TOLERANCE = 0.5;
  */
 const FILLER_OVERLAP_TOLERANCE = 0.85;
 
-interface Candidate extends Omit<StoryMoment, "order"> {}
+type Candidate = Omit<StoryMoment, "order">;
 
 export function buildMoments(
   samples: Sample[],

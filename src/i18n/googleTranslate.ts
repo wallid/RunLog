@@ -204,6 +204,10 @@ function surviveTranslatedTextNodes(): void {
   if (patchedDom || typeof Node === "undefined") return;
   patchedDom = true;
 
+  // Pulled off the prototype to be re-entered through `.call(this, …)` below,
+  // which is the whole mechanism of the patch. The rule cannot see that and
+  // reads an unbound method it is about to lose `this` on.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { removeChild, insertBefore } = Node.prototype;
 
   Node.prototype.removeChild = function <T extends Node>(child: T): T {

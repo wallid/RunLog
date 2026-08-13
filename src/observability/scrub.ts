@@ -39,7 +39,9 @@ export function scrubBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb | null {
   // Anything the app logged could carry a sample, a pace or a place name.
   if (breadcrumb.category === "console") return null;
 
-  const url = breadcrumb.data?.url;
+  // Sentry types breadcrumb data as `any`; taking it as `unknown` means the
+  // guard below is what proves it is a URL, rather than a type nobody checked.
+  const url: unknown = breadcrumb.data?.url;
   if (typeof url === "string") {
     breadcrumb.data = { ...breadcrumb.data, url: safeUrl(url) };
   }

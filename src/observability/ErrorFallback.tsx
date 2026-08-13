@@ -31,8 +31,9 @@ export function ErrorFallback({ resetError }: { resetError: () => void }) {
           </button>
         </div>
         <p className={styles.note}>
-          Your run stayed in this browser. If crash reporting is on, a stack trace
-          was sent — no part of your activity file goes with it.
+          Your run stayed in this browser, and so did the fault: nothing about
+          this was sent anywhere. If it keeps happening, the address in the
+          footer is the way to say so.
         </p>
       </div>
     </div>

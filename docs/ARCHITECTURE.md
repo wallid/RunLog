@@ -14,7 +14,7 @@ src/
 │   ├── zones.ts      heart-rate zones from a configurable maximum
 │   └── pipeline/     normalise → derive → split → detect events → rank moments
 ├── state/            small Zustand stores (activity, selection, settings)
-├── observability/    crash reporting: the gates, the scrubber, the boundary
+├── observability/    the error boundary and the page it shows
 ├── shell/            masthead, contents rail, scroll-spy
 ├── tour/             the first-run walkthrough: steps, spotlight geometry
 ├── viz/              Track primitive, SVG shapes, scales

@@ -42,9 +42,8 @@ import styles from "./DropZone.module.css";
  *
  * The file is read locally and never uploaded anywhere, which is worth saying
  * plainly on the screen where a runner hands over their data — it is the last
- * section for that reason. The only thing that ever leaves is a crash report,
- * which carries none of it: see observability/scrub for what is stripped, and
- * Settings for the switch.
+ * section for that reason. Nothing about a run leaves at all unless the reader
+ * switches on the weather lookup, and that sends a rounded coordinate.
  */
 
 export function DropZone() {
@@ -316,9 +315,9 @@ export function DropZone() {
                   <li className={styles.factNone}>Nothing.</li>
                 </ul>
                 <p className={styles.factNote}>
-                  Optional, and off unless you turn it on: a weather lookup for
-                  the run (rounded coordinates only) and a crash report with
-                  your data stripped out.
+                  One exception, optional and off unless you turn it on: a
+                  weather lookup for the run, which sends a coordinate rounded
+                  to about eleven kilometres and nothing else.
                 </p>
               </div>
             </div>

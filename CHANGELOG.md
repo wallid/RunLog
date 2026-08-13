@@ -7,6 +7,22 @@ the project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Removed
+
+**Crash reporting is gone.** Sentry, the DSN, the scrubber, the buffered early
+errors and the switch in Settings have all been taken out, along with the
+build-time environment the app read to configure them — the SDK is no longer a
+dependency and the bundle contains no trace of it. What is left of that module
+is the error boundary and the page it shows, which is the half a reader ever
+saw: a thrown widget still gives a page that says what happened and offers a
+way back, rather than a white screen.
+
+The count in `docs/PRIVACY.md` goes from three things that talk to a server to
+two, and both of the survivors are off until switched on. The cost is real and
+worth naming: a fault on somebody else's browser is now invisible unless they
+write in, which is why the boundary's own text points at the address in the
+footer.
+
 ### Added
 
 **Events the runner adds themselves.** A watch records what happened; only the

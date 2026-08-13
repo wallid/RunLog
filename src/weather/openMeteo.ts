@@ -5,8 +5,9 @@ import { haversineMetres } from "@/lib/geo";
  * The one request this app makes on the runner's behalf.
  *
  * Everything else in Run Log happens on the machine. This does not, so it is
- * built the way crash reporting is: off unless asked for, and sending as little
- * as will still answer the question.
+ * built to the rule that governs anything that leaves: off unless asked for,
+ * and sending as little as will still answer the question. With crash
+ * reporting gone it is the only such thing left in Settings.
  *
  * The rounding is the whole point and is not cosmetic. Coordinates go out at
  * one decimal place, which is a cell roughly eleven kilometres across — coarser

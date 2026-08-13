@@ -25,17 +25,11 @@ export interface Settings {
    */
   showExperimental?: boolean;
   /**
-   * Send anonymous crash reports. Undefined means "not yet decided", which is
-   * treated as on — the reports carry no run data, and a report nobody opted
-   * into is the only way a crash on someone else's browser is ever seen.
-   */
-  crashReports?: boolean;
-  /**
    * Look up what the weather was near a run. Undefined means off.
    *
-   * Unlike crash reports, this defaults off and has to be switched on: it is
-   * the only feature that sends anything about where the runner was, and a
-   * location is not something to disclose on someone's behalf.
+   * It defaults off and has to be switched on: it is the only feature that
+   * sends anything about where the runner was, and a location is not something
+   * to disclose on someone's behalf.
    */
   weatherLookup?: boolean;
   /**
@@ -54,7 +48,6 @@ export interface Settings {
 interface SettingsState extends Settings {
   setMaxHr: (maxHr: number | undefined) => void;
   setShowExperimental: (show: boolean) => void;
-  setCrashReports: (send: boolean) => void;
   setWeatherLookup: (enabled: boolean) => void;
   setLanguage: (language: string | undefined) => void;
 }
@@ -70,11 +63,9 @@ function loadSettings(): Settings {
     if (typeof parsed.maxHr === "number" && parsed.maxHr >= 120 && parsed.maxHr <= 230) {
       settings.maxHr = parsed.maxHr;
     }
-    // As with crash reports, only an explicit refusal is stored; anything else
-    // leaves it undecided, and undecided shows them.
+    // Only an explicit refusal is stored; anything else leaves it undecided,
+    // and undecided shows them.
     if (parsed.showExperimental === false) settings.showExperimental = false;
-    // Only an explicit refusal is stored; anything else leaves it undecided.
-    if (parsed.crashReports === false) settings.crashReports = false;
     // Only an explicit yes is stored, so the default stays off.
     if (parsed.weatherLookup === true) settings.weatherLookup = true;
     // Refuse a stored code that is not one this build offers: an unknown code
@@ -106,14 +97,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
    * reaches storage is still only what was actually chosen.
    */
   const update = (change: Settings): Settings => {
-    const { maxHr, showExperimental, crashReports, weatherLookup, language } = {
+    const { maxHr, showExperimental, weatherLookup, language } = {
       ...get(),
       ...change,
     };
     const next: Settings = {
       maxHr,
       showExperimental,
-      crashReports,
       weatherLookup,
       language,
     };
@@ -126,13 +116,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
 
     setMaxHr: (maxHr) => set(() => update({ maxHr })),
     setShowExperimental: (showExperimental) => set(() => update({ showExperimental })),
-    setCrashReports: (crashReports) => set(() => update({ crashReports })),
     setWeatherLookup: (weatherLookup) => set(() => update({ weatherLookup })),
     setLanguage: (language) => set(() => update({ language })),
   };
 });
-
-/** Undecided counts as consent; only an explicit "no" turns reporting off. */
-export function sendsCrashReports(settings: Settings): boolean {
-  return settings.crashReports !== false;
-}

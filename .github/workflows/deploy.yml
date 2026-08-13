@@ -25,13 +25,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      # A DSN is a write-only key and is baked into the bundle, so it is a
-      # repository variable rather than a secret. A fork without it builds an
-      # app that reports nothing and asks nobody for consent.
       - run: npm run build
-        env:
-          VITE_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
-          VITE_SENTRY_RELEASE: ${{ github.sha }}
       # `--branch` is not optional here. Left off, wrangler infers the branch
       # from git, and a checkout in Actions is a detached HEAD — so the upload
       # can be filed as a preview deployment while the job still reports

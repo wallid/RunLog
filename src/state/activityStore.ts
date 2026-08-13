@@ -1,10 +1,9 @@
 import { create } from "zustand";
-import { ParseError, type RawActivity } from "@/parsers/types";
+import type { RawActivity } from "@/parsers/types";
 import type { DerivedActivity } from "@/model/activity";
 import { buildActivity } from "@/model/pipeline";
 import { parseFile } from "@/parsers";
 import { ArchiveError, readArchive, type ArchiveEntry } from "@/upload/archive";
-import { reportParseFailure } from "@/observability/sentry";
 import { useSelectionStore } from "./selectionStore";
 import { useSettingsStore } from "./settingsStore";
 import { useLibraryStore } from "./libraryStore";
@@ -99,12 +98,6 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
       await ingest(set, file.name, async () => file);
     } catch (error) {
-      if (isReportable(error)) {
-        reportParseFailure(error, {
-          format: extensionOf(file.name),
-          bytes: file.size,
-        });
-      }
       set({ status: "error", raw: null, activity: null, choices: null, error: messageFor(error) });
     }
   },
@@ -116,9 +109,6 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
     try {
       await ingest(set, entry.name, () => entry.read());
     } catch (error) {
-      if (isReportable(error)) {
-        reportParseFailure(error, { format: extensionOf(entry.name), bytes: entry.size });
-      }
       // The list is kept: a route the parser could not read is a reason to try
       // another one, not a reason to go back to the file picker.
       set({ status: "choosing", raw: null, activity: null, error: messageFor(error) });
@@ -272,17 +262,4 @@ function currentMaxHr(): number | undefined {
 function messageFor(error: unknown): string {
   if (error instanceof Error && error.message) return error.message;
   return "Something went wrong while reading this file.";
-}
-
-/** Picking the wrong file is not a bug; failing to read the right one is. */
-function isReportable(error: unknown): boolean {
-  if (error instanceof ArchiveError) return false;
-  return !(error instanceof ParseError && error.kind === "unsupported");
-}
-
-/** The extension alone. Runners name exports after places and people. */
-function extensionOf(fileName: string): string {
-  const dot = fileName.lastIndexOf(".");
-  if (dot < 0 || dot === fileName.length - 1) return "none";
-  return fileName.slice(dot + 1).toLowerCase();
 }

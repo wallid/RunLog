@@ -4,8 +4,7 @@ import type { WidgetGroup } from "@/widgets/buildWidgets";
 import { useActivityStore } from "@/state/activityStore";
 import { useLibraryStore } from "@/state/libraryStore";
 import { RunList } from "@/library/RunList";
-import { sendsCrashReports, useSettingsStore } from "@/state/settingsStore";
-import { CRASH_REPORTING_AVAILABLE } from "@/observability/sentry";
+import { useSettingsStore } from "@/state/settingsStore";
 import { BrandMark } from "./BrandMark";
 import { TableOfContents } from "./TableOfContents";
 import { useScrollProgress } from "./useScrollProgress";
@@ -149,9 +148,6 @@ export function RunHeader({
               <MaxHeartRateSetting activity={activity} />
               <ExperimentalSetting count={experimentalCount} />
               <WeatherSetting activity={activity} />
-              {/* Absent from a build with no crash-reporting DSN, where there
-                  is nothing to consent to. */}
-              {CRASH_REPORTING_AVAILABLE && <CrashReportSetting />}
               <StoredRunsSetting />
               <TourSetting onStart={() => setOpenPanel(null)} />
             </>
@@ -387,10 +383,10 @@ function ExperimentalSetting({ count }: { count: number }) {
 /**
  * The only feature that discloses anything about where the runner was.
  *
- * It is off until switched on, which is the opposite of crash reporting and
- * deliberately so: a stack trace says nothing about a person, and a place and
- * a time say a great deal. The help text states exactly what is sent, because
- * a consent nobody can check is not consent. Coordinates are rounded to one
+ * It is off until switched on, and with crash reporting gone it is now the
+ * only thing in this panel that sends anything at all: a place and a time say
+ * a great deal about a person. The help text states exactly what is sent,
+ * because a consent nobody can check is not consent. Coordinates are rounded to one
  * decimal before they leave — a cell about eleven kilometres across, which is
  * coarser than the weather grid, so the rounding costs nothing.
  */
@@ -524,39 +520,3 @@ function TourSetting({ onStart }: { onStart: () => void }) {
   );
 }
 
-/**
- * The one thing on the page that talks to a server.
- *
- * It is on by default, which is a claim that has to be earned rather than
- * assumed: what leaves the browser is a stack trace and the browser version,
- * never a sample, a coordinate or a file name. Saying so here — next to the
- * switch, in the same words as the promise on the upload screen — is the point
- * of the setting. Turning it off applies immediately, not at the next reload.
- */
-function CrashReportSetting() {
-  const enabled = useSettingsStore(sendsCrashReports);
-  const setCrashReports = useSettingsStore((state) => state.setCrashReports);
-
-  return (
-    <div className={styles.settingsBlock}>
-      <label className={styles.switchRow}>
-        <input
-          type="checkbox"
-          className={styles.switchInput}
-          checked={enabled}
-          onChange={(event) => setCrashReports(event.target.checked)}
-        />
-        <span className={styles.switchTrack} aria-hidden="true">
-          <span className={styles.switchThumb} />
-        </span>
-        <span className={styles.settingsLabel}>Send anonymous crash reports</span>
-      </label>
-      <p className={styles.settingsHelp}>
-        Your run is still read only in this browser and is never uploaded. If
-        something breaks, this sends the error and the browser version so it can be
-        fixed — no part of your activity file, no location, and nothing that
-        identifies you.
-      </p>
-    </div>
-  );
-}

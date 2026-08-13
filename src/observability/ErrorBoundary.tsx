@@ -1,14 +1,17 @@
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 import { ErrorFallback } from "./ErrorFallback";
-import { captureRenderError } from "./sentry";
 
 /**
  * The last line between a thrown widget and a blank page.
  *
- * Sentry ships a boundary of its own, but using it would mean importing the SDK
- * into the main bundle — the one thing `observability/sentry` exists to avoid.
- * A boundary is a dozen lines of React, so this one is local and reports
- * through the same lazily-loaded path as everything else.
+ * It catches and shows a way out; it reports nothing. Crash reporting used to
+ * hang off `componentDidCatch` here, and when it was removed the boundary was
+ * kept, because the half a reader sees is the half that mattered: a thrown
+ * widget leaves a page that says what happened and offers a way back, rather
+ * than a white screen.
+ *
+ * A fault is now visible only to the person in front of it, which is the trade
+ * that comes with sending nothing anywhere.
  */
 interface State {
   error: Error | null;
@@ -19,10 +22,6 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { error };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo): void {
-    captureRenderError(error, info.componentStack ?? undefined);
   }
 
   render(): ReactNode {

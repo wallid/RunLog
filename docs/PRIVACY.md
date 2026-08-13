@@ -3,9 +3,15 @@
 Your activity file is read in the browser and never uploaded. Nothing about a
 run is sent anywhere by default.
 
-Exactly three things talk to a server, all narrow and all listed in Settings.
-Two of them are off until you switch them on. This document is the long version
-of that list.
+Exactly two things talk to a server, both narrow, both listed in Settings, and
+both off until you switch them on. This document is the long version of that
+list.
+
+Crash reporting used to be a third, and the only one that was on by default.
+It has been removed outright — no SDK, no DSN, no switch, nothing to consent
+to. A fault is now seen only by the person it happens to, which costs the
+project the one signal it had about breakage on other people's browsers, and
+that is the trade.
 
 ## The library keeps files, not conclusions
 
@@ -76,42 +82,18 @@ works, which is enough to unmount a React tree mid-update, so
 away — applied on the first switch and never to a reader who has not asked for
 it.
 
-## Crash reporting is the other thing that talks to a server
-
-It is built as an exception. A fault on someone else's browser is otherwise
-invisible: the reader sees a broken page and closes the tab. So the hosted
-build reports crashes — behind three gates. A build with no `VITE_SENTRY_DSN`
-never loads the SDK at all, which covers local development and every fork. The
-runner can switch it off in Settings, and that takes effect immediately rather
-than at the next reload. And everything sent passes through
-[`src/observability/scrub.ts`](../src/observability/scrub.ts) first.
-
-The scrubber is the part worth reading. Map tiles are requested by z/x/y, so a
-breadcrumb reading `tile.openstreetmap.org/14/8210/5453.png` says where the
-runner was — the one thing this project most wants to keep local. Cross-origin
-request breadcrumbs are therefore cut back to their origin, console breadcrumbs
-are dropped rather than trusting that nothing ever logs a sample, query strings
-are stripped while the section anchor is kept, and the user object is deleted
-outright. The file name never goes; runners name their exports after places and
-people. A failed parse reports only the extension and a size bucket. Because a
-regression here would be silent, the scrubber is unit-tested against the shapes
-Sentry actually produces.
-
-The SDK sits behind a dynamic import so its 30 kB never lands in a build that
-cannot use it. That opens a gap at startup — Sentry's handlers only attach at
-`init` — so anything thrown while the chunk is in flight is held and replayed
-once the client is up.
-
 ## Map tiles
 
-The map is drawn from OpenStreetMap tiles, fetched by tile coordinate. That is
-a request to a third party which implies roughly where the run was, and it is
-the reason the crash-report scrubber cuts tile URLs back to their origin. It
-is not opt-in: a run that carries a position renders its map, and the tiles
-load with it.
+The map is drawn from OpenStreetMap tiles, fetched by tile coordinate — a
+request to a third party which implies roughly where the run was. It is not
+opt-in: a run that carries a position renders its map, and the tiles load with
+it. This is the one disclosure on the list that the reader is not asked about
+first, and it is here rather than in the count above because it follows from
+drawing a map at all.
 
 ## Everything else
 
-A local build sends nothing anywhere. Crash reporting only exists in a build
-given a `VITE_SENTRY_DSN` — see `.env.example` — and without one the SDK chunk
-is never even fetched.
+Nothing. There is no analytics script, no tag manager, no error reporter and no
+build-time configuration that could switch one on: the app reads nothing from
+the environment. A local build and the hosted one make exactly the same
+requests.

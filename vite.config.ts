@@ -34,7 +34,16 @@ async function countStars(): Promise<number | null> {
 
 export default defineConfig(async ({ command }) => ({
   plugins: [react()],
-  base: "./",
+  /**
+   * Absolute, not relative.
+   *
+   * This was `"./"`, which is the right answer for a site served entirely from
+   * its root: the bundle resolves wherever it is put, including from a `file://`
+   * path. Share links ended that. A page served at `/s/7Qk2xN4v` would resolve
+   * `./assets/index.js` against `/s/`, ask for `/s/assets/index.js`, and get
+   * nothing — every shared run would be a blank page.
+   */
+  base: "/",
   define: {
     __GITHUB_STARS__: JSON.stringify(
       command === "build" ? await countStars() : null,

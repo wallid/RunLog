@@ -9,6 +9,8 @@ import { buildWidgets, countExperimental, groupWidgets } from "./widgets/buildWi
 import { RunHeader } from "./shell/RunHeader";
 import { TableOfContents } from "./shell/TableOfContents";
 import { Tour } from "./tour/Tour";
+import { SharedBanner } from "./share/SharedBanner";
+import { useShareRoute } from "./share/useShareRoute";
 import { CONTACT_EMAIL, contactHref } from "./contact";
 import { SUPPORT_URL } from "./support";
 import { DISCLAIMER } from "./disclaimer";
@@ -20,6 +22,10 @@ export function App() {
   const rebuild = useActivityStore((state) => state.rebuild);
   const maxHr = useSettingsStore((state) => state.maxHr);
   const initLibrary = useLibraryStore((state) => state.init);
+
+  // A run arriving by link, before anything else. Does nothing on an ordinary
+  // visit, which is every visit that did not follow somebody's share.
+  useShareRoute();
 
   // What is already kept in this browser, read once. The upload screen needs
   // the answer before it can decide whether it is a landing page or a list.
@@ -97,6 +103,10 @@ export function App() {
         groups={groups}
         experimentalCount={experimentalCount}
       />
+
+      {/* Present only when this run arrived by link. Above the story rather
+          than inside it, because it qualifies the whole page below it. */}
+      <SharedBanner />
 
       {/* Keyed by the run, so switching to another one builds a new story
           rather than reusing the last one's nodes. The reveal each card does on

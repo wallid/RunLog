@@ -1,11 +1,11 @@
 # What stays here, and what does not
 
 Your activity file is read in the browser and never uploaded. Nothing about a
-run is sent anywhere by default.
+run is sent anywhere unless you ask for it — and there is now exactly one thing
+you can ask for that sends the run itself, which is sharing it.
 
-Exactly two things talk to a server, both narrow, both listed in Settings, and
-both off until you switch them on. This document is the long version of that
-list.
+Three things talk to a server, all narrow, none of them on by default. This
+document is the long version of that list.
 
 Crash reporting used to be a third, and the only one that was on by default.
 It has been removed outright — no SDK, no DSN, no switch, nothing to consent
@@ -41,6 +41,73 @@ offer one stands down, and the page behaves exactly as it did before there was
 one. Safari may evict browser storage after about seven days without a visit,
 which is worth knowing and costs nothing: the library is a convenience over
 files you still have.
+
+## Sharing a run puts it on a server, and that is the point
+
+This is the one feature here that contradicts the sentence at the top of this
+page, so it is worth being exact about what it does. Everything else in Run Log
+happens in your browser because it can. Sharing cannot: a link somebody else can
+open is, by definition, a copy of the run somewhere they can reach.
+
+**Nothing is shared until you press the button.** There is no default, no
+setting left on from last time, and no background sync. A run is shared once,
+deliberately, and the dialog asks about the route every single time rather than
+remembering what you chose in March.
+
+**The server cannot read what you share.** The run is encrypted in your browser
+with a key generated for that one share. The key is put in the *fragment* of the
+link — the part after the `#` — which browsers do not send in requests. So the
+key never reaches the server, and what the server holds is a blob it cannot turn
+back into a run. Neither can anyone who later gets at the storage.
+
+**Anyone with the link can.** This is the part that actually matters, and it is
+said in the dialog rather than only here. A link is a bearer token. Forwarded,
+screenshotted, pasted into a group chat or left in a browser history, it works
+for whoever has it. Encryption protects the run from the people running this
+site; it does nothing about the people you sent it to, or the people *they* send
+it to. Sharing is publishing to an audience you do not control.
+
+**The route is a choice you make each time.** A GPS trace that starts and ends
+at your front door says where you live. Every share offers three answers: the
+whole route, the route with the first and last 250 m withheld, or no position
+at all. The stripping happens in your browser before anything is encrypted, so
+what you chose to withhold is not merely hidden — it was never uploaded. The
+page opening the share is told which of the three it is looking at, because a
+trimmed route drawn without comment is a map quietly claiming the run was
+shorter than it was.
+
+**Your own events go too, if you say so.** The gels, the cramps, the lactate
+readings and the notes you typed on them. They are most of why a run is worth
+showing somebody, and they are also the most personal thing on the page, so they
+are a separate switch from the run itself.
+
+**You can take it back.** Every share can be withdrawn, which deletes it from
+the server; anyone opening the link afterwards is told so. The proof that a
+share is yours to withdraw is a token kept in this browser and nowhere else —
+which is the honest trade for having no accounts. Clearing this site's storage
+gives up the ability to withdraw links made from it. The links themselves keep
+working.
+
+**Shared runs are not indexed.** Every share page answers with `noindex` as an
+HTTP header and as a meta tag, and `robots.txt` disallows the whole path. A link
+pasted into a public forum should not become a search result.
+
+**What the server logs.** What any HTTP server knows: that a request happened.
+The one piece deliberately kept is a counter that stops the endpoint being used
+as free file hosting — twenty-five shares per connection per day. It is keyed by
+a hash of the address *and* the date rather than by the address, so it cannot be
+read back into a list of who shared what, and yesterday's counters cannot be
+joined to today's.
+
+**The picture is not shared at all.** The same dialog offers to save an image of
+the run — the figures and one chart — and that one never touches a server. It is
+drawn on a canvas in your browser and saved to your device. It also carries no
+map and no coordinates, whatever you chose for the link, because the code that
+draws it never reads a position.
+
+The whole server side is two small files, [`functions/api/share/`](../functions/api/share/)
+and [`server/share.ts`](../server/share.ts), and the encryption is
+[`src/share/crypto.ts`](../src/share/crypto.ts).
 
 ## The weather lookup is opt-in, and rounded
 
@@ -96,4 +163,5 @@ drawing a map at all.
 Nothing. There is no analytics script, no tag manager, no error reporter and no
 build-time configuration that could switch one on: the app reads nothing from
 the environment. A local build and the hosted one make exactly the same
-requests.
+requests — with the one exception that a local build has no sharing endpoint to
+talk to, so the button reports that it could not reach the server.

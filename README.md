@@ -9,7 +9,7 @@ what changed, where, and what might account for it.
 
 **[runlogapp.com](https://runlogapp.com)**
 
-No account. No upload. Everything runs in your browser.
+No account. Nothing uploaded unless you choose to share a run.
 
 </div>
 
@@ -56,6 +56,30 @@ a section; on narrow screens it collapses into a **Contents** button. Each card
 shows only what happened — press the **ⓘ** and it turns over to reveal what the
 metric means.
 
+## Sharing a run
+
+**Share** turns a run into a link somebody else can open — the whole page, with
+your own events on it. It is the one thing here that puts data on a server, so
+it works the way the rest of the project would want it to.
+
+The run is encrypted in your browser, and the key goes in the *fragment* of the
+link — the part after the `#`, which browsers never send to a server. So the
+link opens the run and the server storing it cannot read it. That is not the
+whole story and the dialog says so: a link is a bearer token, and anyone it
+reaches can read the run.
+
+Every share asks about the route, every time, because a GPS trace that starts at
+your door says where you live: share the whole route, hide the first and last
+250 m, or share no position at all. Whatever you withhold is stripped before
+anything is encrypted, so it never leaves the machine. Any share can be
+withdrawn, and shared runs are never indexed.
+
+The same dialog will also draw the run as an image — the figures, one chart and
+your events — for posting somewhere a link will not go. That one touches no
+server at all, and carries no map.
+
+[**Privacy**](docs/PRIVACY.md) has the long version.
+
 ## The one idea
 
 Every card separates **what your watch measured** from **what was inferred from
@@ -88,7 +112,7 @@ A local build sends nothing anywhere.
 |---|---|
 | [**Architecture**](docs/ARCHITECTURE.md) | How a file becomes a page: the parsers, the pipeline, the widget contract, and how to add a widget |
 | [**Design decisions**](docs/DESIGN.md) | The choices with plausible alternatives, and why each went the way it did |
-| [**Privacy**](docs/PRIVACY.md) | The three things that talk to a server, in full |
+| [**Privacy**](docs/PRIVACY.md) | Everything that talks to a server, in full — including exactly what sharing sends |
 | [**Contributing**](CONTRIBUTING.md) | Setup and the trunk-based flow |
 | [**Conventions**](CONVENTIONS.md) | Commit-message format |
 

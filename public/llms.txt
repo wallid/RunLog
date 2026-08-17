@@ -1,0 +1,53 @@
+# Run Log
+
+> A free, open-source run explorer. Drop in a FIT or GPX file from a running
+> watch and read what actually happened during the run — what changed, where it
+> changed, and what might account for it. The file is parsed in the browser and
+> is never uploaded unless the runner deliberately shares a run, in which case
+> it is encrypted first. There is no account.
+
+This file follows the llms.txt convention, which is a proposal rather than a
+standard: no assistant is known to require it, and nothing here is a substitute
+for the page itself saying what it is. It costs one static file, and it is the
+one place a summary of the site can be written for a reader that fetches HTML
+and does not run JavaScript.
+
+## What the site is
+
+Run Log is a single client-rendered page at https://runlogapp.com/. There is no
+route to crawl beyond the root. A run exists only in the reader's own browser
+for as long as the tab is open, so there is no public per-run URL to index.
+
+Shared runs live under /s/, and that path is disallowed in robots.txt and served
+with `noindex`. A share link is unguessable and its payload is encrypted with a
+key held in the link's fragment, which is never sent to the server — so there is
+nothing there to crawl, and nothing a crawler could read if it did.
+
+## What it does
+
+- Reads FIT and GPX files from running watches, in the browser.
+- Resamples the run onto a uniform one-second grid, then builds a page of cards
+  from it: pace, heart rate and its zones, cadence, power, elevation and
+  gradient, kilometre splits, stops and walking, best sections.
+- Adjusts pace for gradient using the Minetti cost-of-running curve, so a
+  kilometre run uphill can be compared with one run on the flat.
+- Lets the runner add what the watch could not record — a gel, a drink, a
+  cramp, a blood lactate reading — and reads the run around those marks.
+- States a confidence and a provenance for every claim, and declines to make a
+  claim the file cannot support rather than filling the gap.
+
+## What it is not
+
+- Not a training log, a race diary or a social network. It reads one run at a
+  time and explains it.
+- Not medical, coaching or training advice. Every figure comes from a consumer
+  device and can be wrong.
+- Not a service. Nothing is uploaded, so there is nothing to sign in to.
+
+## Links
+
+- The app: https://runlogapp.com/
+- Source, MIT licensed: https://github.com/wallid/RunLog
+- What it does, in full: https://github.com/wallid/RunLog#readme
+- How it is built: https://github.com/wallid/RunLog/blob/main/docs/ARCHITECTURE.md
+- What it does with data: https://github.com/wallid/RunLog/blob/main/docs/PRIVACY.md

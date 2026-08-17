@@ -34,8 +34,8 @@ export function SocialProof() {
             </p>
             <p className={styles.statNote}>
               That is the whole census. Runs are read on the visitor's own
-              machine and never uploaded, so runs cannot be counted from here —
-              but if each visit read one, that is how many runs stayed private.
+              machine, so runs cannot be counted from here — a shared one is
+              encrypted before it leaves and is unreadable to us either way.
             </p>
           </div>
         </div>

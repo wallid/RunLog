@@ -1,0 +1,165 @@
+/*
+ * The sharing section on the landing page.
+ *
+ * Shares the two-column shape the other feature sections use, so it reads as
+ * one of them rather than as an announcement bolted on.
+ */
+
+.section {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  padding: clamp(3rem, 7vw, 5.5rem) 0;
+}
+
+.text {
+  min-width: 0;
+}
+
+.heading {
+  font-size: clamp(1.7rem, 1.4rem + 1.2vw, 2.2rem);
+  font-weight: 720;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.body {
+  margin-top: var(--space-4);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.visual {
+  min-width: 0;
+}
+
+.panel {
+  padding: var(--space-5);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+}
+
+.label {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 640;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+/*
+ * The rule between the two halves of the panel. Hung off the legend rather
+ * than off `.label + .label`, which never matched: the legend list sits
+ * between the two labels, so they are not adjacent siblings.
+ */
+.legend + .label {
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+/*
+ * The link itself, set in mono because it is the output rather than a claim
+ * about it — the same reasoning as the fact panel next door. It wraps at the
+ * `#` on a narrow screen, which is exactly where the meaning divides.
+ */
+.link {
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.seen {
+  padding: 0.15em 0.1em;
+  background: var(--surface-inset);
+  color: var(--text-primary);
+  border-radius: 3px;
+}
+
+.unseen {
+  padding: 0.15em 0.25em;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 3px;
+  font-weight: 620;
+}
+
+.legend {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legend li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.2rem;
+  border-radius: 3px;
+}
+
+.swatchSeen {
+  background: var(--surface-inset);
+  border: 1px solid var(--border-strong);
+}
+
+.swatchUnseen {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+
+.choices {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.choices li {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.choices li[data-recommended="true"] {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+
+.note {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+/* The same breakpoint `.feature` in DropZone.module.css turns two-column at. */
+@media (min-width: 900px) {
+  .section {
+    grid-template-columns: 1fr 1fr;
+  }
+}

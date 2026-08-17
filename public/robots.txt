@@ -5,4 +5,38 @@
 User-agent: *
 Allow: /
 
+# Shared runs are the exception, and the only one.
+#
+# A share link is unguessable, so nothing here is what keeps a run private —
+# but a link pasted into a public forum would be crawled from there, and
+# somebody who sent their run to a club should not find it in a search result.
+# The pages themselves also answer with `noindex` in a header and a meta tag;
+# this line is the part a crawler reads before it asks for the page at all.
+Disallow: /s/
+
+# The assistants, named rather than left to the wildcard above.
+#
+# The wildcard already permits every one of these, so none of these lines
+# changes what a crawler is allowed to do. They are here because two of the
+# tokens — Google-Extended and Applebot-Extended — exist only as opt-outs, and
+# a file that never mentions them cannot be read as having decided anything.
+# This records the decision: a page that explains what a running file means is
+# more useful quoted than unquoted, and there is nothing on it to protect.
+#
+# Worth knowing when reading this list: most of these fetch HTML and do not run
+# JavaScript, so what they can actually see of this site is whatever the served
+# HTML already says — not what React draws afterwards.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://runlogapp.com/sitemap.xml

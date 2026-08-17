@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useScrollProgress } from "./useScrollProgress";
 import { useHeaderHeight } from "./useHeaderHeight";
 import { useTourStore } from "@/state/tourStore";
+import { ShareDialog } from "@/share/ShareDialog";
 import { applyLanguage, type TranslateStatus } from "@/i18n/googleTranslate";
 import { LANGUAGES, suggestedLanguage } from "@/i18n/languages";
 import {
@@ -39,8 +40,15 @@ export function RunHeader({
   const keptCount = useLibraryStore((state) => state.entries.length);
   const hasLibrary = useLibraryStore((state) => state.status === "ready") && keptCount > 0;
   const [openPanel, setOpenPanel] = useState<Panel | null>(null);
+  const [sharing, setSharing] = useState(false);
   const progressRef = useScrollProgress<HTMLSpanElement>();
   const innerRef = useHeaderHeight<HTMLDivElement>();
+
+  // Sharing is offered for your own runs only. A run that arrived by link is
+  // somebody else's to publish or withdraw, and a button that let a reader
+  // re-share it would hand them a decision that was never theirs — the original
+  // sharer could take their link down and never know the run was still up.
+  const isShared = useActivityStore((state) => state.shared !== null);
 
   const toggle = (panel: Panel) =>
     setOpenPanel((current) => (current === panel ? null : panel));
@@ -104,6 +112,15 @@ export function RunHeader({
           >
             Contents
           </button>
+          {!isShared && (
+            <button
+              type="button"
+              className={`${styles.action} ${styles.shareAction}`}
+              onClick={() => setSharing(true)}
+            >
+              Share
+            </button>
+          )}
           <button
             type="button"
             className={styles.action}
@@ -187,6 +204,12 @@ export function RunHeader({
       <span className={styles.progress} aria-hidden="true">
         <span className={styles.progressFill} ref={progressRef} />
       </span>
+
+      {/* Mounted only while open, so the dialog starts from its own opening
+          state each time rather than from wherever it was left. */}
+      {sharing && (
+        <ShareDialog activity={activity} onClose={() => setSharing(false)} />
+      )}
     </header>
   );
 }

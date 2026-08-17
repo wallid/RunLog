@@ -151,6 +151,19 @@
   color: var(--text-on-inverse);
 }
 
+/*
+ * Share carries the accent while its neighbours stay quiet. It is the only
+ * control in this bar that does something outside the page, and the one a
+ * reader who has just finished a run is looking for.
+ */
+.shareAction {
+  color: var(--accent-ink);
+}
+
+.shareAction:hover {
+  color: var(--accent-strong);
+}
+
 .settingsBlock,
 .settingsForm {
   padding-top: var(--space-4);

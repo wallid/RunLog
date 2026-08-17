@@ -183,8 +183,15 @@ export const useAnnotationStore = create<AnnotationState>((set, get) => {
     },
 
     attach: (runId) => {
-      const { activity } = useActivityStore.getState();
+      const { activity, shared } = useActivityStore.getState();
       if (!activity || activity.id !== runId) return;
+      // A run that arrived by link carries the *sharer's* events, and this
+      // store holds only this reader's. Attaching here would replace theirs
+      // with whatever this browser has for the same id — which for almost every
+      // reader is nothing, silently deleting the events off somebody else's
+      // run a moment after it rendered. Shared runs are read-only; the editor
+      // stands down for them too.
+      if (shared !== null) return;
       const entries = get().byRun[runId];
       // Undefined and absent are the same statement — nothing was added — so
       // an empty list is taken back off rather than left as [].

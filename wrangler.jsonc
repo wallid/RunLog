@@ -14,5 +14,24 @@
       "binding": "STATS",
       "id": "bc5b7d931069411196ea56a2c41eee2e"
     }
+  ],
+  // Shared runs. Each object is an encrypted blob this project cannot read —
+  // the key lives in the link's fragment and never reaches a server. See
+  // `server/share.ts` and `docs/PRIVACY.md`.
+  //
+  // Created with `wrangler r2 bucket create runlog-shares`.
+  //
+  // R2 rather than the KV namespace above, which would otherwise have done:
+  // KV's free tier allows 1,000 writes a day *in total*, and the visit counter
+  // already spends from that budget on every new browser. Sharing a run is the
+  // one action here a person has deliberately chosen, and having it fail
+  // because the site had a good day for traffic would be the worst possible
+  // way to spend that limit. R2's free tier is a million writes a month with no
+  // daily cliff, so the two features stop competing.
+  "r2_buckets": [
+    {
+      "binding": "SHARES",
+      "bucket_name": "runlog-shares"
+    }
   ]
 }

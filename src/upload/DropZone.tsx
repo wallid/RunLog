@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/shell/ThemeToggle";
 import { SourceGuide } from "./SourceGuide";
 import { ArchivePicker } from "./ArchivePicker";
 import { Benefits } from "./Benefits";
+import { ShareFeature } from "./ShareFeature";
 import { SocialProof } from "./SocialProof";
 import { useVisitCount } from "./useVisitCount";
 import { useWindowDrop } from "./useWindowDrop";
@@ -106,6 +107,9 @@ export function DropZone() {
           </a>
           <a className={styles.navLink} href="#sources">
             Your watch
+          </a>
+          <a className={styles.navLink} href="#sharing">
+            Sharing
           </a>
         </nav>
         <div className={styles.barEnd}>
@@ -330,13 +334,21 @@ export function DropZone() {
             </div>
           </section>
 
+          {/* After the sources and before the privacy section, which is the
+              order the two arguments have to be made in: sharing is the one
+              exception to the claim that follows it, and a reader who met
+              "nothing is uploaded" first would have to un-learn it. */}
+          <ShareFeature />
+
           <section className={styles.feature}>
             <div className={styles.featureText}>
-              <h2 className={styles.featureHeading}>Nothing is uploaded.</h2>
+              <h2 className={styles.featureHeading}>
+                Nothing is uploaded unless you ask.
+              </h2>
               <p className={styles.featureBody}>
-                No account, no server, no telemetry. Your files are read in this
-                browser, kept in this browser, and never leave this machine —
-                remove them whenever you like. The page works with the network
+                No account, no telemetry. Your files are read in this browser,
+                kept in this browser, and never leave this machine on their own
+                — remove them whenever you like. Read a run with the network
                 off, and that is the honest test of the claim.
               </p>
             </div>
@@ -346,14 +358,17 @@ export function DropZone() {
                 purpose. */}
             <div className={styles.featureVisual}>
               <div className={styles.factPanel}>
-                <p className={styles.factLabel}>Leaves this machine</p>
+                <p className={styles.factLabel}>Leaves this machine on its own</p>
                 <ul className={styles.factList}>
                   <li className={styles.factNone}>Nothing.</li>
                 </ul>
                 <p className={styles.factNote}>
-                  One exception, optional and off unless you turn it on: a
-                  weather lookup for the run, which sends a coordinate rounded
-                  to about eleven kilometres and nothing else.
+                  Two things you can ask for, both off until you do. A weather
+                  lookup, which sends a coordinate rounded to about eleven
+                  kilometres and nothing else. And <strong>Share</strong>, which
+                  is the only way a run itself goes anywhere — encrypted here
+                  first, with the key kept in the link rather than on the
+                  server, and withdrawable whenever you like.
                 </p>
               </div>
             </div>

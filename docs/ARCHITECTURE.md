@@ -16,9 +16,17 @@ src/
 ├── state/            small Zustand stores (activity, selection, settings)
 ├── observability/    the error boundary and the page it shows
 ├── shell/            masthead, contents rail, scroll-spy
+├── share/            encrypt → upload → link, and the card image
 ├── tour/             the first-run walkthrough: steps, spotlight geometry
 ├── viz/              Track primitive, SVG shapes, scales
 └── widgets/          one directory per widget: compute, narrate, view
+
+functions/            Pages Functions — the only code that runs on a server
+├── api/stats.ts      the visit counter
+├── api/share/        create, fetch and withdraw a shared run
+└── s/[id].ts         the page a share link lands on
+server/share.ts       helpers both share handlers use (outside functions/ so
+                      Pages does not turn it into a route)
 ```
 
 **Parsing is not the widgets' problem.** Every parser produces a `RawActivity`;
@@ -34,6 +42,28 @@ slice it paints.
 **One widget list.** `buildWidgets()` decides what the run supports, and both
 the page and the contents rail render from that same list — so the navigation
 can never offer a link to a section that was not built.
+
+**A share carries the recording, not the conclusions.** `src/share/document.ts`
+packs the `RawActivity` — the samples as the watch recorded them — plus the
+runner's own events and, if they looked it up, the weather. The page opening the
+link runs the ordinary pipeline over it. That is the same choice the run library
+makes and it buys the same three things: a payload a fraction of the size, a
+link shared today that reads with next year's analysis, and exactly one code
+path from samples to a page, so a shared run cannot drift into rendering
+differently from the same run opened off disk.
+
+The series is columnar and fixed-point before it is gzipped
+(`src/share/codec.ts`), which is what keeps a marathon inside a couple of
+hundred kilobytes. It is then encrypted, and only then uploaded: ciphertext does
+not compress, so the order is not negotiable.
+
+**The server cannot read a share.** The key is generated per share, lives in the
+link's fragment, and is never sent anywhere — see `src/share/crypto.ts` for what
+that does and does not buy. The two handlers under `functions/api/share/` never
+parse a payload and could not; they check a size, count the request against a
+daily allowance, and move bytes. Storage is R2 rather than the KV namespace the
+visit counter uses, because KV's free tier is 1,000 writes a day *in total* and
+the counter already spends from it.
 
 ## The widget contract
 

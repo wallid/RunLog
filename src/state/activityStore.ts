@@ -9,6 +9,9 @@ import { useSettingsStore } from "./settingsStore";
 import { useLibraryStore } from "./libraryStore";
 import { getRunBlob } from "@/library/db";
 import { fetchRunWeather } from "@/weather/openMeteo";
+import { importKey } from "@/share/crypto";
+import { fetchSharedRun, SharedRunError } from "@/share/transport";
+import type { ShareChoices } from "@/share/document";
 
 /**
  * The run currently being read.
@@ -19,12 +22,30 @@ import { fetchRunWeather } from "@/weather/openMeteo";
 
 export type LoadStatus = "idle" | "loading" | "choosing" | "ready" | "error";
 
+/**
+ * What is known about a run that arrived by link rather than by file.
+ *
+ * Present only for those. Everything reading it is doing one of two things:
+ * telling the reader whose run this is and what was left out of it, or
+ * declining to treat it as the reader's own — a shared run is not filed in the
+ * library, because the library is for runs somebody chose to keep.
+ */
+export interface SharedContext {
+  id: string;
+  /** What the sharer chose to include. The banner reports it verbatim. */
+  choices: ShareChoices;
+  /** The sharer's maximum heart rate, when they had one set. */
+  maxHr?: number;
+}
+
 interface ActivityState {
   status: LoadStatus;
   raw: RawActivity | null;
   activity: DerivedActivity | null;
   error: string | null;
   fileName: string | null;
+  /** Set when this run came from a share link; null for every other path. */
+  shared: SharedContext | null;
   /**
    * The runs found inside an export archive, when it held more than one.
    *
@@ -40,6 +61,11 @@ interface ActivityState {
   loadDemo: () => Promise<void>;
   /** Reads a run back out of the library. */
   openFromLibrary: (id: string) => Promise<void>;
+  /**
+   * Opens a run somebody shared. `encodedKey` comes from the link's fragment
+   * and is the only thing that can decrypt it; the server has neither.
+   */
+  openShared: (id: string, encodedKey: string) => Promise<void>;
   /** Recomputes the model against a new maximum heart rate. */
   rebuild: (maxHr: number | undefined) => void;
   /**
@@ -67,6 +93,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   activity: null,
   error: null,
   fileName: null,
+  shared: null,
   choices: null,
 
   /**
@@ -165,13 +192,65 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
     }
   },
 
+  /**
+   * Opens a run somebody sent a link to.
+   *
+   * The run is decrypted here and never persisted: it is not this reader's run,
+   * so it is not filed in their library and it is gone when the tab closes.
+   * Reopening it means following the link again, which is the correct amount of
+   * ceremony for somebody else's data.
+   *
+   * Zones are built from the sharer's maximum heart rate rather than the
+   * reader's, because a zone is a fact about the person who ran it. The
+   * reader's own figure still wins if they have set one — see `rebuild` — and
+   * the banner says which is in use.
+   */
+  openShared: async (id, encodedKey) => {
+    set({ status: "loading", error: null, fileName: null, choices: null, shared: null });
+    useSelectionStore.getState().clearAll();
+
+    try {
+      const key = await importKey(encodedKey);
+      const { raw, annotations, weather, maxHr, choices } = await fetchSharedRun(id, key);
+
+      const activity = buildActivity(raw, { maxHr: currentMaxHr() ?? maxHr });
+      set({
+        status: "ready",
+        raw,
+        activity: {
+          ...activity,
+          ...(weather ? { weather } : {}),
+          ...(annotations.length > 0 ? { annotations } : {}),
+        },
+        error: null,
+        choices: null,
+        shared: { id, choices, ...(maxHr !== undefined ? { maxHr } : {}) },
+      });
+    } catch (error) {
+      set({
+        status: "error",
+        raw: null,
+        activity: null,
+        shared: null,
+        error:
+          error instanceof SharedRunError
+            ? error.message
+            : "That shared run could not be opened.",
+      });
+    }
+  },
+
   rebuild: (maxHr) => {
-    const { raw, activity } = get();
+    const { raw, activity, shared } = get();
     if (!raw) return;
     // Weather and the reader's own annotations survive a rebuild: both belong
     // to the run, not to the zone boundaries being recomputed, and
     // re-requesting the weather would mean another needless disclosure.
-    const rebuilt = buildActivity(raw, { maxHr });
+    //
+    // On a shared run the sharer's figure stands in where the reader has not
+    // set one of their own, so opening somebody's link does not silently
+    // redraw their zones against an estimate from this reader's settings.
+    const rebuilt = buildActivity(raw, { maxHr: maxHr ?? shared?.maxHr });
     set({
       activity: {
         ...rebuilt,
@@ -212,6 +291,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       activity: null,
       error: null,
       fileName: null,
+      shared: null,
       choices: null,
     });
   },
@@ -245,7 +325,7 @@ async function ingest(
   const parsed = await parseFile(blob, name);
   const raw = options.defaultName ? { ...parsed, name: parsed.name ?? options.defaultName } : parsed;
   const activity = buildActivity(raw, { maxHr: currentMaxHr() });
-  set({ status: "ready", raw, activity, error: null, choices: null });
+  set({ status: "ready", raw, activity, error: null, choices: null, shared: null });
 
   // Deliberately not awaited. Whether a run can be filed away has no bearing on
   // whether it can be read, and making the reader wait on a write to find out

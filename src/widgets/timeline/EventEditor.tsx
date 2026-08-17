@@ -9,6 +9,7 @@ import {
   type EventCategory,
 } from "@/model/annotations";
 import { useAnnotationStore } from "@/state/annotationStore";
+import { useActivityStore } from "@/state/activityStore";
 import { formatDistanceShort, formatDuration } from "@/lib/format";
 import styles from "./EventEditor.module.css";
 
@@ -101,6 +102,10 @@ export function EventEditor({
   const add = useAnnotationStore((state) => state.add);
   const update = useAnnotationStore((state) => state.update);
   const remove = useAnnotationStore((state) => state.remove);
+  // A run that arrived by link. Its events are the sharer's record of their own
+  // run, so they are shown and not edited — see the note on `attach` in the
+  // annotation store for what editing them would actually do.
+  const received = useActivityStore((state) => state.shared !== null);
   const { draft, open, close, change, typeDistance } = controller;
 
   const measure = draft ? kindSpec(draft.kind)?.measure : undefined;
@@ -134,8 +139,10 @@ export function EventEditor({
   return (
     <section className={styles.editor} aria-label="Your own events">
       <div className={styles.head}>
-        <h4 className={styles.title}>Your own events</h4>
-        {draft === null && (
+        <h4 className={styles.title}>
+          {received ? "Events the runner marked" : "Your own events"}
+        </h4>
+        {draft === null && !received && (
           <button
             type="button"
             className={styles.add}
@@ -146,7 +153,17 @@ export function EventEditor({
         )}
       </div>
 
-      {annotations.length === 0 && draft === null && (
+      {/* On somebody else's run these are theirs: a record of what they did,
+          not a list to edit. Adding to it would file this reader's gels under
+          the sharer's run id, where they would reappear on the sharer's own
+          copy of the run if they ever opened it in this browser. */}
+      {received && annotations.length === 0 && (
+        <p className={styles.empty}>
+          The runner did not mark any events on this run.
+        </p>
+      )}
+
+      {annotations.length === 0 && draft === null && !received && (
         <p className={styles.empty}>
           A gel, a drink, a cramp, a stop to fix a shoe, a lactate reading off a
           meter — anything the watch did not record. Added events are marked on
@@ -163,6 +180,7 @@ export function EventEditor({
               <button
                 type="button"
                 className={styles.chipOpen}
+                disabled={received}
                 onClick={() => open(annotation.t, annotation)}
               >
                 <span className={styles.chipKind}>
@@ -180,14 +198,16 @@ export function EventEditor({
                   <span className={styles.chipNote}>{annotation.note}</span>
                 )}
               </button>
-              <button
-                type="button"
-                className={styles.chipRemove}
-                onClick={() => remove(activity.id, annotation.id)}
-                aria-label={`Remove the ${kindSpec(annotation.kind)?.label ?? "event"} at ${formatDistanceShort(distanceAtTime(activity, annotation.t))}`}
-              >
-                ×
-              </button>
+              {!received && (
+                <button
+                  type="button"
+                  className={styles.chipRemove}
+                  onClick={() => remove(activity.id, annotation.id)}
+                  aria-label={`Remove the ${kindSpec(annotation.kind)?.label ?? "event"} at ${formatDistanceShort(distanceAtTime(activity, annotation.t))}`}
+                >
+                  ×
+                </button>
+              )}
             </li>
           ))}
         </ul>
